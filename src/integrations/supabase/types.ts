@@ -16,42 +16,63 @@ export type Database = {
     Tables: {
       evaluations: {
         Row: {
+          approval_status: string | null
+          client_name: string | null
+          copy_comment: string | null
           copy_score: number | null
           created_at: string
           creative_index: number | null
+          design_comment: string | null
           design_score: number | null
           feedback_copy: string | null
           feedback_design: string | null
           id: string
           is_official: boolean
           material_id: string
+          per_creative: Json | null
+          project_id: string | null
           status: string | null
+          submitted_at: string | null
           version_number: number
         }
         Insert: {
+          approval_status?: string | null
+          client_name?: string | null
+          copy_comment?: string | null
           copy_score?: number | null
           created_at?: string
           creative_index?: number | null
+          design_comment?: string | null
           design_score?: number | null
           feedback_copy?: string | null
           feedback_design?: string | null
           id?: string
           is_official?: boolean
           material_id: string
+          per_creative?: Json | null
+          project_id?: string | null
           status?: string | null
+          submitted_at?: string | null
           version_number?: number
         }
         Update: {
+          approval_status?: string | null
+          client_name?: string | null
+          copy_comment?: string | null
           copy_score?: number | null
           created_at?: string
           creative_index?: number | null
+          design_comment?: string | null
           design_score?: number | null
           feedback_copy?: string | null
           feedback_design?: string | null
           id?: string
           is_official?: boolean
           material_id?: string
+          per_creative?: Json | null
+          project_id?: string | null
           status?: string | null
+          submitted_at?: string | null
           version_number?: number
         }
         Relationships: [
@@ -60,6 +81,13 @@ export type Database = {
             columns: ["material_id"]
             isOneToOne: false
             referencedRelation: "materials"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "evaluations_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
             referencedColumns: ["id"]
           },
         ]
@@ -215,64 +243,127 @@ export type Database = {
       }
       projects: {
         Row: {
+          attached_files: Json | null
           campaign_name: string | null
           caption: string | null
           client_name: string | null
           copy_text: string | null
           copywriter_name: string | null
           created_at: string
+          creation_date: string | null
           deadline: string | null
           description: string | null
           designer_name: string | null
+          end_date: string | null
           external_reference_id: string | null
           format: string | null
           id: string
+          landing_page_link: string | null
+          material_type: string | null
           name: string
           notes: string | null
+          pending_creative_indices: Json | null
+          position: number | null
+          responsible_name: string | null
+          responsible_user_id: string | null
+          sent_for_approval_at: string | null
+          share_token: string | null
           squad: string | null
           squad_source: string | null
+          start_date: string | null
+          static_captions: Json | null
+          static_creative_count: number | null
+          static_files_data: Json | null
           status: string
+          title: string | null
           type: string
+          updated_at: string | null
+          video_captions: Json | null
+          video_count: number | null
+          video_files_data: Json | null
+          video_notes: Json | null
         }
         Insert: {
+          attached_files?: Json | null
           campaign_name?: string | null
           caption?: string | null
           client_name?: string | null
           copy_text?: string | null
           copywriter_name?: string | null
           created_at?: string
+          creation_date?: string | null
           deadline?: string | null
           description?: string | null
           designer_name?: string | null
+          end_date?: string | null
           external_reference_id?: string | null
           format?: string | null
           id?: string
+          landing_page_link?: string | null
+          material_type?: string | null
           name: string
           notes?: string | null
+          pending_creative_indices?: Json | null
+          position?: number | null
+          responsible_name?: string | null
+          responsible_user_id?: string | null
+          sent_for_approval_at?: string | null
+          share_token?: string | null
           squad?: string | null
           squad_source?: string | null
+          start_date?: string | null
+          static_captions?: Json | null
+          static_creative_count?: number | null
+          static_files_data?: Json | null
           status?: string
+          title?: string | null
           type?: string
+          updated_at?: string | null
+          video_captions?: Json | null
+          video_count?: number | null
+          video_files_data?: Json | null
+          video_notes?: Json | null
         }
         Update: {
+          attached_files?: Json | null
           campaign_name?: string | null
           caption?: string | null
           client_name?: string | null
           copy_text?: string | null
           copywriter_name?: string | null
           created_at?: string
+          creation_date?: string | null
           deadline?: string | null
           description?: string | null
           designer_name?: string | null
+          end_date?: string | null
           external_reference_id?: string | null
           format?: string | null
           id?: string
+          landing_page_link?: string | null
+          material_type?: string | null
           name?: string
           notes?: string | null
+          pending_creative_indices?: Json | null
+          position?: number | null
+          responsible_name?: string | null
+          responsible_user_id?: string | null
+          sent_for_approval_at?: string | null
+          share_token?: string | null
           squad?: string | null
           squad_source?: string | null
+          start_date?: string | null
+          static_captions?: Json | null
+          static_creative_count?: number | null
+          static_files_data?: Json | null
           status?: string
+          title?: string | null
           type?: string
+          updated_at?: string | null
+          video_captions?: Json | null
+          video_count?: number | null
+          video_files_data?: Json | null
+          video_notes?: Json | null
         }
         Relationships: []
       }

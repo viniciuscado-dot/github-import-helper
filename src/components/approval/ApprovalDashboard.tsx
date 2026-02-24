@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useState, useEffect } from "react";
 import { Send, CheckCircle, PenLine, TrendingUp, Star, Trophy, Users } from "lucide-react";
 import { PageHeader } from "./layout/PageHeader";
 import { KPICard } from "./layout/KPICard";
@@ -9,6 +9,7 @@ import {
   computeKPIs,
   computeUnifiedRanking,
   computeSquadRanking,
+  type SquadRankingEntry,
 } from "@/services/approvalDataService";
 import type { ApprovalFilters } from "@/pages/Aprovacao";
 
@@ -26,9 +27,15 @@ interface ApprovalDashboardProps {
 }
 
 export function ApprovalDashboard({ filters, filterSetters, onNavigateToKanban }: ApprovalDashboardProps) {
-  const kpis = useMemo(() => computeKPIs(filters), [filters]);
-  const ranking = useMemo(() => computeUnifiedRanking(filters), [filters]);
-  const squadRanking = useMemo(() => computeSquadRanking(filters), [filters]);
+  const [kpis, setKpis] = useState({ pendentes: 0, emAjustes: 0, aprovados: 0, total: 0, avgRating: 0, squadHighlight: { squad: "—", avgRating: 0 } });
+  const [ranking, setRanking] = useState<{ position: number; name: string; materialsEvaluated: number; avgRating: number }[]>([]);
+  const [squadRanking, setSquadRanking] = useState<SquadRankingEntry[]>([]);
+
+  useEffect(() => {
+    computeKPIs(filters).then(setKpis);
+    computeUnifiedRanking(filters).then(setRanking);
+    computeSquadRanking(filters).then(setSquadRanking);
+  }, [filters]);
 
   return (
     <>
