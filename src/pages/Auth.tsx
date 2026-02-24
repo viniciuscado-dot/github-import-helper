@@ -9,33 +9,39 @@ import { toast } from 'sonner';
 import { useAuth } from '@/contexts/AuthContext';
 
 export default function Auth() {
-  const { isAuthenticated, login } = useAuth();
+  const { isAuthenticated, login, loading } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoggingIn, setIsLoggingIn] = useState(false);
   const navigate = useNavigate();
 
   // Already logged in → go to dashboard
-  if (isAuthenticated) {
+  if (!loading && isAuthenticated) {
     navigate('/dashboard', { replace: true });
     return null;
   }
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoggingIn(true);
 
-    setTimeout(() => {
-      const success = login(email, password);
-      if (success) {
-        toast.success('Login realizado com sucesso!');
-        navigate('/dashboard', { replace: true });
-      } else {
-        toast.error('E-mail ou senha inválidos');
-      }
-      setIsLoggingIn(false);
-    }, 400);
+    const success = await login(email, password);
+    if (success) {
+      toast.success('Login realizado com sucesso!');
+      navigate('/dashboard', { replace: true });
+    } else {
+      toast.error('E-mail ou senha inválidos');
+    }
+    setIsLoggingIn(false);
   };
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-background via-background to-muted/30 overflow-hidden">

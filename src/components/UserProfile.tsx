@@ -159,18 +159,11 @@ export const UserProfile = () => {
           Administrador
         </Badge>
       )
-    } else if (profile.role === 'sdr') {
+    } else {
       return (
         <Badge variant="secondary" className="bg-blue-600 text-white">
           <User className="h-3 w-3 mr-1" />
-          SDR
-        </Badge>
-      )
-    } else {
-      return (
-        <Badge variant="secondary" className="bg-green-600 text-white">
-          <User className="h-3 w-3 mr-1" />
-          Closer
+          Equipe
         </Badge>
       )
     }
@@ -259,8 +252,8 @@ export const UserProfile = () => {
             <div>
               <Label className="text-sm font-medium">Último Login</Label>
               <p className="text-sm text-muted-foreground mt-1">
-                {profile.last_login 
-                  ? new Date(profile.last_login).toLocaleDateString('pt-BR') 
+                {(profile as any).last_login 
+                  ? new Date((profile as any).last_login).toLocaleDateString('pt-BR') 
                   : 'Nunca'
                 }
               </p>

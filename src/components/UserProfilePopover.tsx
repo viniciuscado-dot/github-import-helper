@@ -178,16 +178,9 @@ export const UserProfilePopover = ({ children, onLogout }: UserProfilePopoverPro
           Administrador
         </Badge>
       )
-    } else if (profile.role === 'sdr') {
-      return (
-        <Badge variant="secondary" className="bg-blue-600 text-white text-xs">
-          <User className="h-3 w-3 mr-1" />
-          SDR
-        </Badge>
-      )
     } else {
       return (
-        <Badge variant="secondary" className="bg-green-600 text-white text-xs">
+        <Badge variant="secondary" className="bg-blue-600 text-white text-xs">
           <User className="h-3 w-3 mr-1" />
           Closer
         </Badge>
