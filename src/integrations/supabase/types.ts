@@ -14,7 +14,268 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      evaluations: {
+        Row: {
+          copy_score: number | null
+          created_at: string
+          creative_index: number | null
+          design_score: number | null
+          feedback_copy: string | null
+          feedback_design: string | null
+          id: string
+          is_official: boolean
+          material_id: string
+          status: string | null
+          version_number: number
+        }
+        Insert: {
+          copy_score?: number | null
+          created_at?: string
+          creative_index?: number | null
+          design_score?: number | null
+          feedback_copy?: string | null
+          feedback_design?: string | null
+          id?: string
+          is_official?: boolean
+          material_id: string
+          status?: string | null
+          version_number?: number
+        }
+        Update: {
+          copy_score?: number | null
+          created_at?: string
+          creative_index?: number | null
+          design_score?: number | null
+          feedback_copy?: string | null
+          feedback_design?: string | null
+          id?: string
+          is_official?: boolean
+          material_id?: string
+          status?: string | null
+          version_number?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "evaluations_material_id_fkey"
+            columns: ["material_id"]
+            isOneToOne: false
+            referencedRelation: "materials"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      kanban_status: {
+        Row: {
+          column_status: string
+          id: string
+          material_id: string
+          updated_at: string
+        }
+        Insert: {
+          column_status?: string
+          id?: string
+          material_id: string
+          updated_at?: string
+        }
+        Update: {
+          column_status?: string
+          id?: string
+          material_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "kanban_status_material_id_fkey"
+            columns: ["material_id"]
+            isOneToOne: false
+            referencedRelation: "materials"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      kpis: {
+        Row: {
+          created_at: string
+          id: string
+          metric_name: string
+          metric_value: number
+          period: string | null
+          project_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          metric_name: string
+          metric_value?: number
+          period?: string | null
+          project_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          metric_name?: string
+          metric_value?: number
+          period?: string | null
+          project_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "kpis_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      material_files: {
+        Row: {
+          created_at: string
+          creative_index: number | null
+          file_type: string
+          file_url: string
+          id: string
+          material_id: string
+          slot: string | null
+        }
+        Insert: {
+          created_at?: string
+          creative_index?: number | null
+          file_type?: string
+          file_url: string
+          id?: string
+          material_id: string
+          slot?: string | null
+        }
+        Update: {
+          created_at?: string
+          creative_index?: number | null
+          file_type?: string
+          file_url?: string
+          id?: string
+          material_id?: string
+          slot?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "material_files_material_id_fkey"
+            columns: ["material_id"]
+            isOneToOne: false
+            referencedRelation: "materials"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      materials: {
+        Row: {
+          caption: string | null
+          copy_text: string | null
+          copywriter_name: string | null
+          created_at: string
+          designer_name: string | null
+          id: string
+          is_active_version: boolean
+          project_id: string
+          status: string
+          version_number: number
+        }
+        Insert: {
+          caption?: string | null
+          copy_text?: string | null
+          copywriter_name?: string | null
+          created_at?: string
+          designer_name?: string | null
+          id?: string
+          is_active_version?: boolean
+          project_id: string
+          status?: string
+          version_number?: number
+        }
+        Update: {
+          caption?: string | null
+          copy_text?: string | null
+          copywriter_name?: string | null
+          created_at?: string
+          designer_name?: string | null
+          id?: string
+          is_active_version?: boolean
+          project_id?: string
+          status?: string
+          version_number?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "materials_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      projects: {
+        Row: {
+          campaign_name: string | null
+          caption: string | null
+          client_name: string | null
+          copy_text: string | null
+          copywriter_name: string | null
+          created_at: string
+          deadline: string | null
+          description: string | null
+          designer_name: string | null
+          external_reference_id: string | null
+          format: string | null
+          id: string
+          name: string
+          notes: string | null
+          squad: string | null
+          squad_source: string | null
+          status: string
+          type: string
+        }
+        Insert: {
+          campaign_name?: string | null
+          caption?: string | null
+          client_name?: string | null
+          copy_text?: string | null
+          copywriter_name?: string | null
+          created_at?: string
+          deadline?: string | null
+          description?: string | null
+          designer_name?: string | null
+          external_reference_id?: string | null
+          format?: string | null
+          id?: string
+          name: string
+          notes?: string | null
+          squad?: string | null
+          squad_source?: string | null
+          status?: string
+          type?: string
+        }
+        Update: {
+          campaign_name?: string | null
+          caption?: string | null
+          client_name?: string | null
+          copy_text?: string | null
+          copywriter_name?: string | null
+          created_at?: string
+          deadline?: string | null
+          description?: string | null
+          designer_name?: string | null
+          external_reference_id?: string | null
+          format?: string | null
+          id?: string
+          name?: string
+          notes?: string | null
+          squad?: string | null
+          squad_source?: string | null
+          status?: string
+          type?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
