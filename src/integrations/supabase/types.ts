@@ -241,6 +241,60 @@ export type Database = {
           },
         ]
       }
+      profiles: {
+        Row: {
+          avatar_url: string | null
+          created_at: string
+          custom_role_id: string | null
+          department: string | null
+          email: string | null
+          group_name: string | null
+          id: string
+          is_active: boolean
+          name: string
+          phone: string | null
+          project_scope: string | null
+          role: string
+          selected_celebration_id: string | null
+          squad: string | null
+          updated_at: string
+        }
+        Insert: {
+          avatar_url?: string | null
+          created_at?: string
+          custom_role_id?: string | null
+          department?: string | null
+          email?: string | null
+          group_name?: string | null
+          id: string
+          is_active?: boolean
+          name?: string
+          phone?: string | null
+          project_scope?: string | null
+          role?: string
+          selected_celebration_id?: string | null
+          squad?: string | null
+          updated_at?: string
+        }
+        Update: {
+          avatar_url?: string | null
+          created_at?: string
+          custom_role_id?: string | null
+          department?: string | null
+          email?: string | null
+          group_name?: string | null
+          id?: string
+          is_active?: boolean
+          name?: string
+          phone?: string | null
+          project_scope?: string | null
+          role?: string
+          selected_celebration_id?: string | null
+          squad?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       projects: {
         Row: {
           attached_files: Json | null
@@ -372,7 +426,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      get_user_role: { Args: { _user_id: string }; Returns: string }
     }
     Enums: {
       [_ in never]: never

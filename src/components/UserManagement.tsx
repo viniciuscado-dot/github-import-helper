@@ -663,10 +663,10 @@ export const UserManagement = () => {
     name: '',
     email: '',
     password: '',
-    role: 'sdr' as 'workspace_admin' | 'admin' | 'sdr' | 'closer',
+    role: 'equipe' as 'workspace_admin' | 'admin' | 'equipe',
     department: '',
     phone: '',
-    customRoleId: 'sdr',
+    customRoleId: 'equipe',
     avatar_url: ''
   });
   const [uploadingAvatar, setUploadingAvatar] = useState(false);
@@ -928,14 +928,13 @@ export const UserManagement = () => {
       return;
     }
 
-    const isBaseRole = ['workspace_admin', 'admin', 'sdr', 'closer', 'designer', 'copywriter', 'analista_performance', 'gestor_projeto'].includes(formData.customRoleId);
-    const role = isBaseRole ? formData.customRoleId as any : 'sdr';
-    const customRoleId = isBaseRole ? undefined : formData.customRoleId;
+    const validRoles = ['workspace_admin', 'admin', 'equipe'];
+    const role = validRoles.includes(formData.customRoleId) ? formData.customRoleId as any : 'equipe';
 
-    const result = await addUser({ ...formData, role, customRoleId });
+    const result = await addUser({ name: formData.name, email: formData.email, password: formData.password, role, department: formData.department, phone: formData.phone });
     
     if (result.success) {
-      setFormData({ name: '', email: '', password: '', role: 'sdr', department: '', phone: '', customRoleId: 'sdr', avatar_url: '' });
+      setFormData({ name: '', email: '', password: '', role: 'equipe', department: '', phone: '', customRoleId: 'equipe', avatar_url: '' });
       setAvatarPreview(null);
       setIsAddDialogOpen(false);
       toast({ title: "Sucesso", description: `${formData.name} foi adicionado ao sistema.` });
@@ -948,10 +947,10 @@ export const UserManagement = () => {
     const user = profiles.find(u => u.user_id === userId);
     if (user) {
       // Garantir que o role seja um dos valores válidos
-      const userRole: 'workspace_admin' | 'admin' | 'sdr' | 'closer' = 
-        (user.role === 'workspace_admin' || user.role === 'admin' || user.role === 'sdr' || user.role === 'closer') 
-          ? user.role as 'workspace_admin' | 'admin' | 'sdr' | 'closer'
-          : 'sdr';
+      const userRole: 'workspace_admin' | 'admin' | 'equipe' = 
+        (user.role === 'workspace_admin' || user.role === 'admin' || user.role === 'equipe') 
+          ? user.role as 'workspace_admin' | 'admin' | 'equipe'
+          : 'equipe';
       
       setFormData({
         name: user.name,
@@ -991,7 +990,7 @@ export const UserManagement = () => {
       .eq('user_id', editingUser);
 
     if (!error) {
-      setFormData({ name: '', email: '', password: '', role: 'sdr', department: '', phone: '', customRoleId: 'sdr', avatar_url: '' });
+      setFormData({ name: '', email: '', password: '', role: 'equipe', department: '', phone: '', customRoleId: 'equipe', avatar_url: '' });
       setAvatarPreview(null);
       setEditingUser(null);
       refreshProfiles();
