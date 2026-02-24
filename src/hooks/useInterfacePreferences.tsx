@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 
-export type ViewType = 'csm' | 'cs-churn' | 'cs-metricas' | 'cs-nps' | 'cs-csat' | 'cs-cancelamento' | 'gestao-cancelamentos' | 'projetos-operacao' | 'gestao-projetos' | 'gestao-contratos' | 'performance' | 'aprovacao' | 'copy' | 'analise-bench' | 'users' | 'profile' | 'preferencias-interface';
+export type ViewType = 'csm' | 'cs-churn' | 'cs-metricas' | 'cs-nps' | 'cs-csat' | 'cs-cancelamento' | 'gestao-cancelamentos' | 'projetos-operacao' | 'gestao-projetos' | 'gestao-contratos' | 'performance' | 'aprovacao' | 'copy' | 'analise-bench' | 'users' | 'profile' | 'preferencias-interface' | 'planejamento-conteudo' | 'varredura';
 
 export interface InterfacePreferences {
   theme: 'light' | 'dark' | 'system';

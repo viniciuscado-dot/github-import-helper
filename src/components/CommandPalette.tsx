@@ -49,6 +49,8 @@ export const CommandPalette = ({ open, onOpenChange, onNavigate }: CommandPalett
     { value: 'aprovacao', label: 'Aprovação', icon: CheckSquare },
     { value: 'copy', label: 'Copy', icon: PenTool },
     { value: 'analise-bench', label: 'Análise e Bench', icon: Search },
+    { value: 'planejamento-conteudo', label: 'Planejamento de Conteúdo', icon: PenTool },
+    { value: 'varredura', label: 'Varredura', icon: Search },
   ];
 
   const handleSelect = (value: string) => {

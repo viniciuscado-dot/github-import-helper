@@ -32,8 +32,8 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog"
 
 interface AppSidebarProps {
-  activeView: 'home-criacao' | 'users' | 'profile' | 'gestao-projetos' | 'gestao-contratos' | 'csm' | 'cs' | 'cs-churn' | 'cs-metricas' | 'cs-nps' | 'cs-csat' | 'cs-cancelamento' | 'gestao-cancelamentos' | 'gestao-nps' | 'gestao-csat' | 'copy' | 'aprovacao' | 'analise-bench' | 'projetos-operacao' | 'projetos-clientes' | 'projetos-metricas' | 'performance' | 'preferencias-interface' | 'cases-sucesso'
-  onViewChange: (view: 'home-criacao' | 'users' | 'profile' | 'gestao-projetos' | 'gestao-contratos' | 'csm' | 'cs' | 'cs-churn' | 'cs-metricas' | 'cs-nps' | 'cs-csat' | 'cs-cancelamento' | 'gestao-cancelamentos' | 'gestao-nps' | 'gestao-csat' | 'copy' | 'aprovacao' | 'analise-bench' | 'projetos-operacao' | 'projetos-clientes' | 'projetos-metricas' | 'performance' | 'preferencias-interface' | 'cases-sucesso') => void
+  activeView: 'home-criacao' | 'users' | 'profile' | 'gestao-projetos' | 'gestao-contratos' | 'csm' | 'cs' | 'cs-churn' | 'cs-metricas' | 'cs-nps' | 'cs-csat' | 'cs-cancelamento' | 'gestao-cancelamentos' | 'gestao-nps' | 'gestao-csat' | 'copy' | 'aprovacao' | 'analise-bench' | 'projetos-operacao' | 'projetos-clientes' | 'projetos-metricas' | 'performance' | 'preferencias-interface' | 'cases-sucesso' | 'planejamento-conteudo' | 'varredura'
+  onViewChange: (view: 'home-criacao' | 'users' | 'profile' | 'gestao-projetos' | 'gestao-contratos' | 'csm' | 'cs' | 'cs-churn' | 'cs-metricas' | 'cs-nps' | 'cs-csat' | 'cs-cancelamento' | 'gestao-cancelamentos' | 'gestao-nps' | 'gestao-csat' | 'copy' | 'aprovacao' | 'analise-bench' | 'projetos-operacao' | 'projetos-clientes' | 'projetos-metricas' | 'performance' | 'preferencias-interface' | 'cases-sucesso' | 'planejamento-conteudo' | 'varredura') => void
 }
 
 export function AppSidebar({ activeView, onViewChange }: AppSidebarProps) {
