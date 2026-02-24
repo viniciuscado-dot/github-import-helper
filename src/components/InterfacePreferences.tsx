@@ -95,6 +95,8 @@ export const InterfacePreferences = () => {
     'users': UserCheck,
     'profile': UserCheck,
     'preferencias-interface': Monitor,
+    'planejamento-conteudo': Copy,
+    'varredura': Activity,
   };
 
   const allPages: { value: ViewType; label: string; moduleName?: string }[] = [

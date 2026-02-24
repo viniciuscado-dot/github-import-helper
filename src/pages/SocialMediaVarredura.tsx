@@ -1,8 +1,27 @@
-const SocialMediaVarredura = () => (
-  <div className="min-h-screen flex flex-col items-center justify-center gap-4 bg-background">
-    <h1 className="text-3xl font-bold text-foreground">Varredura</h1>
-    <p className="text-muted-foreground">Em construção</p>
-  </div>
-);
+import { AppSidebar } from "@/components/app-sidebar";
+import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
+import { MobileSidebarTrigger } from "@/components/MobileSidebarTrigger";
+import { PageComingSoon } from "@/components/PageComingSoon";
+import { useNavigate } from "react-router-dom";
 
-export default SocialMediaVarredura;
+export default function SocialMediaVarredura() {
+  const navigate = useNavigate();
+
+  return (
+    <SidebarProvider defaultOpen={true}>
+      <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/30 flex w-full">
+        <AppSidebar activeView="varredura" onViewChange={(view) => navigate(`/dashboard?view=${view}`)} />
+        <div className="flex-1 flex h-svh min-h-0 flex-col min-w-0">
+          <MobileSidebarTrigger />
+          <SidebarInset className="flex-1 min-h-0 flex flex-col">
+            <PageComingSoon
+              title="Varredura"
+              subtitle="Funcionalidade em desenvolvimento."
+              badgeLabel="Social Media"
+            />
+          </SidebarInset>
+        </div>
+      </div>
+    </SidebarProvider>
+  );
+}

@@ -33,7 +33,9 @@ const viewToRouteMap: Record<string, string> = {
   'performance': '/dashboard',
   'users': '/dashboard',
   'profile': '/dashboard',
-  'preferencias-interface': '/dashboard'
+  'preferencias-interface': '/dashboard',
+  'planejamento-conteudo': '/social-media/planejamento',
+  'varredura': '/social-media/varredura'
 };
 
 export function PublicPageWithSidebar({ children }: PublicPageWithSidebarProps) {
