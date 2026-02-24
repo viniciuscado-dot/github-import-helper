@@ -11,16 +11,21 @@ interface QuickAccessSectionProps {
   onNavigate: (view: string) => void;
 }
 
+const glassSection =
+  "rounded-2xl border border-border/10 bg-card/[0.04] backdrop-blur-xl shadow-sm";
+const glassCard =
+  "rounded-xl border border-border/10 bg-card/[0.06] backdrop-blur-lg transition-all duration-200 hover:border-primary/30 hover:shadow-lg hover:shadow-primary/5 hover:-translate-y-0.5";
+
 export function QuickAccessSection({ onNavigate }: QuickAccessSectionProps) {
   const { user } = useAuth();
   const navigate = useNavigate();
   const [items, setItems] = useState<QuickAccessItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [modalOpen, setModalOpen] = useState(false);
+  const [mounted, setMounted] = useState(false);
 
   const loadPreferences = async () => {
     if (!user) {
-      // localStorage fallback
       const stored = localStorage.getItem("quick_access");
       setItems(stored ? JSON.parse(stored) : []);
       setLoading(false);
@@ -36,7 +41,6 @@ export function QuickAccessSection({ onNavigate }: QuickAccessSectionProps) {
         setItems(data.quick_access as QuickAccessItem[]);
       }
     } catch {
-      // fallback
       const stored = localStorage.getItem("quick_access");
       if (stored) setItems(JSON.parse(stored));
     } finally {
@@ -47,6 +51,13 @@ export function QuickAccessSection({ onNavigate }: QuickAccessSectionProps) {
   useEffect(() => {
     loadPreferences();
   }, [user]);
+
+  useEffect(() => {
+    if (!loading) {
+      const t = setTimeout(() => setMounted(true), 50);
+      return () => clearTimeout(t);
+    }
+  }, [loading]);
 
   const handleSave = async (newItems: QuickAccessItem[]) => {
     setItems(newItems);
@@ -60,7 +71,7 @@ export function QuickAccessSection({ onNavigate }: QuickAccessSectionProps) {
           { onConflict: "user_id" }
         );
     } catch {
-      // silent — localStorage already saved
+      // silent
     }
   };
 
@@ -78,8 +89,8 @@ export function QuickAccessSection({ onNavigate }: QuickAccessSectionProps) {
   };
 
   return (
-    <section className="w-full">
-      <div className="flex items-center justify-between mb-3">
+    <section className={`w-full p-5 ${glassSection}`}>
+      <div className="flex items-center justify-between mb-4">
         <div>
           <h2 className="text-base font-semibold text-foreground">Acesso rápido</h2>
           <p className="text-xs text-muted-foreground">Escolha até 3 atalhos para aparecerem aqui.</p>
@@ -99,29 +110,35 @@ export function QuickAccessSection({ onNavigate }: QuickAccessSectionProps) {
       ) : items.length === 0 ? (
         <button
           onClick={() => setModalOpen(true)}
-          className="w-full flex flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-border/60 bg-card/50 p-8 text-muted-foreground hover:border-primary/40 hover:text-primary transition-colors"
+          className="w-full flex flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-border/30 bg-card/[0.03] backdrop-blur-lg p-8 text-muted-foreground hover:border-primary/40 hover:text-primary transition-colors"
         >
           <Plus className="h-6 w-6" />
           <span className="text-sm font-medium">Escolher atalhos</span>
         </button>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-          {items.map((item) => {
+          {items.map((item, idx) => {
             const Icon = iconForItem(item.key);
             return (
               <button
                 key={item.key}
                 onClick={() => handleCardClick(item)}
-                className="group relative flex items-center gap-3 rounded-xl border border-border/60 bg-card p-4 text-left transition-all hover:border-primary/50 hover:bg-accent/30 hover:shadow-lg hover:shadow-primary/5"
+                className={`group relative flex items-center gap-3 p-4 text-left ${glassCard}`}
+                style={{
+                  opacity: mounted ? 1 : 0,
+                  transform: mounted ? "translateY(0)" : "translateY(8px)",
+                  transition: `opacity 0.35s ease ${idx * 0.08}s, transform 0.35s ease ${idx * 0.08}s`,
+                }}
               >
-                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 text-primary">
+                {/* Icon badge with glass + glow */}
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-primary/10 backdrop-blur-sm text-primary shadow-sm shadow-primary/10">
                   {Icon && <Icon className="h-5 w-5" />}
                 </div>
                 <div className="min-w-0 flex-1">
                   <h3 className="text-sm font-semibold text-foreground truncate">{item.label}</h3>
                   <p className="text-xs text-muted-foreground truncate">{item.description}</p>
                 </div>
-                <ArrowRight className="h-4 w-4 shrink-0 text-muted-foreground/40 transition-all group-hover:text-primary group-hover:translate-x-0.5" />
+                <ArrowRight className="h-4 w-4 shrink-0 text-muted-foreground/30 transition-all group-hover:text-primary group-hover:translate-x-0.5" />
               </button>
             );
           })}
