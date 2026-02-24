@@ -108,9 +108,10 @@ export function JobDialog({ open, onOpenChange, job, onSave, onClose }: JobDialo
   const showLandingPageLink = materialType === "landing_page";
 
   // Creative states for partial approval tracking
-  const creativeStates = useMemo(() => {
-    if (!job?.id) return [] as MaterialCreativeState[];
-    return getCreativeStates(job.id);
+  const [creativeStates, setCreativeStates] = useState<MaterialCreativeState[]>([]);
+  useEffect(() => {
+    if (!job?.id) { setCreativeStates([]); return; }
+    getCreativeStates(job.id).then(setCreativeStates);
   }, [job?.id, open]);
 
   const isCreativeLocked = (idx: number): boolean => {
@@ -124,14 +125,16 @@ export function JobDialog({ open, onOpenChange, job, onSave, onClose }: JobDialo
   };
 
   // Version 1 ratings (primary/official ratings)
-  const v1Ratings = useMemo(() => {
-    if (!job?.id) return null;
-    const feedbacks = getClientFeedback(job.id);
-    if (!feedbacks.length) return null;
-    const sorted = [...feedbacks].sort((a, b) => (a.version_number || 1) - (b.version_number || 1));
-    const v1 = sorted[0];
-    if (!v1.copy_rating && !v1.design_rating) return null;
-    return { copy: v1.copy_rating, design: v1.design_rating };
+  const [v1Ratings, setV1Ratings] = useState<{ copy: number; design: number } | null>(null);
+  useEffect(() => {
+    if (!job?.id) { setV1Ratings(null); return; }
+    getClientFeedback(job.id).then(feedbacks => {
+      if (!feedbacks.length) { setV1Ratings(null); return; }
+      const sorted = [...feedbacks].sort((a, b) => (a.version_number || 1) - (b.version_number || 1));
+      const v1 = sorted[0];
+      if (!v1.copy_rating && !v1.design_rating) { setV1Ratings(null); return; }
+      setV1Ratings({ copy: v1.copy_rating, design: v1.design_rating });
+    });
   }, [job?.id]);
 
   const acceptedFileTypes = useMemo(() => {
@@ -193,35 +196,9 @@ export function JobDialog({ open, onOpenChange, job, onSave, onClose }: JobDialo
 
     async function loadClientFeedback() {
       if (job?.id) {
-        const mockFeedback = getClientFeedback(job.id);
         try {
-          const { data } = await supabase
-            .from("approval_client_feedback")
-            .select("*")
-            .eq("job_id", job.id)
-            .order("submitted_at", { ascending: false });
-          const allFeedback = [...mockFeedback.map(f => ({
-            id: f.id,
-            job_id: f.job_id,
-            client_name: f.client_name,
-            rating: Math.round((f.copy_rating + f.design_rating) / 2),
-            copy_rating: f.copy_rating,
-            design_rating: f.design_rating,
-            comment: [f.copy_comment, f.design_comment].filter(Boolean).join(" | ") || null,
-            copy_comment: f.copy_comment,
-            design_comment: f.design_comment,
-            approval_status: f.approval_status,
-            submitted_at: f.submitted_at,
-          })), ...(data || [])];
-          const seen = new Set<string>();
-          const unique = allFeedback.filter(f => {
-            if (seen.has(f.id)) return false;
-            seen.add(f.id);
-            return true;
-          });
-          setClientFeedback(unique);
-        } catch {
-          setClientFeedback(mockFeedback.map(f => ({
+          const feedbacks = await getClientFeedback(job.id);
+          setClientFeedback(feedbacks.map(f => ({
             id: f.id,
             job_id: f.job_id,
             client_name: f.client_name,
@@ -234,6 +211,8 @@ export function JobDialog({ open, onOpenChange, job, onSave, onClose }: JobDialo
             approval_status: f.approval_status,
             submitted_at: f.submitted_at,
           })));
+        } catch {
+          setClientFeedback([]);
         }
       }
     }
@@ -521,11 +500,11 @@ export function JobDialog({ open, onOpenChange, job, onSave, onClose }: JobDialo
       const targetJobId = job?.id || createdJobId;
 
       if (job) {
-        updateJob(job.id, { ...commonData, status } as any);
+        await updateJob(job.id, { ...commonData, status } as any);
       } else if (createdJobId) {
-        updateJob(createdJobId, { ...commonData, status } as any);
+        await updateJob(createdJobId, { ...commonData, status } as any);
       } else {
-        const created = createJob({
+        const created = await createJob({
           ...commonData,
           status,
           responsible_user_id: currentUser?.user_id || "auth-mock-001",
@@ -538,13 +517,13 @@ export function JobDialog({ open, onOpenChange, job, onSave, onClose }: JobDialo
       // When sending for approval, init creative states and create sent version
       if (status === "para_aprovacao" && resolvedJobId) {
         if (materialType === "estaticos") {
-          initCreativeStates(resolvedJobId, staticCreativeCount);
-          const sentVersion = createSentVersion(resolvedJobId);
-          updateJob(resolvedJobId, { pending_creative_indices: sentVersion.creativeIndices, current_version_number: sentVersion.versionNumber } as any);
+          await initCreativeStates(resolvedJobId, staticCreativeCount);
+          const sentVersion = await createSentVersion(resolvedJobId);
+          await updateJob(resolvedJobId, { pending_creative_indices: sentVersion.creativeIndices, current_version_number: sentVersion.versionNumber } as any);
         } else if (materialType === "videos") {
-          initCreativeStates(resolvedJobId, videoCount);
-          const sentVersion = createSentVersion(resolvedJobId);
-          updateJob(resolvedJobId, { pending_creative_indices: sentVersion.creativeIndices, current_version_number: sentVersion.versionNumber } as any);
+          await initCreativeStates(resolvedJobId, videoCount);
+          const sentVersion = await createSentVersion(resolvedJobId);
+          await updateJob(resolvedJobId, { pending_creative_indices: sentVersion.creativeIndices, current_version_number: sentVersion.versionNumber } as any);
         }
       }
 
