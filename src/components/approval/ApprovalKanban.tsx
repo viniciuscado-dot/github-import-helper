@@ -1,8 +1,8 @@
-import { useState, useMemo, useCallback } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { useToast } from "@/hooks/use-toast";
 import { ApprovalColumn } from "./ApprovalColumn";
 import { JobDialog } from "./JobDialog";
-import { getJobs, ApprovalJobData, getVersions } from "@/services/approvalDataService";
+import { getJobs, getVersions, ApprovalJobData } from "@/services/approvalDataService";
 import { getUserSquadByName } from "@/utils/getActiveUsers";
 
 interface ApprovalKanbanProps {
@@ -33,34 +33,32 @@ export function ApprovalKanban({ showArchived, showDeleted, filters }: ApprovalK
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [highlightedJobId, setHighlightedJobId] = useState<string | null>(null);
   const [refreshKey, setRefreshKey] = useState(0);
+  const [jobs, setJobs] = useState<ApprovalJobData[]>([]);
   const { toast } = useToast();
 
-  const jobs = useMemo(() => {
-    const statusFilter = showDeleted ? "deletado" : showArchived ? "arquivado" : undefined;
-    const allJobs = getJobs({
-      ...filters,
-      status: statusFilter,
-    });
-    if (showDeleted) return allJobs;
-    if (showArchived) return allJobs;
-    return allJobs.filter(j => j.status !== "arquivado" && j.status !== "deletado");
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+  useEffect(() => {
+    async function loadJobs() {
+      const statusFilter = showDeleted ? "deletado" : showArchived ? "arquivado" : undefined;
+      const allJobs = await getJobs({ ...filters, status: statusFilter });
+      if (showDeleted || showArchived) {
+        setJobs(allJobs);
+      } else {
+        setJobs(allJobs.filter(j => j.status !== "arquivado" && j.status !== "deletado"));
+      }
+    }
+    loadJobs();
   }, [filters, showArchived, showDeleted, refreshKey]);
 
-  // Map job → squad: prefer manual squad on job, then resolve from user profile
   const jobSquadMap = useMemo(() => {
     const map = new Map<string, string>();
     jobs.forEach((j: any) => {
       if (j.squad_source === "manual" && j.squad) {
-        // Manual override — use as is
         map.set(j.id, j.squad);
-      } else if (j.squad && j.squad_source !== "manual") {
-        // Auto — try to resolve from user profile (copywriter first, then designer)
+      } else if (j.squad) {
         const copywriterSquad = j.copywriter_name ? getUserSquadByName(j.copywriter_name) : null;
         const designerSquad = j.designer_name ? getUserSquadByName(j.designer_name) : null;
         map.set(j.id, copywriterSquad || designerSquad || j.squad);
       } else {
-        // No squad on job — try to resolve from assigned people
         const copywriterSquad = j.copywriter_name ? getUserSquadByName(j.copywriter_name) : null;
         const designerSquad = j.designer_name ? getUserSquadByName(j.designer_name) : null;
         if (copywriterSquad || designerSquad) {
@@ -68,29 +66,13 @@ export function ApprovalKanban({ showArchived, showDeleted, filters }: ApprovalK
         }
       }
     });
-    // Fallback: legacy versions-based squad for seed data
-    const versions = getVersions();
-    const SQUAD_MAP: Record<string, string> = {
-      "des-001": "Athena", "des-002": "Ártemis", "des-003": "Ares",
-      "cop-001": "Apollo", "cop-002": "Athena", "cop-003": "Ártemis",
-    };
-    versions.forEach(v => {
-      if (!map.has(v.job_id)) {
-        const squad = SQUAD_MAP[v.designer_id] || SQUAD_MAP[v.copywriter_id];
-        if (squad) map.set(v.job_id, squad);
-      }
-    });
     return map;
   }, [jobs]);
 
   const handleStatusChange = useCallback((jobId: string, newStatus: string) => {
-    // In mock mode we'd update localStorage — for now just show feedback
     setHighlightedJobId(jobId);
     setTimeout(() => setHighlightedJobId(null), 1500);
-    toast({
-      title: "Status atualizado",
-      description: "O material foi movido com sucesso.",
-    });
+    toast({ title: "Status atualizado", description: "O material foi movido com sucesso." });
   }, [toast]);
 
   function handleCardClick(job: ApprovalJobData) {
@@ -134,16 +116,11 @@ export function ApprovalKanban({ showArchived, showDeleted, filters }: ApprovalK
         <JobDialog
           open={isDialogOpen}
           onOpenChange={(open) => {
-            if (!open) {
-              handleDialogClose();
-            } else {
-              setIsDialogOpen(true);
-            }
+            if (!open) handleDialogClose();
+            else setIsDialogOpen(true);
           }}
           job={selectedJob}
-          onSave={() => {
-            setRefreshKey(k => k + 1);
-          }}
+          onSave={() => setRefreshKey(k => k + 1)}
           onClose={handleDialogClose}
         />
       )}
