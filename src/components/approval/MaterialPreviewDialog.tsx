@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import {
   Dialog,
   DialogContent,
@@ -118,10 +118,12 @@ export function MaterialPreviewDialog({ open, onOpenChange, job, squad, onRefres
   const creativeCount = isStatic ? staticCreativeCount : isVideo ? videoCount : 1;
 
   // Get creative states to know which are already approved (locked)
-  const approvedCreativeIndices = useMemo(() => {
-    if ((!isStatic && !isVideo) || !job?.id) return new Set<number>();
-    const states = getCreativeStates(job.id);
-    return new Set(states.filter(s => s.finalDecision === "APPROVED").map(s => s.creativeIndex));
+  const [approvedCreativeIndices, setApprovedCreativeIndices] = useState(new Set<number>());
+  useEffect(() => {
+    if ((!isStatic && !isVideo) || !job?.id) { setApprovedCreativeIndices(new Set()); return; }
+    getCreativeStates(job.id).then(states => {
+      setApprovedCreativeIndices(new Set(states.filter(s => s.finalDecision === "APPROVED").map(s => s.creativeIndex)));
+    });
   }, [isStatic, isVideo, job?.id, open]);
 
   const isCreativeApproved = (idx: number) => approvedCreativeIndices.has(idx);
@@ -133,9 +135,10 @@ export function MaterialPreviewDialog({ open, onOpenChange, job, squad, onRefres
   }, [isStatic, isVideo, creativeCount, approvedCreativeIndices]);
 
   // Official ratings detection for re-submissions
-  const officialRatings: OfficialRatings | null = useMemo(() => {
-    if (!job?.id) return null;
-    return getOfficialRatings(job.id);
+  const [officialRatings, setOfficialRatings] = useState<OfficialRatings | null>(null);
+  useEffect(() => {
+    if (!job?.id) { setOfficialRatings(null); return; }
+    getOfficialRatings(job.id).then(setOfficialRatings);
   }, [job?.id, open]);
 
   const isResubmission = !!officialRatings;

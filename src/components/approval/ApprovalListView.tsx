@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { JobDialog } from "./JobDialog";
 import { layoutTokens } from "./layout/layoutTokens";
 import { getJobs, getVersions, ApprovalJobData } from "@/services/approvalDataService";
@@ -44,11 +44,17 @@ export function ApprovalListView({ filters }: ApprovalListViewProps) {
   const [selectedJob, setSelectedJob] = useState<ApprovalJobData | null>(null);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
-  const allVersions = useMemo(() => getVersions(), []);
+  const [allVersions, setAllVersions] = useState<any[]>([]);
+  const [jobs, setJobs] = useState<ApprovalJobData[]>([]);
 
-  const jobs = useMemo(() => {
-    const all = getJobs(filters);
-    return [...all].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+  useEffect(() => {
+    getVersions().then(v => setAllVersions(v));
+  }, []);
+
+  useEffect(() => {
+    getJobs(filters).then(all => {
+      setJobs([...all].sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()));
+    });
   }, [filters]);
 
   // Map job → designer name and squad from versions/job
@@ -57,10 +63,8 @@ export function ApprovalListView({ filters }: ApprovalListViewProps) {
     const sMap = new Map<string, string>();
     jobs.forEach(job => {
       const jobAny = job as any;
-      // Designer
       const version = allVersions.find(v => v.job_id === job.id);
       dMap.set(job.id, jobAny.designer_name || version?.designer_name || "—");
-      // Squad: prefer manual on job, then resolve from people
       if (jobAny.squad) {
         sMap.set(job.id, jobAny.squad);
       } else {

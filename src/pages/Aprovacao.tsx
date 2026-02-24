@@ -1,4 +1,4 @@
-import { useState, useCallback, useMemo } from "react";
+import { useState, useCallback, useMemo, useEffect } from "react";
 import { Plus, LogOut, LayoutDashboard, Columns3, List } from "lucide-react";
 import { NotificationCenter } from "@/components/NotificationCenter";
 import { Button } from "@/components/ui/button";
@@ -45,7 +45,8 @@ export default function Aprovacao() {
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
 
-  const clients = useMemo(() => getUniqueClients(), []);
+  const [clients, setClients] = useState<string[]>([]);
+  useEffect(() => { getUniqueClients().then(setClients); }, []);
   const creators = useMemo(() => getAllActiveUsers(), []);
   const squadOptions = ["Athena", "Ártemis", "Ares", "Apollo"];
 

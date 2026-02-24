@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -24,6 +24,7 @@ import {
   type ApprovalJobData,
   type ApprovalContentVersion,
   type CreativeEvaluation,
+  type SentVersionRecord,
   getContentVersions,
   getSentVersions,
 } from "@/services/approvalDataService";
@@ -815,11 +816,17 @@ export function HistoryTimeline({ job, clientFeedback }: HistoryTimelineProps) {
   const [initialCreativeIdx, setInitialCreativeIdx] = useState<number>(0);
 
   // Get stored versions, fallback to generated ones from feedback
-  const versions = useMemo(() => {
-    const stored = getContentVersions(job.id);
-    if (stored.length > 0) return stored;
-    return buildFallbackVersions(job, clientFeedback);
+  const [versions, setVersions] = useState<ApprovalContentVersion[]>([]);
+  useEffect(() => {
+    getContentVersions(job.id).then(stored => {
+      if (stored.length > 0) { setVersions(stored); }
+      else { setVersions(buildFallbackVersions(job, clientFeedback)); }
+    });
   }, [job, clientFeedback]);
+
+  // Sent versions loaded async
+  const [sentVersions, setSentVersions] = useState<SentVersionRecord[]>([]);
+  useEffect(() => { getSentVersions(job.id).then(setSentVersions); }, [job.id]);
 
   // Build timeline events
   const events = useMemo(() => {
@@ -833,11 +840,7 @@ export function HistoryTimeline({ job, clientFeedback }: HistoryTimelineProps) {
 
     items.push({ type: "cadastrado", date: job.created_at });
 
-    // Get sent version records for proper multi-version tracking
-    const sentVersions = getSentVersions(job.id);
-    
     if (sentVersions.length > 0) {
-      // Use sent version records for accurate history
       sentVersions.forEach(sv => {
         items.push({
           type: "enviado",
@@ -847,7 +850,6 @@ export function HistoryTimeline({ job, clientFeedback }: HistoryTimelineProps) {
         });
       });
     } else if ((job as any).sent_for_approval_at) {
-      // Fallback: single sent event
       items.push({ type: "enviado", date: (job as any).sent_for_approval_at });
     }
 
@@ -856,7 +858,6 @@ export function HistoryTimeline({ job, clientFeedback }: HistoryTimelineProps) {
     );
     sortedFeedback.forEach((fb, idx) => {
       const isAdjust = fb.approval_status === "em_ajustes";
-      // Match feedback to sent version by version_number if available
       const fbVersionNum = fb.version_number || (idx + 1);
       items.push({
         type: isAdjust ? "ajuste" : "aprovado",
@@ -868,7 +869,7 @@ export function HistoryTimeline({ job, clientFeedback }: HistoryTimelineProps) {
 
     items.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
     return items;
-  }, [job, clientFeedback]);
+  }, [job, clientFeedback, sentVersions]);
 
   // ── Version Detail View ──
   if (selectedVersion) {
