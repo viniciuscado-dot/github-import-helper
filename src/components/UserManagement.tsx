@@ -987,7 +987,7 @@ export const UserManagement = () => {
         custom_role_id: customRoleId,
         avatar_url: formData.avatar_url || null
       })
-      .eq('user_id', editingUser);
+      .eq('id', editingUser);
 
     if (!error) {
       setFormData({ name: '', email: '', password: '', role: 'equipe', department: '', phone: '', customRoleId: 'equipe', avatar_url: '' });
