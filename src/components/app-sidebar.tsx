@@ -1,4 +1,4 @@
-import { Users, Settings, User, FolderOpen, FileText, Copy, CheckCircle, BarChart2, TrendingDown, DollarSign, Heart, Activity, Sparkles, ChevronRight, UserCheck, Sliders, AlertCircle, Star, MessageSquare, ClipboardList, Trophy, LogOut, TrendingUp, Shield, Home } from "lucide-react"
+import { Users, Settings, User, FolderOpen, FileText, Copy, CheckCircle, BarChart2, TrendingDown, DollarSign, Heart, Activity, Sparkles, ChevronRight, UserCheck, Sliders, AlertCircle, Star, MessageSquare, ClipboardList, Trophy, LogOut, TrendingUp, Shield, Home, Video, Lightbulb, Layout, Eye, Newspaper } from "lucide-react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { UserProfilePopover } from "./UserProfilePopover"
 import { useAuth } from "@/contexts/AuthContext"
@@ -495,6 +495,59 @@ export function AppSidebar({ activeView, onViewChange }: AppSidebarProps) {
               {[
                 { id: 'planejamento-conteudo', title: 'Planejamento de Conteúdo', icon: ClipboardList, route: '/social-media/planejamento' },
                 { id: 'varredura', title: 'Varredura', icon: Activity, route: '/social-media/varredura' },
+                { id: 'central-posts', title: 'Central de Posts', icon: Newspaper, route: '/social-media/central-posts' },
+              ].map((item) => {
+                const isActive = location.pathname === item.route;
+                return (
+                  <SidebarMenuItem key={item.id}>
+                    {!shouldShowText ? (
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <SidebarMenuButton
+                            asChild
+                            isActive={isActive}
+                            className="w-full transition-all duration-200 justify-center"
+                            style={isActive ? { backgroundColor: '#ec4a55', color: 'white' } : {}}
+                          >
+                            <Link to={item.route}>
+                              <item.icon className="h-4 w-4 flex-shrink-0" />
+                            </Link>
+                          </SidebarMenuButton>
+                        </TooltipTrigger>
+                        <TooltipContent side="right">
+                          <p>{item.title}</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    ) : (
+                      <SidebarMenuButton
+                        asChild
+                        isActive={isActive}
+                        className="w-full transition-all duration-200 justify-start"
+                        style={isActive ? { backgroundColor: '#ec4a55', color: 'white' } : {}}
+                      >
+                        <Link to={item.route}>
+                          <item.icon className="h-4 w-4 flex-shrink-0" />
+                          <span className="text-xs">{item.title}</span>
+                        </Link>
+                      </SidebarMenuButton>
+                    )}
+                  </SidebarMenuItem>
+                );
+              })}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+
+        {/* Seção Laboratório */}
+        <SidebarGroup>
+          <SidebarGroupLabel className="text-[#ec4a55]">Laboratório</SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              {[
+                { id: 'editor-video', title: 'Editor de Vídeo', icon: Video, route: '/laboratorio/editor-video' },
+                { id: 'banco-ideias', title: 'Banco de Ideias', icon: Lightbulb, route: '/laboratorio/banco-ideias' },
+                { id: 'lp-builder', title: 'LP Builder', icon: Layout, route: '/laboratorio/lp-builder' },
+                { id: 'diagnostico-visual', title: 'Diagnóstico Visual', icon: Eye, route: '/laboratorio/diagnostico-visual' },
               ].map((item) => {
                 const isActive = location.pathname === item.route;
                 return (

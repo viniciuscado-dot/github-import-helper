@@ -17,6 +17,11 @@ import NotFound from "./pages/NotFound";
 const Aprovacao = lazy(() => import("./pages/Aprovacao"));
 const SocialMediaPlanejamento = lazy(() => import("./pages/SocialMediaPlanejamento"));
 const SocialMediaVarredura = lazy(() => import("./pages/SocialMediaVarredura"));
+const SocialMediaCentralPosts = lazy(() => import("./pages/SocialMediaCentralPosts"));
+const LaboratorioEditorVideo = lazy(() => import("./pages/LaboratorioEditorVideo"));
+const LaboratorioBancoIdeias = lazy(() => import("./pages/LaboratorioBancoIdeias"));
+const LaboratorioLPBuilder = lazy(() => import("./pages/LaboratorioLPBuilder"));
+const LaboratorioDiagnosticoVisual = lazy(() => import("./pages/LaboratorioDiagnosticoVisual"));
 import AprovacaoCliente from "./pages/AprovacaoCliente";
 import SolicitacaoCancelamento from "./pages/SolicitacaoCancelamento";
 import GestaoCancelamentos from "./pages/GestaoCancelamentos";
@@ -147,6 +152,43 @@ const App = () => (
                 <ProtectedRoute>
                   <Suspense fallback={<DashboardFallback />}>
                     <SocialMediaVarredura />
+                  </Suspense>
+                </ProtectedRoute>
+              } />
+              <Route path="/social-media/central-posts" element={
+                <ProtectedRoute>
+                  <Suspense fallback={<DashboardFallback />}>
+                    <SocialMediaCentralPosts />
+                  </Suspense>
+                </ProtectedRoute>
+              } />
+
+              {/* ── Laboratório ── */}
+              <Route path="/laboratorio/editor-video" element={
+                <ProtectedRoute>
+                  <Suspense fallback={<DashboardFallback />}>
+                    <LaboratorioEditorVideo />
+                  </Suspense>
+                </ProtectedRoute>
+              } />
+              <Route path="/laboratorio/banco-ideias" element={
+                <ProtectedRoute>
+                  <Suspense fallback={<DashboardFallback />}>
+                    <LaboratorioBancoIdeias />
+                  </Suspense>
+                </ProtectedRoute>
+              } />
+              <Route path="/laboratorio/lp-builder" element={
+                <ProtectedRoute>
+                  <Suspense fallback={<DashboardFallback />}>
+                    <LaboratorioLPBuilder />
+                  </Suspense>
+                </ProtectedRoute>
+              } />
+              <Route path="/laboratorio/diagnostico-visual" element={
+                <ProtectedRoute>
+                  <Suspense fallback={<DashboardFallback />}>
+                    <LaboratorioDiagnosticoVisual />
                   </Suspense>
                 </ProtectedRoute>
               } />
