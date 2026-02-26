@@ -11,18 +11,9 @@ import {
 } from "@/components/ui/command";
 import { 
   LayoutDashboard, 
-  Users, 
-  MessageSquare, 
-  Clock, 
-  Wallet,
-  TrendingDown,
-  DollarSign,
-  Star,
-  FolderKanban,
-  BarChart3,
-  CheckSquare,
   PenTool,
-  Search
+  Search,
+  CheckSquare
 } from "lucide-react";
 import { ViewType } from '@/hooks/useInterfacePreferences';
 
@@ -36,21 +27,10 @@ export const CommandPalette = ({ open, onOpenChange, onNavigate }: CommandPalett
   const navigate = useNavigate();
 
   const pages = [
-    { value: 'dashboard', label: 'Quadro de vendas', icon: LayoutDashboard },
-    { value: 'crm', label: 'CRM', icon: DollarSign },
-    { value: 'csm', label: 'CSM', icon: MessageSquare },
-    { value: 'lista-espera', label: 'Lista de espera', icon: Clock },
-    { value: 'wallet', label: 'Wallet', icon: Wallet },
-    { value: 'cs-churn', label: 'CS - Churn', icon: TrendingDown },
-    { value: 'cs-metricas', label: 'CS - Métricas Financeiras', icon: DollarSign },
-    { value: 'cs-nps', label: 'CS - NPS', icon: Star },
-    { value: 'projetos-operacao', label: 'Projetos', icon: FolderKanban },
-    { value: 'performance', label: 'Performance', icon: BarChart3 },
-    { value: 'aprovacao', label: 'Aprovação', icon: CheckSquare },
+    { value: 'home-criacao', label: 'Home', icon: LayoutDashboard },
     { value: 'copy', label: 'Copy', icon: PenTool },
+    { value: 'aprovacao', label: 'Aprovação', icon: CheckSquare },
     { value: 'analise-bench', label: 'Análise e Bench', icon: Search },
-    { value: 'planejamento-conteudo', label: 'Planejamento de Conteúdo', icon: PenTool },
-    { value: 'varredura', label: 'Varredura', icon: Search },
   ];
 
   const handleSelect = (value: string) => {

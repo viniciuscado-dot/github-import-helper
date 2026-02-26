@@ -23,22 +23,12 @@ const LaboratorioBancoIdeias = lazy(() => import("./pages/LaboratorioBancoIdeias
 const LaboratorioLPBuilder = lazy(() => import("./pages/LaboratorioLPBuilder"));
 const LaboratorioDiagnosticoVisual = lazy(() => import("./pages/LaboratorioDiagnosticoVisual"));
 import AprovacaoCliente from "./pages/AprovacaoCliente";
-import SolicitacaoCancelamento from "./pages/SolicitacaoCancelamento";
-import GestaoCancelamentos from "./pages/GestaoCancelamentos";
-import FormCSAT from "./pages/FormCSAT";
-import FormNPS from "./pages/FormNPS";
-import GestaoNPS from "./pages/GestaoNPS";
-import GestaoCSAT from "./pages/GestaoCSAT";
-import CasesSuccesso from "./pages/CasesSuccesso";
-import CasesRouter from "./pages/CasesRouter";
-import GerarForms from "./pages/GerarForms";
-import { PublicPageWithSidebar } from "@/components/PublicPageWithSidebar";
 
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       refetchOnWindowFocus: false,
-      staleTime: 1000 * 60 * 5, // 5 minutos
+      staleTime: 1000 * 60 * 5,
     },
   },
 });
@@ -78,67 +68,6 @@ const App = () => (
                 </ProtectedRoute>
               } />
               <Route path="/aprovacao-cliente/:token" element={<AprovacaoCliente />} />
-
-              {/* ── Cancelamentos ── */}
-              <Route path="/solicitacao-cancelamento" element={
-                <PublicPageWithSidebar>
-                  <SolicitacaoCancelamento />
-                </PublicPageWithSidebar>
-              } />
-              <Route path="/solicitacao-cancelamento-interno" element={
-                <ProtectedRoute>
-                  <PublicPageWithSidebar>
-                    <SolicitacaoCancelamento />
-                  </PublicPageWithSidebar>
-                </ProtectedRoute>
-              } />
-              <Route path="/gestao-cancelamentos" element={
-                <ProtectedRoute>
-                  <PublicPageWithSidebar>
-                    <GestaoCancelamentos />
-                  </PublicPageWithSidebar>
-                </ProtectedRoute>
-              } />
-
-              {/* ── CSAT / NPS ── */}
-              <Route path="/pesquisa-csat" element={
-                <PublicPageWithSidebar><FormCSAT /></PublicPageWithSidebar>
-              } />
-              <Route path="/pesquisa-csat-interno" element={
-                <ProtectedRoute>
-                  <PublicPageWithSidebar><FormCSAT /></PublicPageWithSidebar>
-                </ProtectedRoute>
-              } />
-              <Route path="/pesquisa-nps" element={
-                <PublicPageWithSidebar><FormNPS /></PublicPageWithSidebar>
-              } />
-              <Route path="/pesquisa-nps-interno" element={
-                <ProtectedRoute>
-                  <PublicPageWithSidebar><FormNPS /></PublicPageWithSidebar>
-                </ProtectedRoute>
-              } />
-              <Route path="/gestao-nps" element={
-                <ProtectedRoute>
-                  <PublicPageWithSidebar><GestaoNPS /></PublicPageWithSidebar>
-                </ProtectedRoute>
-              } />
-              <Route path="/gestao-csat" element={
-                <ProtectedRoute>
-                  <PublicPageWithSidebar><GestaoCSAT /></PublicPageWithSidebar>
-                </ProtectedRoute>
-              } />
-
-              {/* ── Forms / Cases ── */}
-              <Route path="/gerar-forms" element={
-                <ProtectedRoute><GerarForms /></ProtectedRoute>
-              } />
-              <Route path="/cases-sucesso" element={
-                <ProtectedRoute>
-                  <PublicPageWithSidebar><CasesSuccesso /></PublicPageWithSidebar>
-                </ProtectedRoute>
-              } />
-              <Route path="/cases" element={<CasesRouter />} />
-              <Route path="/cases/:param" element={<CasesRouter />} />
 
               {/* ── Social Media ── */}
               <Route path="/social-media/planejamento" element={
