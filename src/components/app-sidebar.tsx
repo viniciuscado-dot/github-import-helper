@@ -1,4 +1,4 @@
-import { Users, Settings, User, FolderOpen, FileText, Copy, CheckCircle, BarChart2, TrendingDown, DollarSign, Heart, Activity, Sparkles, ChevronRight, UserCheck, Sliders, AlertCircle, Star, MessageSquare, ClipboardList, Trophy, LogOut, TrendingUp, Shield, Home, Video, Lightbulb, Layout, Eye, Newspaper } from "lucide-react"
+import { Users, Settings, Copy, CheckCircle, BarChart2, Sparkles, LogOut, TrendingUp, Shield, Home, Video, Lightbulb, Layout, Eye, Newspaper, ClipboardList, Activity } from "lucide-react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { UserProfilePopover } from "./UserProfilePopover"
 import { useAuth } from "@/contexts/AuthContext"
@@ -6,8 +6,6 @@ import { useModulePermissions } from "@/hooks/useModulePermissions"
 import { useInterfacePreferences } from "@/hooks/useInterfacePreferences"
 import { Link, useLocation, useNavigate } from "react-router-dom"
 import { useState, useMemo, useEffect } from "react"
-// SSO config não usada diretamente - seleção de módulos agora é interna
-// import { getCRMModuleSelectUrl, getCRMLoginUrl } from "@/config/sso"
 
 import {
   Sidebar,
@@ -18,22 +16,17 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
-  SidebarMenuSub,
-  SidebarMenuSubButton,
-  SidebarMenuSubItem,
   SidebarHeader,
   SidebarFooter,
   SidebarTrigger,
   useSidebar,
 } from "@/components/ui/sidebar"
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog"
 
 interface AppSidebarProps {
-  activeView: 'home-criacao' | 'users' | 'profile' | 'gestao-projetos' | 'gestao-contratos' | 'csm' | 'cs' | 'cs-churn' | 'cs-metricas' | 'cs-nps' | 'cs-csat' | 'cs-cancelamento' | 'gestao-cancelamentos' | 'gestao-nps' | 'gestao-csat' | 'copy' | 'aprovacao' | 'analise-bench' | 'projetos-operacao' | 'projetos-clientes' | 'projetos-metricas' | 'performance' | 'preferencias-interface' | 'cases-sucesso' | 'planejamento-conteudo' | 'varredura'
-  onViewChange: (view: 'home-criacao' | 'users' | 'profile' | 'gestao-projetos' | 'gestao-contratos' | 'csm' | 'cs' | 'cs-churn' | 'cs-metricas' | 'cs-nps' | 'cs-csat' | 'cs-cancelamento' | 'gestao-cancelamentos' | 'gestao-nps' | 'gestao-csat' | 'copy' | 'aprovacao' | 'analise-bench' | 'projetos-operacao' | 'projetos-clientes' | 'projetos-metricas' | 'performance' | 'preferencias-interface' | 'cases-sucesso' | 'planejamento-conteudo' | 'varredura') => void
+  activeView: 'home-criacao' | 'users' | 'profile' | 'copy' | 'aprovacao' | 'analise-bench' | 'preferencias-interface' | 'planejamento-conteudo' | 'varredura'
+  onViewChange: (view: 'home-criacao' | 'users' | 'profile' | 'copy' | 'aprovacao' | 'analise-bench' | 'preferencias-interface' | 'planejamento-conteudo' | 'varredura') => void
 }
 
 export function AppSidebar({ activeView, onViewChange }: AppSidebarProps) {
@@ -44,295 +37,21 @@ export function AppSidebar({ activeView, onViewChange }: AppSidebarProps) {
   const location = useLocation()
   const navigate = useNavigate()
   
-  // Debug log
-  console.log('🎮 AppSidebar render - permissions loading:', permissionsLoading);
-  console.log('🎮 AppSidebar render - profile:', profile?.name, profile?.role);
-  
-  // Item CSM para a seção CS
-  const csmItem = {
-    title: "CSM",
-    icon: UserCheck,
-    view: 'csm' as const,
-    moduleName: 'csm',
-    available: checkModulePermission('csm', 'view')
-  }
-
-  // Check if any submenu item is active to keep section open
-  const isCSFormulariosActive = ['cs-cancelamento'].includes(activeView) || 
-    ['/pesquisa-csat-interno', '/pesquisa-nps-interno', '/solicitacao-cancelamento-interno', '/gerar-forms'].includes(location.pathname)
-  const isCSGestaoActive = ['gestao-cancelamentos', 'gestao-nps', 'gestao-csat'].includes(activeView) ||
-    ['/gestao-cancelamentos', '/gestao-nps', '/gestao-csat'].includes(location.pathname)
-  const isCSMetricasActive = ['cs-churn', 'cs-nps', 'cs-csat'].includes(activeView)
-  const isCriacaoActive = ['aprovacao', 'copy', 'analise-bench', 'home-criacao'].includes(activeView) || location.pathname === '/aprovacao'
-  const isSettingsActive = ['users', 'profile', 'preferencias-interface'].includes(activeView)
-  const isProjetosActive = ['projetos-clientes', 'projetos-metricas'].includes(activeView)
-  
-  // Start menus closed - only open when user clicks or navigates to an item inside
-  const [openCSFormularios, setOpenCSFormularios] = useState(false)
-  const [openCSGestao, setOpenCSGestao] = useState(false)
-  const [openCSMetricas, setOpenCSMetricas] = useState(false)
-  const [openCriacao, setOpenCriacao] = useState(false)
-  const [openSettings, setOpenSettings] = useState(false)
-  const [openProjetos, setOpenProjetos] = useState(false)
   const [openModulesDialog, setOpenModulesDialog] = useState(false)
-  
-  // Auto-open sections when navigating to an item within them
-  useEffect(() => {
-    if (isCSFormulariosActive) setOpenCSFormularios(true)
-  }, [isCSFormulariosActive])
-  
-  useEffect(() => {
-    if (isCSGestaoActive) setOpenCSGestao(true)
-  }, [isCSGestaoActive])
-  
-  useEffect(() => {
-    if (isCSMetricasActive) setOpenCSMetricas(true)
-  }, [isCSMetricasActive])
-  
-  useEffect(() => {
-    if (isCriacaoActive) setOpenCriacao(true)
-  }, [isCriacaoActive])
-  
-  useEffect(() => {
-    if (isSettingsActive) setOpenSettings(true)
-  }, [isSettingsActive])
-  
-  useEffect(() => {
-    if (isProjetosActive) setOpenProjetos(true)
-  }, [isProjetosActive])
 
-  // Definir submenus base para CS - Formulários
-  const csFormulariosSubmenuBase = [
-    {
-      id: 'gerar-forms',
-      title: "Gerar Forms",
-      view: 'cs' as const,
-      icon: FileText,
-      route: '/gerar-forms',
-    },
-    {
-      id: 'pesquisa-csat',
-      title: "CSAT",
-      view: 'cs' as const,
-      icon: Star,
-      route: '/pesquisa-csat-interno',
-    },
-    {
-      id: 'pesquisa-nps',
-      title: "NPS",
-      view: 'cs' as const,
-      icon: MessageSquare,
-      route: '/pesquisa-nps-interno',
-    },
-    {
-      id: 'cs-cancelamento',
-      title: "CHURN",
-      view: 'cs-cancelamento' as const,
-      icon: AlertCircle,
-      route: '/solicitacao-cancelamento-interno',
-    },
-  ];
-
-  // Definir submenus base para CS - Gestão
-  const csGestaoSubmenuBase = [
-    {
-      id: 'gestao-csat',
-      title: "CSAT",
-      view: 'gestao-csat' as const,
-      icon: ClipboardList,
-      route: '/gestao-csat',
-    },
-    {
-      id: 'gestao-nps',
-      title: "NPS",
-      view: 'gestao-nps' as const,
-      icon: ClipboardList,
-      route: '/gestao-nps',
-    },
-    {
-      id: 'gestao-cancelamentos',
-      title: "CHURN",
-      view: 'gestao-cancelamentos' as const,
-      icon: FileText,
-      route: '/gestao-cancelamentos',
-    }
-  ];
-
-  // Definir submenus base para CS - Métricas
-  const csMetricasSubmenuBase = [
-    {
-      id: 'cs-csat',
-      title: "CSAT",
-      view: 'cs-csat' as const,
-      icon: Star,
-    },
-    {
-      id: 'cs-nps',
-      title: "NPS",
-      view: 'cs-nps' as const,
-      icon: Heart,
-    },
-    {
-      id: 'cs-churn',
-      title: "CHURN",
-      view: 'cs-churn' as const,
-      icon: TrendingDown,
-    },
-  ];
-
-  const projetosSubmenuBase = [
-    {
-      id: 'projetos-clientes',
-      title: "Clientes",
-      view: 'projetos-clientes' as const,
-      icon: Users,
-    },
-    {
-      id: 'projetos-metricas',
-      title: "Métricas Financeiras",
-      view: 'projetos-metricas' as const,
-      icon: DollarSign,
-    }
-  ];
-
-  const criacaoSubmenuBase = [
-    {
-      id: 'copy',
-      title: "Copy",
-      view: 'copy' as const,
-      icon: Copy,
-    },
-    {
-      id: 'aprovacao',
-      title: "Aprovação",
-      view: 'aprovacao' as const,
-      icon: CheckCircle,
-      route: '/aprovacao'
-    },
-    {
-      id: 'analise-bench',
-      title: "Análise e Bench",
-      view: 'analise-bench' as const,
-      icon: BarChart2,
-    }
-  ];
-
-  // Submenus para a seção CS
-  const csFormulariosSubmenu = useMemo(() => csFormulariosSubmenuBase, []);
-  const csGestaoSubmenu = useMemo(() => csGestaoSubmenuBase, []);
-  const csMetricasSubmenu = useMemo(() => csMetricasSubmenuBase, []);
-
-  const criacaoSubmenu = useMemo(() => criacaoSubmenuBase, []);
-
-  const projetosSubmenu = useMemo(() => {
-    return projetosSubmenuBase;
-  }, []);
-
-  // Item Cases de Sucesso
-  const casesSuccessoItem = {
-    title: "Cases de sucesso",
-    icon: Trophy,
-    view: 'cases-sucesso' as const,
-    moduleName: 'cs',
-    available: !permissionsLoading && checkModulePermission('cs', 'view'),
-    route: '/cases-sucesso'
-  }
-
-  // Itens da seção CS
-  const csItems = [
-    {
-      title: "Dashboards",
-      icon: BarChart2,
-      moduleName: 'cs',
-      available: !permissionsLoading && checkModulePermission('cs', 'view'),
-      hasSubmenu: true,
-      isOpen: openCSMetricas,
-      setIsOpen: setOpenCSMetricas,
-      submenu: csMetricasSubmenu
-    },
-    {
-      title: "Pipelines",
-      icon: ClipboardList,
-      moduleName: 'cs',
-      available: !permissionsLoading && checkModulePermission('cs', 'view'),
-      hasSubmenu: true,
-      isOpen: openCSGestao,
-      setIsOpen: setOpenCSGestao,
-      submenu: csGestaoSubmenu
-    },
-    {
-      title: "Formulários",
-      icon: FileText,
-      moduleName: 'cs',
-      available: !permissionsLoading && checkModulePermission('cs', 'view'),
-      hasSubmenu: true,
-      isOpen: openCSFormularios,
-      setIsOpen: setOpenCSFormularios,
-      submenu: csFormulariosSubmenu
-    }
-  ]
-
-  const operacaoItems = [
-    {
-      title: "Projetos",
-      icon: FolderOpen,
-      moduleName: 'projetos',
-      available: checkModulePermission('projetos', 'view'),
-      hasSubmenu: true,
-      isOpen: openProjetos,
-      setIsOpen: setOpenProjetos,
-      submenu: projetosSubmenu
-    },
-    {
-      title: "Performance",
-      icon: Activity,
-      view: 'performance' as const,
-      moduleName: 'performance',
-      available: checkModulePermission('performance', 'view')
-    },
-    {
-      title: "Criação",
-      icon: Sparkles,
-      moduleName: 'criacao',
-      available: !permissionsLoading && (checkModulePermission('copy', 'view') || checkModulePermission('aprovacao', 'view') || checkModulePermission('analise_bench', 'view')),
-      hasSubmenu: true,
-      isOpen: openCriacao,
-      setIsOpen: setOpenCriacao,
-      submenu: criacaoSubmenu
-    }
-  ]
-
-  // Debug log dos itens
-  console.log('🎮 Operação items availability:', {
-    gestao_projetos: checkModulePermission('gestao_projetos', 'view'),
-    gestao_contratos: checkModulePermission('gestao_contratos', 'view'),
-    copy: checkModulePermission('copy', 'view'),
-    analise_bench: checkModulePermission('analise_bench', 'view'),
-    permissionsLoading
-  });
-
-  const profileItems = [
-    {
-      title: "Usuários",
-      icon: Users,
-      view: 'users' as const,
-      moduleName: 'users',
-      available: checkModulePermission('users', 'view')
-    }
-    // "Preferências da Interface" removido - toggle de tema agora fica no popover do usuário
-  ]
+  const criacaoSubmenu = useMemo(() => [
+    { id: 'copy', title: 'Copy', view: 'copy' as const, icon: Copy },
+    { id: 'aprovacao', title: 'Aprovação', view: 'aprovacao' as const, icon: CheckCircle, route: '/aprovacao' },
+    { id: 'analise-bench', title: 'Análise e Bench', view: 'analise-bench' as const, icon: BarChart2 },
+  ], []);
 
   const isCollapsed = state === "collapsed"
   const shouldShowText = isMobile ? openMobile : open
-  const shouldShowIcons = true // Ícones sempre visíveis
-
+  const shouldShowIcons = true
 
   const handleLogout = () => {
-    // Adiciona animação de fade out suave
     document.body.style.transition = 'opacity 0.3s ease-out';
     document.body.style.opacity = '0';
-
-    // Navega para a página de logout dedicada (que faz o signOut e redireciona)
     setTimeout(() => {
       document.body.style.opacity = '1';
       navigate('/logout');
@@ -363,9 +82,7 @@ export function AppSidebar({ activeView, onViewChange }: AppSidebarProps) {
                     alt="DOT"
                     className="h-5 w-5 transition-all duration-500 ease-in-out"
                     key="logo-collapsed"
-                    style={{ 
-                      animation: 'spin 0.5s ease-in-out',
-                    }}
+                    style={{ animation: 'spin 0.5s ease-in-out' }}
                   />
                 </SidebarMenuButton>
               </SidebarMenuItem>
@@ -397,9 +114,7 @@ export function AppSidebar({ activeView, onViewChange }: AppSidebarProps) {
                         <Home className="h-4 w-4 flex-shrink-0" />
                       </SidebarMenuButton>
                     </TooltipTrigger>
-                    <TooltipContent side="right">
-                      <p>Home</p>
-                    </TooltipContent>
+                    <TooltipContent side="right"><p>Home</p></TooltipContent>
                   </Tooltip>
                 ) : (
                   <SidebarMenuButton
@@ -417,7 +132,7 @@ export function AppSidebar({ activeView, onViewChange }: AppSidebarProps) {
           </SidebarGroupContent>
         </SidebarGroup>
 
-        {/* Seção Criação para Performance */}
+        {/* Seção Performance (Criação) */}
         <SidebarGroup>
           <SidebarGroupLabel className="text-[#ec4a55]">Performance</SidebarGroupLabel>
           <SidebarGroupContent>
@@ -451,9 +166,7 @@ export function AppSidebar({ activeView, onViewChange }: AppSidebarProps) {
                             </SidebarMenuButton>
                           )}
                         </TooltipTrigger>
-                        <TooltipContent side="right">
-                          <p>{subItem.title}</p>
-                        </TooltipContent>
+                        <TooltipContent side="right"><p>{subItem.title}</p></TooltipContent>
                       </Tooltip>
                     ) : (
                       subItem.route ? (
@@ -504,24 +217,18 @@ export function AppSidebar({ activeView, onViewChange }: AppSidebarProps) {
                       <Tooltip>
                         <TooltipTrigger asChild>
                           <SidebarMenuButton
-                            asChild
-                            isActive={isActive}
+                            asChild isActive={isActive}
                             className="w-full transition-all duration-200 justify-center"
                             style={isActive ? { backgroundColor: '#ec4a55', color: 'white' } : {}}
                           >
-                            <Link to={item.route}>
-                              <item.icon className="h-4 w-4 flex-shrink-0" />
-                            </Link>
+                            <Link to={item.route}><item.icon className="h-4 w-4 flex-shrink-0" /></Link>
                           </SidebarMenuButton>
                         </TooltipTrigger>
-                        <TooltipContent side="right">
-                          <p>{item.title}</p>
-                        </TooltipContent>
+                        <TooltipContent side="right"><p>{item.title}</p></TooltipContent>
                       </Tooltip>
                     ) : (
                       <SidebarMenuButton
-                        asChild
-                        isActive={isActive}
+                        asChild isActive={isActive}
                         className="w-full transition-all duration-200 justify-start"
                         style={isActive ? { backgroundColor: '#ec4a55', color: 'white' } : {}}
                       >
@@ -556,24 +263,18 @@ export function AppSidebar({ activeView, onViewChange }: AppSidebarProps) {
                       <Tooltip>
                         <TooltipTrigger asChild>
                           <SidebarMenuButton
-                            asChild
-                            isActive={isActive}
+                            asChild isActive={isActive}
                             className="w-full transition-all duration-200 justify-center"
                             style={isActive ? { backgroundColor: '#ec4a55', color: 'white' } : {}}
                           >
-                            <Link to={item.route}>
-                              <item.icon className="h-4 w-4 flex-shrink-0" />
-                            </Link>
+                            <Link to={item.route}><item.icon className="h-4 w-4 flex-shrink-0" /></Link>
                           </SidebarMenuButton>
                         </TooltipTrigger>
-                        <TooltipContent side="right">
-                          <p>{item.title}</p>
-                        </TooltipContent>
+                        <TooltipContent side="right"><p>{item.title}</p></TooltipContent>
                       </Tooltip>
                     ) : (
                       <SidebarMenuButton
-                        asChild
-                        isActive={isActive}
+                        asChild isActive={isActive}
                         className="w-full transition-all duration-200 justify-start"
                         style={isActive ? { backgroundColor: '#ec4a55', color: 'white' } : {}}
                       >
@@ -590,12 +291,12 @@ export function AppSidebar({ activeView, onViewChange }: AppSidebarProps) {
           </SidebarGroupContent>
         </SidebarGroup>
 
-          {/* Botão Voltar aos Módulos e Usuários */}
-          <div className="mt-auto pt-4">
+        {/* Admin + Módulos + Sair */}
+        <div className="mt-auto pt-4">
           <SidebarGroup>
             <SidebarGroupContent>
               <SidebarMenu>
-              {/* Usuários - visível apenas para admin */}
+                {/* Usuários - admin only */}
                 {profile?.effectiveRole === 'admin' && checkModulePermission('users', 'view') && (
                   <SidebarMenuItem>
                     {!shouldShowText ? (
@@ -610,9 +311,7 @@ export function AppSidebar({ activeView, onViewChange }: AppSidebarProps) {
                             <Users className="h-4 w-4" />
                           </SidebarMenuButton>
                         </TooltipTrigger>
-                        <TooltipContent side="right">
-                          <p>Usuários</p>
-                        </TooltipContent>
+                        <TooltipContent side="right"><p>Usuários</p></TooltipContent>
                       </Tooltip>
                     ) : (
                       <SidebarMenuButton
@@ -628,7 +327,7 @@ export function AppSidebar({ activeView, onViewChange }: AppSidebarProps) {
                   </SidebarMenuItem>
                 )}
 
-                {/* Botão Voltar para Módulos */}
+                {/* Voltar para Módulos */}
                 <SidebarMenuItem>
                   <Dialog open={openModulesDialog} onOpenChange={setOpenModulesDialog}>
                     <DialogTrigger asChild>
@@ -639,9 +338,7 @@ export function AppSidebar({ activeView, onViewChange }: AppSidebarProps) {
                               <Settings className="h-4 w-4 text-[#ec4a55]" />
                             </SidebarMenuButton>
                           </TooltipTrigger>
-                          <TooltipContent side="right">
-                            <p>Voltar para módulos</p>
-                          </TooltipContent>
+                          <TooltipContent side="right"><p>Voltar para módulos</p></TooltipContent>
                         </Tooltip>
                       ) : (
                         <SidebarMenuButton className="w-full justify-start transition-all duration-200">
@@ -652,26 +349,17 @@ export function AppSidebar({ activeView, onViewChange }: AppSidebarProps) {
                     </DialogTrigger>
                     <DialogContent className="sm:max-w-4xl bg-[#0d1117] border-border/50" aria-describedby={undefined}>
                       <div className="flex flex-col items-center py-8">
-                        {/* Logo Skala */}
                         <div className="flex items-center gap-2 mb-8">
                           <span className="text-3xl font-bold text-[#ec4a55]">Skala</span>
                           <Sparkles className="h-5 w-5 text-muted-foreground" />
                         </div>
-                        
-                        {/* Saudação */}
                         <h2 className="text-2xl font-bold text-foreground mb-2">
                           Olá, {profile?.name?.split(' ')[0] || 'Usuário'}!
                         </h2>
                         <p className="text-muted-foreground mb-8">Escolha o módulo para continuar</p>
-                        
-                        {/* Cards de Módulos */}
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 w-full max-w-3xl px-4">
-                          {/* CRM */}
                           <button
-                            onClick={() => {
-                              setOpenModulesDialog(false);
-                              window.location.href = 'https://skala.dotconceito.com';
-                            }}
+                            onClick={() => { setOpenModulesDialog(false); window.location.href = 'https://skala.dotconceito.com'; }}
                             className="flex flex-col items-center p-8 rounded-xl border border-border/50 bg-card/50 hover:bg-card hover:border-[#ec4a55]/50 transition-all duration-300 group"
                           >
                             <div className="w-16 h-16 rounded-full bg-[#ec4a55]/10 flex items-center justify-center mb-4 group-hover:bg-[#ec4a55]/20 transition-colors">
@@ -680,14 +368,8 @@ export function AppSidebar({ activeView, onViewChange }: AppSidebarProps) {
                             <span className="font-semibold text-foreground mb-1">SKALA CRM</span>
                             <span className="text-sm text-muted-foreground text-center">Gestão Comercial e Vendas</span>
                           </button>
-                          
-                          {/* Operação */}
                           <button
-                            onClick={() => {
-                              setOpenModulesDialog(false);
-                              navigate('/dashboard?view=csm');
-                              onViewChange('csm');
-                            }}
+                            onClick={() => { setOpenModulesDialog(false); navigate('/dashboard?view=home-criacao'); onViewChange('home-criacao'); }}
                             className="flex flex-col items-center p-8 rounded-xl border border-[#ec4a55] bg-card/50 hover:bg-card transition-all duration-300 group"
                           >
                             <div className="w-16 h-16 rounded-full bg-[#ec4a55]/10 flex items-center justify-center mb-4 group-hover:bg-[#ec4a55]/20 transition-colors">
@@ -696,13 +378,8 @@ export function AppSidebar({ activeView, onViewChange }: AppSidebarProps) {
                             <span className="font-semibold text-foreground mb-1">SKALA Operação</span>
                             <span className="text-sm text-muted-foreground text-center">Gestão de Projetos e CS</span>
                           </button>
-                          
-                          {/* Admin */}
                           <button
-                            onClick={() => {
-                              setOpenModulesDialog(false);
-                              window.location.href = 'https://skala.dotconceito.com/admin';
-                            }}
+                            onClick={() => { setOpenModulesDialog(false); window.location.href = 'https://skala.dotconceito.com/admin'; }}
                             className="flex flex-col items-center p-8 rounded-xl border border-border/50 bg-card/50 hover:bg-card hover:border-amber-500/50 transition-all duration-300 group"
                           >
                             <div className="w-16 h-16 rounded-full bg-amber-500/10 flex items-center justify-center mb-4 group-hover:bg-amber-500/20 transition-colors">
@@ -712,14 +389,8 @@ export function AppSidebar({ activeView, onViewChange }: AppSidebarProps) {
                             <span className="text-sm text-muted-foreground text-center">Administração do Sistema</span>
                           </button>
                         </div>
-                        
-                        {/* Botão Sair */}
                         <button
-                          onClick={() => {
-                            setOpenModulesDialog(false);
-                            // Usar window.location para garantir navegação mesmo dentro do Dialog
-                            window.location.href = '/logout';
-                          }}
+                          onClick={() => { setOpenModulesDialog(false); window.location.href = '/logout'; }}
                           className="flex items-center gap-2 mt-8 text-muted-foreground hover:text-foreground transition-colors"
                         >
                           <LogOut className="h-4 w-4" />
@@ -742,9 +413,7 @@ export function AppSidebar({ activeView, onViewChange }: AppSidebarProps) {
                           <LogOut className="h-4 w-4" />
                         </SidebarMenuButton>
                       </TooltipTrigger>
-                      <TooltipContent side="right">
-                        <p>Sair</p>
-                      </TooltipContent>
+                      <TooltipContent side="right"><p>Sair</p></TooltipContent>
                     </Tooltip>
                   ) : (
                     <SidebarMenuButton
@@ -759,7 +428,7 @@ export function AppSidebar({ activeView, onViewChange }: AppSidebarProps) {
               </SidebarMenu>
             </SidebarGroupContent>
           </SidebarGroup>
-          </div>
+        </div>
       </SidebarContent>
 
       <SidebarFooter className={shouldShowText ? "p-4" : "py-4"}>
@@ -774,9 +443,7 @@ export function AppSidebar({ activeView, onViewChange }: AppSidebarProps) {
               </Avatar>
               <div className="flex flex-col flex-1 min-w-0">
                 <span className="text-sm font-medium truncate">{profile?.name}</span>
-                <span className="text-xs text-muted-foreground truncate">
-                  {profile?.email}
-                </span>
+                <span className="text-xs text-muted-foreground truncate">{profile?.email}</span>
               </div>
             </div>
           ) : (
