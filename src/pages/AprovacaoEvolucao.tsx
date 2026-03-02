@@ -29,8 +29,8 @@ import {
   type MaterialTypeEvolution,
   type SquadComparison,
 } from "@/services/evolutionDataService";
-import { Responsive } from "react-grid-layout";
-import WidthProvider from "react-grid-layout/lib/components/WidthProvider";
+// @ts-ignore - WidthProvider is exported but types are incomplete
+import ReactGridLayout from "react-grid-layout";
 import "react-grid-layout/css/styles.css";
 import "react-resizable/css/styles.css";
 
