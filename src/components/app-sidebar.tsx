@@ -263,7 +263,7 @@ export function AppSidebar({ activeView, onViewChange }: AppSidebarProps) {
       </SidebarContent>
 
       {/* ══════════ BLOCO INFERIOR FIXO ══════════ */}
-      <SidebarFooter className={`flex-shrink-0 border-t border-border/10 ${shouldShowText ? "px-2 pt-4 pb-2" : "py-3"}`}>
+      <SidebarFooter className={`flex-shrink-0 border-t border-border/20 ${shouldShowText ? "px-2 pt-4 pb-2" : "py-3"}`}>
         <SidebarMenu>
           {/* Usuários - admin only */}
           {profile?.effectiveRole === 'admin' && checkModulePermission('users', 'view') && (
