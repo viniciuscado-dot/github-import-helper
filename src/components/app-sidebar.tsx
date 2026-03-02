@@ -211,7 +211,7 @@ export function AppSidebar({ activeView, onViewChange }: AppSidebarProps) {
         </SidebarGroup>
 
         {/* Social Media */}
-        <SidebarGroup className="pt-2">
+        <SidebarGroup className="pt-3 pb-1">
           <SidebarGroupLabel className={groupLabelClass}>Social Media</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
