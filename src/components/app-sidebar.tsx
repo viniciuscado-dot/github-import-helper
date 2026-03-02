@@ -130,7 +130,7 @@ export function AppSidebar({ activeView, onViewChange }: AppSidebarProps) {
       <SidebarContent className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-border/30 scrollbar-track-transparent">
         {/* Seção Performance (Criação) */}
         <SidebarGroup>
-          <SidebarGroupLabel className="text-[#ec4a55]">Performance</SidebarGroupLabel>
+          <SidebarGroupLabel className="text-[#ec4a55] uppercase text-[10px] font-semibold tracking-wider opacity-70 mt-2">Performance</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {criacaoSubmenu.map((subItem) => {
