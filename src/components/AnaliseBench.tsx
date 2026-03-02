@@ -83,6 +83,9 @@ export function AnaliseBench() {
   const [isEditingResponse, setIsEditingResponse] = useState(false)
   const [editedResponse, setEditedResponse] = useState('')
   const [isSavingEdit, setIsSavingEdit] = useState(false)
+  const [logoFile, setLogoFile] = useState<File | null>(null)
+  const [logoPreview, setLogoPreview] = useState<string | null>(null)
+  const [isUploadingLogo, setIsUploadingLogo] = useState(false)
   const ANALISE_STEP_MESSAGES = [
     'Lendo dados da campanha…',
     'Cruzando métricas de desempenho…',
