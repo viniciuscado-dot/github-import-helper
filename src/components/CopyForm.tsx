@@ -33,6 +33,7 @@ import { CopyGenerationOverlay } from '@/components/CopyGenerationOverlay';
 import { CopyResultsRecent } from '@/components/copy/CopyResultsRecent';
 import { CopyDetailDialog } from '@/components/copy/CopyDetailDialog';
 import { CopyHistoryFull } from '@/components/copy/CopyHistoryFull';
+import { MarkdownRenderer } from '@/components/ui/markdown-renderer';
 
 const copyFormSchema = z.object({
   // Transcrições das reuniões
