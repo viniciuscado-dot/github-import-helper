@@ -20,6 +20,7 @@ export type Database = {
           ai_response: string | null
           aspecto_prioritario: string | null
           client_id: string | null
+          client_logo_url: string | null
           competitors: Json | null
           created_at: string
           created_by: string
@@ -45,6 +46,7 @@ export type Database = {
           ai_response?: string | null
           aspecto_prioritario?: string | null
           client_id?: string | null
+          client_logo_url?: string | null
           competitors?: Json | null
           created_at?: string
           created_by: string
@@ -70,6 +72,7 @@ export type Database = {
           ai_response?: string | null
           aspecto_prioritario?: string | null
           client_id?: string | null
+          client_logo_url?: string | null
           competitors?: Json | null
           created_at?: string
           created_by?: string
