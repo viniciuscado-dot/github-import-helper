@@ -367,10 +367,10 @@ export function AppSidebar({ activeView, onViewChange }: AppSidebarProps) {
             ) : (
               <SidebarMenuButton
                 onClick={handleLogout}
-                className={`${menuBtnExpanded} hover:bg-destructive/10 hover:text-destructive`}
+                className={`${menuBtnExpanded} text-muted-foreground hover:bg-destructive/10 hover:text-destructive`}
               >
                 <LogOut className="h-4 w-4 flex-shrink-0" />
-                <span className="text-xs">Sair</span>
+                <span className="text-[13px]">Sair</span>
               </SidebarMenuButton>
             )}
           </SidebarMenuItem>
