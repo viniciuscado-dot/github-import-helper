@@ -356,15 +356,3 @@ function ModalChartLoader<T>({ fetcher, render }: { fetcher: () => Promise<T>; r
   if (!data) return <EmptyState />;
   return <>{render(data)}</>;
 }
-
-function EmptyState() {
-  return (
-    <div className="flex items-center justify-center h-full text-muted-foreground text-sm">
-      Ainda não há dados suficientes para análise.
-    </div>
-  );
-}
-
-function ChartSkeleton() {
-  return <Skeleton className="w-full h-full rounded-xl" />;
-}

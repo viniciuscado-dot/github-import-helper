@@ -69,6 +69,13 @@ const App = () => (
                   </Suspense>
                 </ProtectedRoute>
               } />
+              <Route path="/aprovacao/evolucao" element={
+                <ProtectedRoute>
+                  <Suspense fallback={<DashboardFallback />}>
+                    <AprovacaoEvolucao />
+                  </Suspense>
+                </ProtectedRoute>
+              } />
               <Route path="/aprovacao-cliente/:token" element={<AprovacaoCliente />} />
 
               {/* ── Social Media ── */}
