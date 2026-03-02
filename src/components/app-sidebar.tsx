@@ -164,15 +164,19 @@ export function AppSidebar({ activeView, onViewChange }: AppSidebarProps) {
         )}
 
         {/* Home - fixed in header */}
-        <SidebarMenu className="mt-2 px-2">
-          <SidebarMenuItem>
-            {renderMenuItem(
-              { id: 'home', title: 'Home', icon: Home },
-              activeView === 'home-criacao',
-              () => onViewChange('home-criacao')
-            )}
-          </SidebarMenuItem>
-        </SidebarMenu>
+        <SidebarGroup className="mt-2 pb-0">
+          <SidebarGroupContent>
+            <SidebarMenu>
+              <SidebarMenuItem>
+                {renderMenuItem(
+                  { id: 'home', title: 'Home', icon: Home },
+                  activeView === 'home-criacao',
+                  () => onViewChange('home-criacao')
+                )}
+              </SidebarMenuItem>
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
       </SidebarHeader>
 
       {/* ══════════ BLOCO CENTRAL ROLÁVEL ══════════ */}
