@@ -79,6 +79,7 @@ export function AnaliseBench() {
   const [overlayStatus, setOverlayStatus] = useState<'generating' | 'success' | 'error' | null>(null)
   const [overlayError, setOverlayError] = useState<string | undefined>(undefined)
   const [pendingRetryId, setPendingRetryId] = useState<string | null>(null)
+  const [showFullHistory, setShowFullHistory] = useState(false)
 
   const ANALISE_STEP_MESSAGES = [
     'Lendo dados da campanha…',
