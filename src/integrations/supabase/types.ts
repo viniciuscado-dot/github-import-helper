@@ -14,6 +14,81 @@ export type Database = {
   }
   public: {
     Tables: {
+      analise_bench_forms: {
+        Row: {
+          ai_provider: string | null
+          ai_response: string | null
+          aspecto_prioritario: string | null
+          client_id: string | null
+          competitors: Json | null
+          created_at: string
+          created_by: string
+          diferenciais_competitivos: string | null
+          id: string
+          informacoes_adicionais: string | null
+          maior_desafio: string | null
+          nicho_empresa: string | null
+          nome_empresa: string | null
+          objetivo_benchmark: Json | null
+          objetivo_benchmark_outro: string | null
+          objetivo_projeto: string | null
+          publico_alvo: string | null
+          response_generated_at: string | null
+          servicos_produtos: string | null
+          site: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          ai_provider?: string | null
+          ai_response?: string | null
+          aspecto_prioritario?: string | null
+          client_id?: string | null
+          competitors?: Json | null
+          created_at?: string
+          created_by: string
+          diferenciais_competitivos?: string | null
+          id?: string
+          informacoes_adicionais?: string | null
+          maior_desafio?: string | null
+          nicho_empresa?: string | null
+          nome_empresa?: string | null
+          objetivo_benchmark?: Json | null
+          objetivo_benchmark_outro?: string | null
+          objetivo_projeto?: string | null
+          publico_alvo?: string | null
+          response_generated_at?: string | null
+          servicos_produtos?: string | null
+          site?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          ai_provider?: string | null
+          ai_response?: string | null
+          aspecto_prioritario?: string | null
+          client_id?: string | null
+          competitors?: Json | null
+          created_at?: string
+          created_by?: string
+          diferenciais_competitivos?: string | null
+          id?: string
+          informacoes_adicionais?: string | null
+          maior_desafio?: string | null
+          nicho_empresa?: string | null
+          nome_empresa?: string | null
+          objetivo_benchmark?: Json | null
+          objetivo_benchmark_outro?: string | null
+          objetivo_projeto?: string | null
+          publico_alvo?: string | null
+          response_generated_at?: string | null
+          servicos_produtos?: string | null
+          site?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       briefing_form_labels: {
         Row: {
           created_at: string

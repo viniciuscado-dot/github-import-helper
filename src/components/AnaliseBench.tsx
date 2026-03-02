@@ -1044,11 +1044,13 @@ export function AnaliseBench() {
                         <TableCell>
                           <Badge variant={
                             briefing.status === 'completed' ? 'default' : 
-                            briefing.status === 'processing' ? 'secondary' : 
+                            briefing.status === 'processing' ? 'secondary' :
+                            briefing.status === 'failed' ? 'destructive' :
                             'outline'
                           }>
                             {briefing.status === 'completed' ? 'Concluído' : 
-                             briefing.status === 'processing' ? 'Processando' : 
+                             briefing.status === 'processing' ? 'Processando' :
+                             briefing.status === 'failed' ? 'Erro' :
                              'Pendente'}
                           </Badge>
                         </TableCell>
@@ -1061,7 +1063,7 @@ export function AnaliseBench() {
                             >
                               Ver detalhes
                             </Button>
-                            {briefing.status === 'pending' && canCreate && (
+                            {(briefing.status === 'pending' || briefing.status === 'failed') && canCreate && (
                               <Button
                                 variant="default"
                                 size="sm"
@@ -1074,7 +1076,24 @@ export function AnaliseBench() {
                                     Gerando...
                                   </>
                                 ) : (
-                                  'Gerar Análise'
+                                  briefing.status === 'failed' ? 'Tentar Novamente' : 'Gerar Análise'
+                                )}
+                              </Button>
+                            )}
+                            {briefing.status === 'completed' && canCreate && (
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => handleGenerateAnalysis(briefing.id)}
+                                disabled={isGeneratingAnalysis && generatingBriefingId === briefing.id}
+                              >
+                                {isGeneratingAnalysis && generatingBriefingId === briefing.id ? (
+                                  <>
+                                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                                    Regenerando...
+                                  </>
+                                ) : (
+                                  'Regenerar'
                                 )}
                               </Button>
                             )}
