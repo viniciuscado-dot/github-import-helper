@@ -3,7 +3,7 @@ import { ReactNode } from "react";
 
 interface KPICardProps {
   label: string;
-  value: number | string;
+  value: ReactNode;
   subtitle?: ReactNode;
   icon?: ReactNode;
   variant?: "large" | "compact";

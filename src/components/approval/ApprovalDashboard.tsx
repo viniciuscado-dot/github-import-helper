@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { Send, CheckCircle, PenLine, TrendingUp, Star, Trophy, Users } from "lucide-react";
+import { Send, CheckCircle, PenLine, TrendingUp, TrendingDown, Minus, Star, Trophy, Users } from "lucide-react";
 import { PageHeader } from "./layout/PageHeader";
 import { KPICard } from "./layout/KPICard";
 import { RankingTable } from "./layout/RankingTable";
@@ -28,7 +28,7 @@ interface ApprovalDashboardProps {
 }
 
 export function ApprovalDashboard({ filters, filterSetters, onNavigateToKanban }: ApprovalDashboardProps) {
-  const [kpis, setKpis] = useState({ pendentes: 0, emAjustes: 0, aprovados: 0, total: 0, avgRating: 0, squadHighlight: { squad: "—", avgRating: 0 } });
+  const [kpis, setKpis] = useState({ pendentes: 0, emAjustes: 0, aprovados: 0, total: 0, avgRating: 0, avgRatingTrend: null as "up" | "down" | "stable" | null, squadHighlight: { squad: "—", avgRating: 0 } });
   const [ranking, setRanking] = useState<{ position: number; name: string; materialsEvaluated: number; avgRating: number }[]>([]);
   const [squadRanking, setSquadRanking] = useState<SquadRankingEntry[]>([]);
 
@@ -74,7 +74,14 @@ export function ApprovalDashboard({ filters, filterSetters, onNavigateToKanban }
       <div className={`${layoutTokens.grid.cols2} ${layoutTokens.spacing.gridGap}`}>
         <KPICard
           label="Média de Aprovação Geral"
-          value={kpis.avgRating.toFixed(1)}
+          value={
+            <span className="flex items-center gap-2">
+              {kpis.avgRating.toFixed(1)}
+              {kpis.avgRatingTrend === "up" && <TrendingUp className="h-5 w-5 text-success" />}
+              {kpis.avgRatingTrend === "down" && <TrendingDown className="h-5 w-5 text-destructive" />}
+              {kpis.avgRatingTrend === "stable" && <Minus className="h-4 w-4 text-muted-foreground" />}
+            </span>
+          }
           icon={<Star className="h-5 w-5" />}
           iconBgClass="bg-primary/15 text-primary"
           variant="large"

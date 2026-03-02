@@ -338,7 +338,42 @@ export async function computeKPIs(filters?: Parameters<typeof getJobs>[0]) {
     ? { squad: squadRanking[0].squad, avgRating: squadRanking[0].avgRating }
     : { squad: "—", avgRating: 0 };
 
-  return { pendentes, emAjustes, aprovados, total, avgRating, squadHighlight };
+  // Compute previous period avg rating for trend arrow
+  let avgRatingTrend: "up" | "down" | "stable" | null = null;
+  if (filters?.startDate && filters?.endDate) {
+    const start = new Date(filters.startDate);
+    const end = new Date(filters.endDate);
+    const durationMs = end.getTime() - start.getTime();
+    const prevEnd = new Date(start.getTime() - 1); // day before current start
+    const prevStart = new Date(prevEnd.getTime() - durationMs);
+    const prevFilters = { ...filters, startDate: prevStart.toISOString().slice(0, 10), endDate: prevEnd.toISOString().slice(0, 10) };
+    const prevJobs = await getJobs(prevFilters);
+    const prevJobIds = prevJobs.map(j => j.id);
+    let prevAvgRating = 0;
+    if (prevJobIds.length > 0) {
+      const { data: prevEvals } = await supabase
+        .from("evaluations")
+        .select("copy_score, design_score, project_id")
+        .in("project_id", prevJobIds)
+        .eq("is_official", true);
+      if (prevEvals && prevEvals.length > 0) {
+        let pTotal = 0; let pCount = 0;
+        prevEvals.forEach((e: any) => {
+          const r: number[] = [];
+          if (e.copy_score) r.push(Number(e.copy_score));
+          if (e.design_score) r.push(Number(e.design_score));
+          if (r.length > 0) { pTotal += r.reduce((s, v) => s + v, 0) / r.length; pCount++; }
+        });
+        prevAvgRating = pCount > 0 ? pTotal / pCount : 0;
+      }
+    }
+    if (prevAvgRating > 0 && avgRating > 0) {
+      const diff = avgRating - prevAvgRating;
+      avgRatingTrend = diff > 0.05 ? "up" : diff < -0.05 ? "down" : "stable";
+    }
+  }
+
+  return { pendentes, emAjustes, aprovados, total, avgRating, avgRatingTrend, squadHighlight };
 }
 
 // ─── Unified Ranking ──────────────────────────────────
