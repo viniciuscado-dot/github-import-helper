@@ -5,7 +5,7 @@ import { useAuth } from "@/contexts/AuthContext"
 import { useModulePermissions } from "@/hooks/useModulePermissions"
 import { useInterfacePreferences } from "@/hooks/useInterfacePreferences"
 import { Link, useLocation, useNavigate } from "react-router-dom"
-import { useState, useMemo, useEffect } from "react"
+import { useState, useMemo } from "react"
 
 import {
   Sidebar,
@@ -58,10 +58,78 @@ export function AppSidebar({ activeView, onViewChange }: AppSidebarProps) {
     }, 150);
   };
 
+  // Shared menu button classes
+  const menuBtnBase = "w-full transition-all duration-150 ease-in-out"
+  const menuBtnExpanded = `${menuBtnBase} justify-start py-2.5 gap-3`
+  const menuBtnCollapsed = `${menuBtnBase} justify-center py-2.5`
+
+  const activeStyle = { backgroundColor: '#ec4a55', color: 'white' }
+
+  // Helper to render a menu item with tooltip support
+  const renderMenuItem = (
+    item: { id: string; title: string; icon: React.ElementType; route?: string; view?: string },
+    isActive: boolean,
+    onClick?: () => void
+  ) => {
+    const Icon = item.icon;
+    if (!shouldShowText) {
+      return (
+        <Tooltip>
+          <TooltipTrigger asChild>
+            {item.route ? (
+              <SidebarMenuButton asChild isActive={isActive} className={menuBtnCollapsed} style={isActive ? activeStyle : {}}>
+                <Link to={item.route}><Icon className="h-4 w-4 flex-shrink-0" /></Link>
+              </SidebarMenuButton>
+            ) : (
+              <SidebarMenuButton onClick={onClick} isActive={isActive} className={menuBtnCollapsed} style={isActive ? activeStyle : {}}>
+                <Icon className="h-4 w-4 flex-shrink-0" />
+              </SidebarMenuButton>
+            )}
+          </TooltipTrigger>
+          <TooltipContent side="right"><p>{item.title}</p></TooltipContent>
+        </Tooltip>
+      );
+    }
+    if (item.route) {
+      return (
+        <SidebarMenuButton asChild isActive={isActive} className={menuBtnExpanded} style={isActive ? activeStyle : {}}>
+          <Link to={item.route}>
+            <Icon className="h-4 w-4 flex-shrink-0" />
+            <span className="text-xs">{item.title}</span>
+          </Link>
+        </SidebarMenuButton>
+      );
+    }
+    return (
+      <SidebarMenuButton onClick={onClick} isActive={isActive} className={menuBtnExpanded} style={isActive ? activeStyle : {}}>
+        <Icon className="h-4 w-4 flex-shrink-0" />
+        <span className="text-xs">{item.title}</span>
+      </SidebarMenuButton>
+    );
+  };
+
+  const socialMediaItems = [
+    { id: 'planejamento-conteudo', title: 'Planejamento de Conteúdo', icon: ClipboardList, route: '/social-media/planejamento' },
+    { id: 'varredura', title: 'Varredura', icon: Activity, route: '/social-media/varredura' },
+    { id: 'central-posts', title: 'Central de Posts', icon: Newspaper, route: '/social-media/central-posts' },
+  ];
+
+  const laboratorioItems = [
+    { id: 'editor-video', title: 'Editor de Vídeo', icon: Video, route: '/laboratorio/editor-video' },
+    { id: 'banco-ideias', title: 'Banco de Ideias', icon: Lightbulb, route: '/laboratorio/banco-ideias' },
+    { id: 'lp-builder', title: 'LP Builder', icon: Layout, route: '/laboratorio/lp-builder' },
+    { id: 'diagnostico-visual', title: 'Diagnóstico Visual', icon: Eye, route: '/laboratorio/diagnostico-visual' },
+  ];
+
+  // Group label style
+  const groupLabelClass = "text-[#ec4a55] uppercase text-[10px] font-semibold tracking-wider opacity-70";
+
   return (
     <TooltipProvider delayDuration={100}>
       <Sidebar side="left" collapsible="icon" className="border-r transition-all duration-300 ease-in-out">
-      <SidebarHeader className={`flex-shrink-0 ${shouldShowText ? "p-4 pb-2" : "py-4 pb-2"}`}>
+
+      {/* ══════════ BLOCO SUPERIOR FIXO ══════════ */}
+      <SidebarHeader className={`flex-shrink-0 ${shouldShowText ? "p-4 pb-1" : "py-4 pb-1"}`}>
         {shouldShowText ? (
           <div className="flex items-center justify-between w-full px-4">
             <img 
@@ -95,144 +163,34 @@ export function AppSidebar({ activeView, onViewChange }: AppSidebarProps) {
           </div>
         )}
 
-        {/* Home button - fixed in header */}
-        <SidebarMenu className="mt-2">
+        {/* Home - fixed in header */}
+        <SidebarMenu className="mt-2 px-2">
           <SidebarMenuItem>
-            {!shouldShowText ? (
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <SidebarMenuButton
-                    onClick={() => onViewChange('home-criacao')}
-                    isActive={activeView === 'home-criacao'}
-                    className="w-full transition-all duration-150 ease-in-out justify-center py-2.5"
-                    style={activeView === 'home-criacao' ? { backgroundColor: '#ec4a55', color: 'white' } : {}}
-                  >
-                    <Home className="h-4 w-4 flex-shrink-0" />
-                  </SidebarMenuButton>
-                </TooltipTrigger>
-                <TooltipContent side="right"><p>Home</p></TooltipContent>
-              </Tooltip>
-            ) : (
-              <SidebarMenuButton
-                onClick={() => onViewChange('home-criacao')}
-                isActive={activeView === 'home-criacao'}
-                className="w-full transition-all duration-150 ease-in-out justify-start py-2.5 gap-3"
-                style={activeView === 'home-criacao' ? { backgroundColor: '#ec4a55', color: 'white' } : {}}
-              >
-                <Home className="h-4 w-4 flex-shrink-0" />
-                <span className="text-xs">Home</span>
-              </SidebarMenuButton>
+            {renderMenuItem(
+              { id: 'home', title: 'Home', icon: Home },
+              activeView === 'home-criacao',
+              () => onViewChange('home-criacao')
             )}
           </SidebarMenuItem>
         </SidebarMenu>
       </SidebarHeader>
 
-      <SidebarContent className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-border/30 scrollbar-track-transparent">
-        {/* Seção Performance (Criação) */}
-        <SidebarGroup>
-          <SidebarGroupLabel className="text-[#ec4a55] uppercase text-[10px] font-semibold tracking-wider opacity-70 mt-2">Performance</SidebarGroupLabel>
+      {/* ══════════ BLOCO CENTRAL ROLÁVEL ══════════ */}
+      <SidebarContent className="flex-1 overflow-y-auto">
+
+        {/* Performance */}
+        <SidebarGroup className="pt-2">
+          <SidebarGroupLabel className={groupLabelClass}>Performance</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
               {criacaoSubmenu.map((subItem) => {
-                const isSubActive = subItem.route ? location.pathname === subItem.route : activeView === subItem.view
+                const isSubActive = subItem.route ? location.pathname === subItem.route : activeView === subItem.view;
                 return (
                   <SidebarMenuItem key={subItem.id}>
-                    {!shouldShowText ? (
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          {subItem.route ? (
-                            <SidebarMenuButton
-                              asChild
-                              isActive={isSubActive}
-                              className="w-full transition-all duration-200 justify-center"
-                              style={isSubActive ? { backgroundColor: '#ec4a55', color: 'white' } : {}}
-                            >
-                              <Link to={subItem.route}>
-                                <subItem.icon className="h-4 w-4 flex-shrink-0" />
-                              </Link>
-                            </SidebarMenuButton>
-                          ) : (
-                            <SidebarMenuButton
-                              onClick={() => onViewChange(subItem.view)}
-                              isActive={isSubActive}
-                              className="w-full transition-all duration-200 justify-center"
-                              style={isSubActive ? { backgroundColor: '#ec4a55', color: 'white' } : {}}
-                            >
-                              <subItem.icon className="h-4 w-4 flex-shrink-0" />
-                            </SidebarMenuButton>
-                          )}
-                        </TooltipTrigger>
-                        <TooltipContent side="right"><p>{subItem.title}</p></TooltipContent>
-                      </Tooltip>
-                    ) : (
-                      subItem.route ? (
-                        <SidebarMenuButton
-                          asChild
-                          isActive={isSubActive}
-                          className="w-full transition-all duration-200 justify-start"
-                          style={isSubActive ? { backgroundColor: '#ec4a55', color: 'white' } : {}}
-                        >
-                          <Link to={subItem.route}>
-                            <subItem.icon className="h-4 w-4 flex-shrink-0" />
-                            <span className="text-xs">{subItem.title}</span>
-                          </Link>
-                        </SidebarMenuButton>
-                      ) : (
-                        <SidebarMenuButton
-                          onClick={() => onViewChange(subItem.view)}
-                          isActive={isSubActive}
-                          className="w-full transition-all duration-200 justify-start"
-                          style={isSubActive ? { backgroundColor: '#ec4a55', color: 'white' } : {}}
-                        >
-                          <subItem.icon className="h-4 w-4 flex-shrink-0" />
-                          <span className="text-xs">{subItem.title}</span>
-                        </SidebarMenuButton>
-                      )
-                    )}
-                  </SidebarMenuItem>
-                )
-              })}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
-
-        {/* Seção Social Media */}
-        <SidebarGroup>
-          <SidebarGroupLabel className="text-[#ec4a55]">Social Media</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {[
-                { id: 'planejamento-conteudo', title: 'Planejamento de Conteúdo', icon: ClipboardList, route: '/social-media/planejamento' },
-                { id: 'varredura', title: 'Varredura', icon: Activity, route: '/social-media/varredura' },
-                { id: 'central-posts', title: 'Central de Posts', icon: Newspaper, route: '/social-media/central-posts' },
-              ].map((item) => {
-                const isActive = location.pathname === item.route;
-                return (
-                  <SidebarMenuItem key={item.id}>
-                    {!shouldShowText ? (
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <SidebarMenuButton
-                            asChild isActive={isActive}
-                            className="w-full transition-all duration-200 justify-center"
-                            style={isActive ? { backgroundColor: '#ec4a55', color: 'white' } : {}}
-                          >
-                            <Link to={item.route}><item.icon className="h-4 w-4 flex-shrink-0" /></Link>
-                          </SidebarMenuButton>
-                        </TooltipTrigger>
-                        <TooltipContent side="right"><p>{item.title}</p></TooltipContent>
-                      </Tooltip>
-                    ) : (
-                      <SidebarMenuButton
-                        asChild isActive={isActive}
-                        className="w-full transition-all duration-200 justify-start"
-                        style={isActive ? { backgroundColor: '#ec4a55', color: 'white' } : {}}
-                      >
-                        <Link to={item.route}>
-                          <item.icon className="h-4 w-4 flex-shrink-0" />
-                          <span className="text-xs">{item.title}</span>
-                        </Link>
-                      </SidebarMenuButton>
+                    {renderMenuItem(
+                      subItem,
+                      isSubActive,
+                      subItem.route ? undefined : () => onViewChange(subItem.view)
                     )}
                   </SidebarMenuItem>
                 );
@@ -241,45 +199,16 @@ export function AppSidebar({ activeView, onViewChange }: AppSidebarProps) {
           </SidebarGroupContent>
         </SidebarGroup>
 
-        {/* Seção Laboratório */}
-        <SidebarGroup>
-          <SidebarGroupLabel className="text-[#ec4a55]">Laboratório</SidebarGroupLabel>
+        {/* Social Media */}
+        <SidebarGroup className="pt-2">
+          <SidebarGroupLabel className={groupLabelClass}>Social Media</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {[
-                { id: 'editor-video', title: 'Editor de Vídeo', icon: Video, route: '/laboratorio/editor-video' },
-                { id: 'banco-ideias', title: 'Banco de Ideias', icon: Lightbulb, route: '/laboratorio/banco-ideias' },
-                { id: 'lp-builder', title: 'LP Builder', icon: Layout, route: '/laboratorio/lp-builder' },
-                { id: 'diagnostico-visual', title: 'Diagnóstico Visual', icon: Eye, route: '/laboratorio/diagnostico-visual' },
-              ].map((item) => {
-                const isActive = location.pathname === item.route;
+              {socialMediaItems.map((item) => {
+                const active = location.pathname === item.route;
                 return (
                   <SidebarMenuItem key={item.id}>
-                    {!shouldShowText ? (
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <SidebarMenuButton
-                            asChild isActive={isActive}
-                            className="w-full transition-all duration-200 justify-center"
-                            style={isActive ? { backgroundColor: '#ec4a55', color: 'white' } : {}}
-                          >
-                            <Link to={item.route}><item.icon className="h-4 w-4 flex-shrink-0" /></Link>
-                          </SidebarMenuButton>
-                        </TooltipTrigger>
-                        <TooltipContent side="right"><p>{item.title}</p></TooltipContent>
-                      </Tooltip>
-                    ) : (
-                      <SidebarMenuButton
-                        asChild isActive={isActive}
-                        className="w-full transition-all duration-200 justify-start"
-                        style={isActive ? { backgroundColor: '#ec4a55', color: 'white' } : {}}
-                      >
-                        <Link to={item.route}>
-                          <item.icon className="h-4 w-4 flex-shrink-0" />
-                          <span className="text-xs">{item.title}</span>
-                        </Link>
-                      </SidebarMenuButton>
-                    )}
+                    {renderMenuItem(item, active)}
                   </SidebarMenuItem>
                 );
               })}
@@ -287,150 +216,142 @@ export function AppSidebar({ activeView, onViewChange }: AppSidebarProps) {
           </SidebarGroupContent>
         </SidebarGroup>
 
-        {/* Admin + Módulos + Sair */}
-        <div className="mt-auto pt-4">
-          <SidebarGroup>
-            <SidebarGroupContent>
-              <SidebarMenu>
-                {/* Usuários - admin only */}
-                {profile?.effectiveRole === 'admin' && checkModulePermission('users', 'view') && (
-                  <SidebarMenuItem>
-                    {!shouldShowText ? (
-                      <Tooltip>
-                        <TooltipTrigger asChild>
-                          <SidebarMenuButton
-                            onClick={() => onViewChange('users')}
-                            isActive={activeView === 'users'}
-                            className="w-full justify-center transition-all duration-200"
-                            style={activeView === 'users' ? { backgroundColor: '#ec4a55', color: 'white' } : {}}
-                          >
-                            <Users className="h-4 w-4" />
-                          </SidebarMenuButton>
-                        </TooltipTrigger>
-                        <TooltipContent side="right"><p>Usuários</p></TooltipContent>
-                      </Tooltip>
-                    ) : (
-                      <SidebarMenuButton
-                        onClick={() => onViewChange('users')}
-                        isActive={activeView === 'users'}
-                        className="w-full justify-start transition-all duration-200"
-                        style={activeView === 'users' ? { backgroundColor: '#ec4a55', color: 'white' } : {}}
-                      >
-                        <Users className="h-4 w-4 flex-shrink-0" />
-                        <span className="text-xs">Usuários</span>
-                      </SidebarMenuButton>
-                    )}
+        {/* Laboratório */}
+        <SidebarGroup className="pt-2">
+          <SidebarGroupLabel className={groupLabelClass}>Laboratório</SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              {laboratorioItems.map((item) => {
+                const active = location.pathname === item.route;
+                return (
+                  <SidebarMenuItem key={item.id}>
+                    {renderMenuItem(item, active)}
                   </SidebarMenuItem>
-                )}
-
-                {/* Voltar para Módulos */}
-                <SidebarMenuItem>
-                  <Dialog open={openModulesDialog} onOpenChange={setOpenModulesDialog}>
-                    <DialogTrigger asChild>
-                      {!shouldShowText ? (
-                        <Tooltip>
-                          <TooltipTrigger asChild>
-                            <SidebarMenuButton className="w-full justify-center transition-all duration-200">
-                              <Settings className="h-4 w-4 text-[#ec4a55]" />
-                            </SidebarMenuButton>
-                          </TooltipTrigger>
-                          <TooltipContent side="right"><p>Voltar para módulos</p></TooltipContent>
-                        </Tooltip>
-                      ) : (
-                        <SidebarMenuButton className="w-full justify-start transition-all duration-200">
-                          <Settings className="h-4 w-4 flex-shrink-0 text-[#ec4a55]" />
-                          <span className="text-xs">Voltar para módulos</span>
-                        </SidebarMenuButton>
-                      )}
-                    </DialogTrigger>
-                    <DialogContent className="sm:max-w-4xl bg-[#0d1117] border-border/50" aria-describedby={undefined}>
-                      <div className="flex flex-col items-center py-8">
-                        <div className="flex items-center gap-2 mb-8">
-                          <span className="text-3xl font-bold text-[#ec4a55]">Skala</span>
-                          <Sparkles className="h-5 w-5 text-muted-foreground" />
-                        </div>
-                        <h2 className="text-2xl font-bold text-foreground mb-2">
-                          Olá, {profile?.name?.split(' ')[0] || 'Usuário'}!
-                        </h2>
-                        <p className="text-muted-foreground mb-8">Escolha o módulo para continuar</p>
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 w-full max-w-3xl px-4">
-                          <button
-                            onClick={() => { setOpenModulesDialog(false); window.location.href = 'https://skala.dotconceito.com'; }}
-                            className="flex flex-col items-center p-8 rounded-xl border border-border/50 bg-card/50 hover:bg-card hover:border-[#ec4a55]/50 transition-all duration-300 group"
-                          >
-                            <div className="w-16 h-16 rounded-full bg-[#ec4a55]/10 flex items-center justify-center mb-4 group-hover:bg-[#ec4a55]/20 transition-colors">
-                              <TrendingUp className="h-8 w-8 text-[#ec4a55]" />
-                            </div>
-                            <span className="font-semibold text-foreground mb-1">SKALA CRM</span>
-                            <span className="text-sm text-muted-foreground text-center">Gestão Comercial e Vendas</span>
-                          </button>
-                          <button
-                            onClick={() => { setOpenModulesDialog(false); navigate('/dashboard?view=home-criacao'); onViewChange('home-criacao'); }}
-                            className="flex flex-col items-center p-8 rounded-xl border border-[#ec4a55] bg-card/50 hover:bg-card transition-all duration-300 group"
-                          >
-                            <div className="w-16 h-16 rounded-full bg-[#ec4a55]/10 flex items-center justify-center mb-4 group-hover:bg-[#ec4a55]/20 transition-colors">
-                              <Settings className="h-8 w-8 text-[#ec4a55]" />
-                            </div>
-                            <span className="font-semibold text-foreground mb-1">SKALA Operação</span>
-                            <span className="text-sm text-muted-foreground text-center">Gestão de Projetos e CS</span>
-                          </button>
-                          <button
-                            onClick={() => { setOpenModulesDialog(false); window.location.href = 'https://skala.dotconceito.com/admin'; }}
-                            className="flex flex-col items-center p-8 rounded-xl border border-border/50 bg-card/50 hover:bg-card hover:border-amber-500/50 transition-all duration-300 group"
-                          >
-                            <div className="w-16 h-16 rounded-full bg-amber-500/10 flex items-center justify-center mb-4 group-hover:bg-amber-500/20 transition-colors">
-                              <Shield className="h-8 w-8 text-amber-500" />
-                            </div>
-                            <span className="font-semibold text-foreground mb-1">SKALA Admin</span>
-                            <span className="text-sm text-muted-foreground text-center">Administração do Sistema</span>
-                          </button>
-                        </div>
-                        <button
-                          onClick={() => { setOpenModulesDialog(false); window.location.href = '/logout'; }}
-                          className="flex items-center gap-2 mt-8 text-muted-foreground hover:text-foreground transition-colors"
-                        >
-                          <LogOut className="h-4 w-4" />
-                          <span>Sair da conta</span>
-                        </button>
-                      </div>
-                    </DialogContent>
-                  </Dialog>
-                </SidebarMenuItem>
-
-                {/* Botão Sair */}
-                <SidebarMenuItem>
-                  {!shouldShowText ? (
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <SidebarMenuButton
-                          onClick={handleLogout}
-                          className="w-full justify-center transition-all duration-200 hover:bg-destructive/10 hover:text-destructive"
-                        >
-                          <LogOut className="h-4 w-4" />
-                        </SidebarMenuButton>
-                      </TooltipTrigger>
-                      <TooltipContent side="right"><p>Sair</p></TooltipContent>
-                    </Tooltip>
-                  ) : (
-                    <SidebarMenuButton
-                      onClick={handleLogout}
-                      className="w-full justify-start transition-all duration-200 hover:bg-destructive/10 hover:text-destructive"
-                    >
-                      <LogOut className="h-4 w-4 flex-shrink-0" />
-                      <span className="text-xs">Sair</span>
-                    </SidebarMenuButton>
-                  )}
-                </SidebarMenuItem>
-              </SidebarMenu>
-            </SidebarGroupContent>
-          </SidebarGroup>
-        </div>
+                );
+              })}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
       </SidebarContent>
 
-      <SidebarFooter className={shouldShowText ? "p-4" : "py-4"}>
+      {/* ══════════ BLOCO INFERIOR FIXO ══════════ */}
+      <SidebarFooter className={`flex-shrink-0 border-t border-border/10 ${shouldShowText ? "p-4 pt-3" : "py-3"}`}>
+        <SidebarMenu>
+          {/* Usuários - admin only */}
+          {profile?.effectiveRole === 'admin' && checkModulePermission('users', 'view') && (
+            <SidebarMenuItem>
+              {renderMenuItem(
+                { id: 'users', title: 'Usuários', icon: Users },
+                activeView === 'users',
+                () => onViewChange('users')
+              )}
+            </SidebarMenuItem>
+          )}
+
+          {/* Voltar para Módulos */}
+          <SidebarMenuItem>
+            <Dialog open={openModulesDialog} onOpenChange={setOpenModulesDialog}>
+              <DialogTrigger asChild>
+                {!shouldShowText ? (
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <SidebarMenuButton className={menuBtnCollapsed}>
+                        <Settings className="h-4 w-4 text-[#ec4a55]" />
+                      </SidebarMenuButton>
+                    </TooltipTrigger>
+                    <TooltipContent side="right"><p>Voltar para módulos</p></TooltipContent>
+                  </Tooltip>
+                ) : (
+                  <SidebarMenuButton className={menuBtnExpanded}>
+                    <Settings className="h-4 w-4 flex-shrink-0 text-[#ec4a55]" />
+                    <span className="text-xs">Voltar para módulos</span>
+                  </SidebarMenuButton>
+                )}
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-4xl bg-[#0d1117] border-border/50" aria-describedby={undefined}>
+                <div className="flex flex-col items-center py-8">
+                  <div className="flex items-center gap-2 mb-8">
+                    <span className="text-3xl font-bold text-[#ec4a55]">Skala</span>
+                    <Sparkles className="h-5 w-5 text-muted-foreground" />
+                  </div>
+                  <h2 className="text-2xl font-bold text-foreground mb-2">
+                    Olá, {profile?.name?.split(' ')[0] || 'Usuário'}!
+                  </h2>
+                  <p className="text-muted-foreground mb-8">Escolha o módulo para continuar</p>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6 w-full max-w-3xl px-4">
+                    <button
+                      onClick={() => { setOpenModulesDialog(false); window.location.href = 'https://skala.dotconceito.com'; }}
+                      className="flex flex-col items-center p-8 rounded-xl border border-border/50 bg-card/50 hover:bg-card hover:border-[#ec4a55]/50 transition-all duration-300 group"
+                    >
+                      <div className="w-16 h-16 rounded-full bg-[#ec4a55]/10 flex items-center justify-center mb-4 group-hover:bg-[#ec4a55]/20 transition-colors">
+                        <TrendingUp className="h-8 w-8 text-[#ec4a55]" />
+                      </div>
+                      <span className="font-semibold text-foreground mb-1">SKALA CRM</span>
+                      <span className="text-sm text-muted-foreground text-center">Gestão Comercial e Vendas</span>
+                    </button>
+                    <button
+                      onClick={() => { setOpenModulesDialog(false); navigate('/dashboard?view=home-criacao'); onViewChange('home-criacao'); }}
+                      className="flex flex-col items-center p-8 rounded-xl border border-[#ec4a55] bg-card/50 hover:bg-card transition-all duration-300 group"
+                    >
+                      <div className="w-16 h-16 rounded-full bg-[#ec4a55]/10 flex items-center justify-center mb-4 group-hover:bg-[#ec4a55]/20 transition-colors">
+                        <Settings className="h-8 w-8 text-[#ec4a55]" />
+                      </div>
+                      <span className="font-semibold text-foreground mb-1">SKALA Operação</span>
+                      <span className="text-sm text-muted-foreground text-center">Gestão de Projetos e CS</span>
+                    </button>
+                    <button
+                      onClick={() => { setOpenModulesDialog(false); window.location.href = 'https://skala.dotconceito.com/admin'; }}
+                      className="flex flex-col items-center p-8 rounded-xl border border-border/50 bg-card/50 hover:bg-card hover:border-amber-500/50 transition-all duration-300 group"
+                    >
+                      <div className="w-16 h-16 rounded-full bg-amber-500/10 flex items-center justify-center mb-4 group-hover:bg-amber-500/20 transition-colors">
+                        <Shield className="h-8 w-8 text-amber-500" />
+                      </div>
+                      <span className="font-semibold text-foreground mb-1">SKALA Admin</span>
+                      <span className="text-sm text-muted-foreground text-center">Administração do Sistema</span>
+                    </button>
+                  </div>
+                  <button
+                    onClick={() => { setOpenModulesDialog(false); window.location.href = '/logout'; }}
+                    className="flex items-center gap-2 mt-8 text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    <LogOut className="h-4 w-4" />
+                    <span>Sair da conta</span>
+                  </button>
+                </div>
+              </DialogContent>
+            </Dialog>
+          </SidebarMenuItem>
+
+          {/* Sair */}
+          <SidebarMenuItem>
+            {!shouldShowText ? (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <SidebarMenuButton
+                    onClick={handleLogout}
+                    className={`${menuBtnCollapsed} hover:bg-destructive/10 hover:text-destructive`}
+                  >
+                    <LogOut className="h-4 w-4" />
+                  </SidebarMenuButton>
+                </TooltipTrigger>
+                <TooltipContent side="right"><p>Sair</p></TooltipContent>
+              </Tooltip>
+            ) : (
+              <SidebarMenuButton
+                onClick={handleLogout}
+                className={`${menuBtnExpanded} hover:bg-destructive/10 hover:text-destructive`}
+              >
+                <LogOut className="h-4 w-4 flex-shrink-0" />
+                <span className="text-xs">Sair</span>
+              </SidebarMenuButton>
+            )}
+          </SidebarMenuItem>
+        </SidebarMenu>
+
+        {/* User avatar */}
         <UserProfilePopover onLogout={handleLogout}>
           {shouldShowText ? (
-            <div className="flex items-center gap-3 p-3 transition-all duration-200 cursor-pointer hover:bg-accent rounded-md">
+            <div className="flex items-center gap-3 p-3 mt-1 transition-all duration-150 cursor-pointer hover:bg-accent rounded-md">
               <Avatar className="h-8 w-8 flex-shrink-0">
                 <AvatarImage src={(profile as any)?.avatar_url} alt={profile?.name} />
                 <AvatarFallback className="bg-primary text-primary-foreground text-sm font-medium">
