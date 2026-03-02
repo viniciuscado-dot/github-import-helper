@@ -523,7 +523,11 @@ export function AnaliseBench() {
       </div>
 
       {/* Conteúdo - Tabs */}
-      <Tabs value={activeTab} onValueChange={(value: any) => setActiveTab(value)} className="space-y-4">
+      <Tabs value={activeTab} onValueChange={(value: any) => { 
+        setActiveTab(value); 
+        if (value === 'resultados') fetchBriefingHistory();
+        if (value !== 'resultados') setShowFullHistory(false);
+      }} className="space-y-4">
         <div className="flex items-center justify-between gap-4">
           {/* Lado esquerdo - Tabs */}
           <TabsList>
