@@ -72,16 +72,20 @@ export function AppSidebar({ activeView, onViewChange }: AppSidebarProps) {
     onClick?: () => void
   ) => {
     const Icon = item.icon;
+    const btnClass = isActive
+      ? `${shouldShowText ? menuBtnExpanded : menuBtnCollapsed} ${activeClass}`
+      : `${shouldShowText ? menuBtnExpanded : menuBtnCollapsed} text-muted-foreground hover:text-foreground hover:bg-muted/50`;
+
     if (!shouldShowText) {
       return (
         <Tooltip>
           <TooltipTrigger asChild>
             {item.route ? (
-              <SidebarMenuButton asChild isActive={isActive} className={menuBtnCollapsed} style={isActive ? activeStyle : {}}>
+              <SidebarMenuButton asChild isActive={isActive} className={btnClass}>
                 <Link to={item.route}><Icon className="h-4 w-4 flex-shrink-0" /></Link>
               </SidebarMenuButton>
             ) : (
-              <SidebarMenuButton onClick={onClick} isActive={isActive} className={menuBtnCollapsed} style={isActive ? activeStyle : {}}>
+              <SidebarMenuButton onClick={onClick} isActive={isActive} className={btnClass}>
                 <Icon className="h-4 w-4 flex-shrink-0" />
               </SidebarMenuButton>
             )}
@@ -92,18 +96,18 @@ export function AppSidebar({ activeView, onViewChange }: AppSidebarProps) {
     }
     if (item.route) {
       return (
-        <SidebarMenuButton asChild isActive={isActive} className={menuBtnExpanded} style={isActive ? activeStyle : {}}>
+        <SidebarMenuButton asChild isActive={isActive} className={btnClass}>
           <Link to={item.route}>
             <Icon className="h-4 w-4 flex-shrink-0" />
-            <span className="text-xs">{item.title}</span>
+            <span className="text-[13px]">{item.title}</span>
           </Link>
         </SidebarMenuButton>
       );
     }
     return (
-      <SidebarMenuButton onClick={onClick} isActive={isActive} className={menuBtnExpanded} style={isActive ? activeStyle : {}}>
+      <SidebarMenuButton onClick={onClick} isActive={isActive} className={btnClass}>
         <Icon className="h-4 w-4 flex-shrink-0" />
-        <span className="text-xs">{item.title}</span>
+        <span className="text-[13px]">{item.title}</span>
       </SidebarMenuButton>
     );
   };
