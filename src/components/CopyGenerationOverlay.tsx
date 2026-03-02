@@ -107,7 +107,7 @@ export function CopyGenerationOverlay({ status, onRetry, errorMessage, title, su
               exit={{ opacity: 0, y: -8 }}
               className="text-lg font-semibold text-foreground"
             >
-              Gerando copy com IA…
+              {title || 'Gerando copy com IA…'}
             </motion.p>
           )}
           {status === 'success' && (
