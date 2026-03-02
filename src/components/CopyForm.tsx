@@ -1035,7 +1035,7 @@ const [mainTab, setMainTab] = useState<'onboarding' | 'ongoing'>('onboarding')
 
       {/* Conteúdo - as mesmas tabs servem tanto para Onboarding quanto Ongoing */}
       {/* Os dados são filtrados automaticamente baseado no mainTab selecionado */}
-      <Tabs defaultValue="form" className="space-y-4">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
         <div className="flex items-center justify-between gap-4">
           {/* Lado esquerdo - Tabs */}
           <TabsList>
