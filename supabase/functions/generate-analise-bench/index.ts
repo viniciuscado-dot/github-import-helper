@@ -162,7 +162,17 @@ Maior desafio: ${briefing.maior_desafio || 'Não especificado'}
       }
     }
 
-    userContent.push({ type: 'text', text: briefingContext });
+    const formatInstruction = `
+
+INSTRUÇÃO OBRIGATÓRIA DE FORMATO:
+- Sua resposta DEVE ser escrita exclusivamente em Markdown puro (títulos com #, listas com -, tabelas com |, negrito com **, etc.).
+- NÃO gere HTML, CSS, JavaScript ou qualquer código de programação.
+- NÃO crie páginas web, documentos HTML ou artefatos interativos.
+- O conteúdo será renderizado automaticamente por um componente Markdown — basta escrever o texto formatado.
+- Use tabelas Markdown para comparações, listas para itens, e headings para organizar seções.
+`;
+
+    userContent.push({ type: 'text', text: briefingContext + formatInstruction });
 
     // Chamar API Claude com fallback de modelos
     console.log('🤖 Chamando API da Anthropic...');
