@@ -560,7 +560,7 @@ export function AnaliseBench() {
                   form.clearErrors('client_id');
                 }}
               >
-                <SelectTrigger className={`w-[200px] ${!selectedClient && 'border-destructive'}`}>
+                <SelectTrigger className="w-[200px]">
                   <SelectValue placeholder="Selecione um cliente" />
                 </SelectTrigger>
                 <SelectContent className="z-50 bg-popover">
