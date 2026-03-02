@@ -30,6 +30,9 @@ import remarkGfm from 'remark-gfm'
 import * as XLSX from 'xlsx'
 import { DotLogo } from '@/components/DotLogo';
 import { CopyGenerationOverlay } from '@/components/CopyGenerationOverlay';
+import { CopyResultsRecent } from '@/components/copy/CopyResultsRecent';
+import { CopyDetailDialog } from '@/components/copy/CopyDetailDialog';
+import { CopyHistoryFull } from '@/components/copy/CopyHistoryFull';
 
 const copyFormSchema = z.object({
   // Transcrições das reuniões
