@@ -127,6 +127,43 @@ Maior desafio: ${briefing.maior_desafio || 'Não especificado'}
       systemPrompt = activePrompts.map((p: any) => p.content).join('\n\n');
     }
 
+    // Build user message content (text + optional logo image)
+    const userContent: any[] = [];
+
+    // If there's a client logo, fetch it and add as image for vision analysis
+    if (briefing.client_logo_url) {
+      console.log('🖼️ Logo do cliente encontrado, baixando para análise visual...');
+      try {
+        const logoResp = await fetch(briefing.client_logo_url);
+        if (logoResp.ok) {
+          const logoBuffer = await logoResp.arrayBuffer();
+          const logoBase64 = btoa(String.fromCharCode(...new Uint8Array(logoBuffer)));
+          const contentType = logoResp.headers.get('content-type') || 'image/png';
+          
+          // Only add as image if it's an actual image type (not PDF)
+          if (contentType.startsWith('image/')) {
+            userContent.push({
+              type: 'image',
+              source: {
+                type: 'base64',
+                media_type: contentType,
+                data: logoBase64,
+              },
+            });
+            briefingContext += '\n\nLOGO DO CLIENTE: O logo do cliente foi anexado como imagem acima. Analise a identidade visual (cores, tipografia, estilo, elementos gráficos) e considere isso na sua análise de benchmarking.\n';
+            console.log('✅ Logo adicionado como imagem para análise visual');
+          } else {
+            briefingContext += `\n\nLOGO DO CLIENTE: Um arquivo de logo foi fornecido (${contentType}), mas não pôde ser analisado visualmente.\n`;
+          }
+        }
+      } catch (logoErr) {
+        console.error('⚠️ Erro ao baixar logo:', logoErr);
+        briefingContext += '\n\nLOGO DO CLIENTE: Não foi possível carregar o logo para análise.\n';
+      }
+    }
+
+    userContent.push({ type: 'text', text: briefingContext });
+
     // Chamar API Claude com fallback de modelos
     console.log('🤖 Chamando API da Anthropic...');
     const candidateModels = [
@@ -151,7 +188,7 @@ Maior desafio: ${briefing.maior_desafio || 'Não especificado'}
           system: systemPrompt,
           max_tokens: 8000,
           messages: [
-            { role: 'user', content: [{ type: 'text', text: briefingContext }] }
+            { role: 'user', content: userContent }
           ],
         }),
       });

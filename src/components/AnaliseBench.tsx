@@ -346,6 +346,27 @@ export function AnaliseBench() {
 
       console.log('💾 Salvando briefing...')
       
+      // Upload logo if provided
+      let clientLogoUrl: string | null = null
+      if (logoFile) {
+        setIsUploadingLogo(true)
+        const ext = logoFile.name.split('.').pop()
+        const filePath = `analise-logos/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`
+        const { error: uploadError } = await supabase.storage
+          .from('material-files')
+          .upload(filePath, logoFile, { contentType: logoFile.type })
+        setIsUploadingLogo(false)
+        if (uploadError) {
+          console.error('Erro ao fazer upload do logo:', uploadError)
+          toast.error('Erro ao fazer upload do logo')
+        } else {
+          const { data: publicUrl } = supabase.storage
+            .from('material-files')
+            .getPublicUrl(filePath)
+          clientLogoUrl = publicUrl.publicUrl
+        }
+      }
+      
       // Remover campo quantos_concorrentes que não existe no banco
       const { quantos_concorrentes, ...briefingData } = data;
       
@@ -357,6 +378,7 @@ export function AnaliseBench() {
           competitors: competitors as any,
           created_by: createdBy,
           status: 'processing',
+          client_logo_url: clientLogoUrl,
         })
         .select()
         .single()
