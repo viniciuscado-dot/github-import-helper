@@ -1044,11 +1044,13 @@ export function AnaliseBench() {
                         <TableCell>
                           <Badge variant={
                             briefing.status === 'completed' ? 'default' : 
-                            briefing.status === 'processing' ? 'secondary' : 
+                            briefing.status === 'processing' ? 'secondary' :
+                            briefing.status === 'failed' ? 'destructive' :
                             'outline'
                           }>
                             {briefing.status === 'completed' ? 'Concluído' : 
-                             briefing.status === 'processing' ? 'Processando' : 
+                             briefing.status === 'processing' ? 'Processando' :
+                             briefing.status === 'failed' ? 'Erro' :
                              'Pendente'}
                           </Badge>
                         </TableCell>
