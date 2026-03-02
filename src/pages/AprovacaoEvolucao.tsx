@@ -1,6 +1,6 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, TrendingUp, Users, Layers, BarChart3, Expand, BarChart2 } from "lucide-react";
+import { ArrowLeft, TrendingUp, Users, Layers, BarChart3, Expand, GripVertical, Settings2, RotateCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -9,6 +9,14 @@ import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
 import { MobileSidebarTrigger } from "@/components/MobileSidebarTrigger";
 import { NotificationCenter } from "@/components/NotificationCenter";
 import { ChartExpandModal } from "@/components/approval/evolution/ChartExpandModal";
+import {
+  OverallChart,
+  SquadChart,
+  PersonChart,
+  MaterialChart,
+  SquadComparisonChart,
+  EmptyState,
+} from "@/components/approval/evolution/EvolutionCharts";
 import {
   getOverallEvolution,
   getSquadEvolution,
@@ -22,196 +30,122 @@ import {
   type SquadComparison,
 } from "@/services/evolutionDataService";
 import {
-  ResponsiveContainer,
-  LineChart,
-  Line,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  Legend,
-  BarChart,
-  Bar,
-  Area,
-  AreaChart,
-} from "recharts";
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+} from "@dnd-kit/core";
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  useSortable,
+  rectSortingStrategy,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 
-const SQUAD_COLORS = ["hsl(var(--primary))", "hsl(var(--secondary))", "#10b981", "#f59e0b", "#ef4444", "#8b5cf6"];
-const MATERIAL_COLORS = ["hsl(var(--primary))", "#f59e0b", "#10b981", "#ef4444", "#8b5cf6", "#06b6d4"];
+const CHART_META: Record<string, { title: string; subtitle: string; icon: React.ElementType; span?: number }> = {
+  overall: { title: "Aprovação Geral", subtitle: "Média histórica das notas", icon: TrendingUp },
+  squad: { title: "Evolução por Squad", subtitle: "Desempenho comparativo", icon: Users },
+  material: { title: "Evolução por Material", subtitle: "Notas por tipo de criativo", icon: Layers },
+  person: { title: "Evolução por Pessoa", subtitle: "Performance individual", icon: Users },
+  comparison: { title: "Comparativo de Squads", subtitle: "Copy vs Design por squad", icon: BarChart3, span: 2 },
+};
 
-function EmptyState() {
-  return (
-    <div className="flex flex-col items-center justify-center h-full gap-3 py-12">
-      <div className="w-14 h-14 rounded-2xl bg-muted/60 flex items-center justify-center">
-        <BarChart2 className="h-7 w-7 text-muted-foreground/50" />
-      </div>
-      <div className="text-center space-y-1">
-        <p className="text-sm font-medium text-muted-foreground">Ainda não há dados suficientes</p>
-        <p className="text-xs text-muted-foreground/60">Comece avaliando criativos para visualizar a evolução.</p>
-      </div>
-    </div>
-  );
+const DEFAULT_ORDER = ["overall", "squad", "material", "person", "comparison"];
+const LAYOUT_KEY = "evolution-dashboard-order";
+
+function loadOrder(): string[] {
+  try {
+    const saved = localStorage.getItem(LAYOUT_KEY);
+    if (saved) return JSON.parse(saved);
+  } catch {}
+  return DEFAULT_ORDER;
 }
 
 function ChartSkeleton() {
   return <Skeleton className="w-full h-full rounded-xl" />;
 }
 
-/* ── Chart renderers ── */
-
-function OverallChart({ data }: { data: EvolutionPoint[] }) {
-  if (!data.length) return <EmptyState />;
-  return (
-    <ResponsiveContainer width="100%" height="100%">
-      <AreaChart data={data}>
-        <defs>
-          <linearGradient id="gradOverall" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.3} />
-            <stop offset="95%" stopColor="hsl(var(--primary))" stopOpacity={0} />
-          </linearGradient>
-        </defs>
-        <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.3} />
-        <XAxis dataKey="label" fontSize={11} stroke="hsl(var(--muted-foreground))" tickLine={false} axisLine={false} />
-        <YAxis domain={[0, 5]} fontSize={11} stroke="hsl(var(--muted-foreground))" tickLine={false} axisLine={false} />
-        <Tooltip contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: 10, fontSize: 12 }} />
-        <Area type="monotone" dataKey="avg" stroke="hsl(var(--primary))" fill="url(#gradOverall)" strokeWidth={2.5} name="Média Geral" dot={{ r: 3, fill: "hsl(var(--primary))" }} />
-      </AreaChart>
-    </ResponsiveContainer>
-  );
-}
-
-function SquadChart({ squads, points }: { squads: string[]; points: SquadEvolutionPoint[] }) {
-  if (!points.length) return <EmptyState />;
-  return (
-    <ResponsiveContainer width="100%" height="100%">
-      <LineChart data={points}>
-        <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.3} />
-        <XAxis dataKey="label" fontSize={11} stroke="hsl(var(--muted-foreground))" tickLine={false} axisLine={false} />
-        <YAxis domain={[0, 5]} fontSize={11} stroke="hsl(var(--muted-foreground))" tickLine={false} axisLine={false} />
-        <Tooltip contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: 10, fontSize: 12 }} />
-        <Legend wrapperStyle={{ fontSize: 11 }} />
-        {squads.map((sq, i) => (
-          <Line key={sq} type="monotone" dataKey={sq} stroke={SQUAD_COLORS[i % SQUAD_COLORS.length]} strokeWidth={2.5} dot={{ r: 3 }} />
-        ))}
-      </LineChart>
-    </ResponsiveContainer>
-  );
-}
-
-function PersonChart({ data, selected }: { data: PersonEvolution[]; selected: string }) {
-  const person = data.find(p => p.name === selected);
-  if (!person || !person.points.length) return <EmptyState />;
-  return (
-    <ResponsiveContainer width="100%" height="100%">
-      <AreaChart data={person.points}>
-        <defs>
-          <linearGradient id="gradPerson" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="5%" stopColor="hsl(var(--secondary))" stopOpacity={0.3} />
-            <stop offset="95%" stopColor="hsl(var(--secondary))" stopOpacity={0} />
-          </linearGradient>
-        </defs>
-        <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.3} />
-        <XAxis dataKey="label" fontSize={11} stroke="hsl(var(--muted-foreground))" tickLine={false} axisLine={false} />
-        <YAxis domain={[0, 5]} fontSize={11} stroke="hsl(var(--muted-foreground))" tickLine={false} axisLine={false} />
-        <Tooltip contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: 10, fontSize: 12 }} />
-        <Area type="monotone" dataKey="avg" stroke="hsl(var(--secondary))" fill="url(#gradPerson)" strokeWidth={2.5} name={selected} dot={{ r: 3, fill: "hsl(var(--secondary))" }} />
-      </AreaChart>
-    </ResponsiveContainer>
-  );
-}
-
-function MaterialChart({ data }: { data: MaterialTypeEvolution[] }) {
-  if (!data.length || data.every(d => !d.points.length)) return <EmptyState />;
-  const allWeeks = new Set<string>();
-  data.forEach(d => d.points.forEach(p => allWeeks.add(p.date)));
-  const sorted = Array.from(allWeeks).sort();
-  const merged = sorted.map(week => {
-    const point: Record<string, any> = { date: week, label: data[0]?.points.find(p => p.date === week)?.label || week.slice(5) };
-    for (const d of data) {
-      const found = d.points.find(p => p.date === week);
-      point[d.type] = found?.avg || 0;
-    }
-    return point;
-  });
-
-  return (
-    <ResponsiveContainer width="100%" height="100%">
-      <LineChart data={merged}>
-        <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.3} />
-        <XAxis dataKey="label" fontSize={11} stroke="hsl(var(--muted-foreground))" tickLine={false} axisLine={false} />
-        <YAxis domain={[0, 5]} fontSize={11} stroke="hsl(var(--muted-foreground))" tickLine={false} axisLine={false} />
-        <Tooltip contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: 10, fontSize: 12 }} />
-        <Legend wrapperStyle={{ fontSize: 11 }} />
-        {data.map((d, i) => (
-          <Line key={d.type} type="monotone" dataKey={d.type} stroke={MATERIAL_COLORS[i % MATERIAL_COLORS.length]} strokeWidth={2.5} dot={{ r: 3 }} />
-        ))}
-      </LineChart>
-    </ResponsiveContainer>
-  );
-}
-
-function SquadComparisonChart({ data }: { data: SquadComparison[] }) {
-  if (!data.length) return <EmptyState />;
-  return (
-    <ResponsiveContainer width="100%" height="100%">
-      <BarChart data={data} barGap={4}>
-        <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" opacity={0.3} />
-        <XAxis dataKey="squad" fontSize={11} stroke="hsl(var(--muted-foreground))" tickLine={false} axisLine={false} />
-        <YAxis domain={[0, 5]} fontSize={11} stroke="hsl(var(--muted-foreground))" tickLine={false} axisLine={false} />
-        <Tooltip contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: 10, fontSize: 12 }} />
-        <Legend wrapperStyle={{ fontSize: 11 }} />
-        <Bar dataKey="avgCopy" name="Copy" fill="hsl(var(--primary))" radius={[6, 6, 0, 0]} />
-        <Bar dataKey="avgDesign" name="Design" fill="hsl(var(--secondary))" radius={[6, 6, 0, 0]} />
-      </BarChart>
-    </ResponsiveContainer>
-  );
-}
-
-/* ── Chart card with subtitle ── */
-
-const CHART_META: Record<string, { subtitle: string }> = {
-  "Aprovação Geral": { subtitle: "Média histórica das notas ao longo do tempo" },
-  "Evolução por Squad": { subtitle: "Desempenho comparativo entre squads" },
-  "Evolução por Pessoa": { subtitle: "Performance individual ao longo do tempo" },
-  "Evolução por Material": { subtitle: "Notas por tipo de material criativo" },
-  "Comparativo de Squads": { subtitle: "Médias atuais de Copy e Design por squad" },
-};
-
-function ChartCard({ title, icon: Icon, children, onExpand }: {
-  title: string;
-  icon: React.ElementType;
+/* ── Sortable chart card ── */
+function SortableChartCard({
+  id,
+  isEditing,
+  children,
+  onExpand,
+}: {
+  id: string;
+  isEditing: boolean;
   children: React.ReactNode;
   onExpand: () => void;
 }) {
-  const meta = CHART_META[title];
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id, disabled: !isEditing });
+  const meta = CHART_META[id];
+  if (!meta) return null;
+  const Icon = meta.icon;
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    gridColumn: meta.span && !isEditing ? `span ${meta.span}` : undefined,
+    zIndex: isDragging ? 50 : undefined,
+    opacity: isDragging ? 0.85 : 1,
+  };
+
   return (
-    <div className="rounded-2xl border border-border/40 bg-card/80 backdrop-blur-sm shadow-sm hover:shadow-md transition-shadow duration-300 flex flex-col overflow-hidden">
-      {/* Header */}
-      <div className="flex items-start justify-between px-6 pt-5 pb-3">
-        <div className="flex items-start gap-3">
-          <div className="w-9 h-9 rounded-xl bg-primary/10 flex items-center justify-center shrink-0 mt-0.5">
-            <Icon className="h-4.5 w-4.5 text-primary" />
+    <div ref={setNodeRef} style={style} {...attributes} className="min-h-[420px]">
+      <div className={`h-full rounded-2xl border bg-card/80 backdrop-blur-sm shadow-sm flex flex-col overflow-hidden transition-all duration-200 ${isEditing ? "border-primary/40 ring-1 ring-primary/20" : "border-border/40 hover:shadow-md"}`}>
+        {/* Header */}
+        <div className="flex items-start justify-between px-5 pt-4 pb-2">
+          <div className="flex items-start gap-2.5 min-w-0">
+            {isEditing && (
+              <div {...listeners} className="mt-0.5 cursor-grab active:cursor-grabbing text-muted-foreground/60 hover:text-muted-foreground touch-none">
+                <GripVertical className="h-4 w-4" />
+              </div>
+            )}
+            <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+              <Icon className="h-4 w-4 text-primary" />
+            </div>
+            <div className="min-w-0">
+              <h3 className="text-sm font-semibold text-foreground leading-tight truncate">{meta.title}</h3>
+              <p className="text-[11px] text-muted-foreground mt-0.5 truncate">{meta.subtitle}</p>
+            </div>
           </div>
-          <div>
-            <h3 className="text-sm font-semibold text-foreground leading-tight">{title}</h3>
-            {meta && <p className="text-[11px] text-muted-foreground mt-0.5">{meta.subtitle}</p>}
-          </div>
+          {!isEditing && (
+            <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground hover:text-foreground shrink-0" onClick={onExpand}>
+              <Expand className="h-3.5 w-3.5" />
+            </Button>
+          )}
         </div>
-        <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-foreground" onClick={onExpand}>
-          <Expand className="h-3.5 w-3.5" />
-        </Button>
-      </div>
-      <div className="mx-6 border-t border-border/30" />
-      {/* Chart area */}
-      <div className="flex-1 min-h-[340px] px-4 pb-5 pt-4">
-        {children}
+        <div className="mx-5 border-t border-border/30" />
+        {/* Chart */}
+        <div className="flex-1 px-3 pb-3 pt-3 min-h-0">
+          {children}
+        </div>
       </div>
     </div>
   );
 }
 
-/* ── Main page ── */
+/* ── Modal chart loader ── */
+function ModalChartLoader<T>({ fetcher, render }: { fetcher: () => Promise<T>; render: (data: T) => React.ReactNode }) {
+  const [data, setData] = useState<T | null>(null);
+  const [loading, setLoading] = useState(true);
 
+  useEffect(() => {
+    setLoading(true);
+    fetcher().then(d => { setData(d); setLoading(false); }).catch(() => setLoading(false));
+  }, [fetcher]);
+
+  if (loading) return <ChartSkeleton />;
+  if (!data) return <EmptyState />;
+  return <>{render(data)}</>;
+}
+
+/* ── Main page ── */
 export default function AprovacaoEvolucao() {
   const navigate = useNavigate();
 
@@ -223,6 +157,13 @@ export default function AprovacaoEvolucao() {
   const [squadComp, setSquadComp] = useState<SquadComparison[]>([]);
   const [selectedPerson, setSelectedPerson] = useState("");
   const [expandedChart, setExpandedChart] = useState<string | null>(null);
+  const [isEditing, setIsEditing] = useState(false);
+  const [chartOrder, setChartOrder] = useState(loadOrder);
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
+  );
 
   const loadAll = useCallback(async () => {
     setLoading(true);
@@ -249,7 +190,24 @@ export default function AprovacaoEvolucao() {
 
   useEffect(() => { loadAll(); }, [loadAll]);
 
-  const modalRenderers: Record<string, { title: string; render: (s?: string, e?: string) => React.ReactNode }> = {
+  const handleDragEnd = useCallback((event: DragEndEvent) => {
+    const { active, over } = event;
+    if (!over || active.id === over.id) return;
+    setChartOrder(prev => {
+      const oldIdx = prev.indexOf(active.id as string);
+      const newIdx = prev.indexOf(over.id as string);
+      const next = arrayMove(prev, oldIdx, newIdx);
+      localStorage.setItem(LAYOUT_KEY, JSON.stringify(next));
+      return next;
+    });
+  }, []);
+
+  const resetLayout = useCallback(() => {
+    setChartOrder(DEFAULT_ORDER);
+    localStorage.setItem(LAYOUT_KEY, JSON.stringify(DEFAULT_ORDER));
+  }, []);
+
+  const modalRenderers: Record<string, { title: string; render: (s?: string, e?: string) => React.ReactNode }> = useMemo(() => ({
     overall: {
       title: "Aprovação Geral — Evolução Temporal",
       render: (s, e) => <ModalChartLoader fetcher={() => getOverallEvolution(s, e)} render={d => <OverallChart data={d} />} />,
@@ -270,6 +228,36 @@ export default function AprovacaoEvolucao() {
       title: "Comparativo de Squads",
       render: (s, e) => <ModalChartLoader fetcher={() => getSquadComparison(s, e)} render={d => <SquadComparisonChart data={d} />} />,
     },
+  }), [selectedPerson]);
+
+  const renderChart = (key: string) => {
+    if (loading) return <ChartSkeleton />;
+    switch (key) {
+      case "overall": return <OverallChart data={overall} />;
+      case "squad": return <SquadChart squads={squadEvol.squads} points={squadEvol.points} />;
+      case "person": return (
+        <div className="flex flex-col h-full">
+          <div className="mb-3 shrink-0">
+            <Select value={selectedPerson} onValueChange={setSelectedPerson}>
+              <SelectTrigger className="w-full max-w-[260px] h-9 text-sm bg-muted/40 border-border/40">
+                <SelectValue placeholder="Selecione uma pessoa..." />
+              </SelectTrigger>
+              <SelectContent>
+                {persons.map(p => (
+                  <SelectItem key={p.name} value={p.name}>{p.name}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="flex-1 min-h-0">
+            <PersonChart data={persons} selected={selectedPerson} />
+          </div>
+        </div>
+      );
+      case "material": return <MaterialChart data={materials} />;
+      case "comparison": return <SquadComparisonChart data={squadComp} />;
+      default: return null;
+    }
   };
 
   return (
@@ -278,79 +266,59 @@ export default function AprovacaoEvolucao() {
         <AppSidebar activeView="aprovacao" onViewChange={(view) => navigate(`/dashboard?view=${view}`)} />
         <div className="flex-1 flex h-svh min-h-0 flex-col min-w-0">
           <MobileSidebarTrigger />
-          <SidebarInset className="flex-1 min-h-0" style={{ scrollbarGutter: "stable" }}>
+          <SidebarInset className="flex-1 min-h-0 overflow-y-auto" style={{ scrollbarGutter: "stable" }}>
             {/* Top bar */}
-            <div className="border-b border-border/60 bg-background/80 backdrop-blur-sm sticky top-0 z-10">
-              <div className="max-w-[1480px] mx-auto px-4 md:px-8 flex items-center justify-end h-14">
+            <div className="border-b border-border/60 bg-background/80 backdrop-blur-sm sticky top-0 z-20">
+              <div className="px-4 md:px-6 flex items-center justify-end h-14">
                 <NotificationCenter />
               </div>
             </div>
 
-            <main className="max-w-[1480px] mx-auto px-4 md:px-8 py-8 space-y-8">
+            <main className="px-4 md:px-6 py-5 space-y-4">
               {/* Header */}
-              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                 <div>
-                  <h1 className="text-2xl font-bold text-foreground">Evolução das Aprovações</h1>
-                  <p className="text-muted-foreground text-sm mt-1">Análise histórica de desempenho criativo</p>
+                  <h1 className="text-xl font-bold text-foreground">Evolução das Aprovações</h1>
+                  <p className="text-muted-foreground text-sm mt-0.5">Análise histórica de desempenho criativo</p>
                 </div>
-                <Button variant="outline" size="sm" className="gap-2 h-9" onClick={() => navigate("/aprovacao")}>
-                  <ArrowLeft className="h-3.5 w-3.5" /> Voltar para Aprovação
-                </Button>
+                <div className="flex items-center gap-2">
+                  {isEditing && (
+                    <Button variant="ghost" size="sm" className="gap-1.5 h-8 text-xs" onClick={resetLayout}>
+                      <RotateCcw className="h-3 w-3" /> Resetar
+                    </Button>
+                  )}
+                  <Button
+                    variant={isEditing ? "default" : "outline"}
+                    size="sm"
+                    className="gap-1.5 h-8 text-xs"
+                    onClick={() => setIsEditing(!isEditing)}
+                  >
+                    <Settings2 className="h-3 w-3" />
+                    {isEditing ? "Salvar Layout" : "Personalizar"}
+                  </Button>
+                  <Button variant="outline" size="sm" className="gap-1.5 h-8 text-xs" onClick={() => navigate("/aprovacao")}>
+                    <ArrowLeft className="h-3 w-3" /> Voltar
+                  </Button>
+                </div>
               </div>
 
-              {/* Charts grid */}
-              {loading ? (
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                  {[1, 2, 3, 4].map(i => (
-                    <div key={i} className="rounded-2xl border border-border/40 bg-card/80 p-6 min-h-[420px]">
-                      <ChartSkeleton />
-                    </div>
-                  ))}
-                </div>
-              ) : (
-                <>
-                  {/* Row 1 — temporal evolution */}
-                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    <ChartCard title="Aprovação Geral" icon={TrendingUp} onExpand={() => setExpandedChart("overall")}>
-                      <OverallChart data={overall} />
-                    </ChartCard>
-
-                    <ChartCard title="Evolução por Squad" icon={Users} onExpand={() => setExpandedChart("squad")}>
-                      <SquadChart squads={squadEvol.squads} points={squadEvol.points} />
-                    </ChartCard>
+              {/* Grid */}
+              <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+                <SortableContext items={chartOrder} strategy={rectSortingStrategy}>
+                  <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 auto-rows-[420px]">
+                    {chartOrder.map(key => (
+                      <SortableChartCard
+                        key={key}
+                        id={key}
+                        isEditing={isEditing}
+                        onExpand={() => setExpandedChart(key)}
+                      >
+                        {renderChart(key)}
+                      </SortableChartCard>
+                    ))}
                   </div>
-
-                  {/* Row 2 — person + material */}
-                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    <ChartCard title="Evolução por Pessoa" icon={Users} onExpand={() => setExpandedChart("person")}>
-                      <div className="mb-4">
-                        <Select value={selectedPerson} onValueChange={setSelectedPerson}>
-                          <SelectTrigger className="w-[240px] h-9 text-sm bg-muted/40 border-border/40">
-                            <SelectValue placeholder="Selecione uma pessoa..." />
-                          </SelectTrigger>
-                          <SelectContent>
-                            {persons.map(p => (
-                              <SelectItem key={p.name} value={p.name}>{p.name}</SelectItem>
-                            ))}
-                          </SelectContent>
-                        </Select>
-                      </div>
-                      <div style={{ height: "calc(100% - 52px)" }}>
-                        <PersonChart data={persons} selected={selectedPerson} />
-                      </div>
-                    </ChartCard>
-
-                    <ChartCard title="Evolução por Material" icon={Layers} onExpand={() => setExpandedChart("material")}>
-                      <MaterialChart data={materials} />
-                    </ChartCard>
-                  </div>
-
-                  {/* Row 3 — comparison (full width) */}
-                  <ChartCard title="Comparativo de Squads" icon={BarChart3} onExpand={() => setExpandedChart("comparison")}>
-                    <SquadComparisonChart data={squadComp} />
-                  </ChartCard>
-                </>
-              )}
+                </SortableContext>
+              </DndContext>
             </main>
           </SidebarInset>
         </div>
@@ -368,19 +336,4 @@ export default function AprovacaoEvolucao() {
       )}
     </SidebarProvider>
   );
-}
-
-/* Helper: loads data inside modal with its own loading state */
-function ModalChartLoader<T>({ fetcher, render }: { fetcher: () => Promise<T>; render: (data: T) => React.ReactNode }) {
-  const [data, setData] = useState<T | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    setLoading(true);
-    fetcher().then(d => { setData(d); setLoading(false); }).catch(() => setLoading(false));
-  }, [fetcher]);
-
-  if (loading) return <ChartSkeleton />;
-  if (!data) return <EmptyState />;
-  return <>{render(data)}</>;
 }
