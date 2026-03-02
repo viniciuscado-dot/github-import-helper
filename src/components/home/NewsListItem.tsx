@@ -33,15 +33,18 @@ export function NewsListItem({ item, index = 0 }: NewsListItemProps) {
       className="group flex items-start gap-3 p-3 rounded-xl border border-border/10 bg-card/[0.06] backdrop-blur-lg transition-all duration-200 hover:border-primary/30 hover:shadow-md hover:shadow-primary/5 hover:-translate-y-px"
     >
       {/* Thumbnail placeholder */}
-      <div className={`shrink-0 w-16 h-16 rounded-lg bg-gradient-to-br ${gradient} overflow-hidden`}>
+      <div className={`shrink-0 w-14 h-14 rounded-lg bg-gradient-to-br ${gradient} overflow-hidden`}>
         <div className="w-full h-full opacity-[0.06]" style={{ backgroundImage: "radial-gradient(circle, hsl(var(--foreground)) 1px, transparent 1px)", backgroundSize: "12px 12px" }} />
       </div>
 
       {/* Info */}
       <div className="flex flex-col justify-center gap-1 min-w-0 flex-1">
-        <h4 className="text-sm font-medium text-foreground leading-snug line-clamp-2 group-hover:text-primary transition-colors">
+        <h4 className="text-sm font-semibold text-foreground leading-snug line-clamp-2 group-hover:text-primary transition-colors">
           {item.title}
         </h4>
+        <p className="text-xs text-muted-foreground/50 leading-relaxed line-clamp-1">
+          {item.excerpt}
+        </p>
         <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground/60">
           <span className={`inline-block w-1.5 h-1.5 rounded-full ${dot}`} />
           <span>{item.source}</span>
