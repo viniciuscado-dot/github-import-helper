@@ -328,6 +328,8 @@ export function AnaliseBench() {
     }
 
     setIsLoading(true)
+    setOverlayStatus('generating')
+    setOverlayError(undefined)
     
     try {
       const { data: authUser } = await supabase.auth.getUser()
@@ -346,7 +348,7 @@ export function AnaliseBench() {
           ...briefingData,
           competitors: competitors as any,
           created_by: createdBy,
-          status: 'processing', // Mudar para processing pois vamos gerar agora
+          status: 'processing',
         })
         .select()
         .single()
@@ -354,7 +356,7 @@ export function AnaliseBench() {
       if (saveError) throw saveError
 
       console.log('✅ Briefing salvo:', savedForm.id)
-      toast.success("Briefing salvo! Gerando análise...")
+      setPendingRetryId(savedForm.id)
       
       // Gerar análise automaticamente
       try {
@@ -370,10 +372,10 @@ export function AnaliseBench() {
         }
 
         console.log('✅ Análise gerada com sucesso!')
-        toast.success("Análise gerada com sucesso!")
+        setOverlayStatus('success')
         
-        // Aguardar um momento para garantir que o banco foi atualizado
-        await new Promise(resolve => setTimeout(resolve, 500))
+        // Aguardar overlay de sucesso ser exibido
+        await new Promise(resolve => setTimeout(resolve, 1500))
         
         // Atualizar histórico
         await fetchBriefingHistory()
@@ -389,11 +391,13 @@ export function AnaliseBench() {
           setSelectedBriefing(updatedBriefing)
         }
         
-        // Mudar para aba de resultados
+        // Fechar overlay e ir para resultados
+        setOverlayStatus(null)
         setActiveTab("resultados")
       } catch (analysisError: any) {
         console.error('❌ Erro ao gerar análise:', analysisError)
-        toast.error(`Erro ao gerar análise: ${analysisError?.message || 'Erro desconhecido'}`)
+        setOverlayStatus('error')
+        setOverlayError(analysisError?.message || 'Erro desconhecido')
         
         // Reverter status para pending
         await supabase
@@ -406,8 +410,12 @@ export function AnaliseBench() {
       setCompetitors([{ id: '1', nome: '', tipo: 'direto', site: '', instagram_linkedin: '', porque_escolhido: '' }])
     } catch (error: any) {
       console.error('Erro ao salvar briefing:', error)
-      toast.error(`Erro ao salvar briefing: ${error?.message || 'Erro desconhecido'}`)
+      setOverlayStatus('error')
+      setOverlayError(error?.message || 'Erro desconhecido')
     } finally {
+      setIsLoading(false)
+    }
+  }
       setIsLoading(false)
     }
   }
