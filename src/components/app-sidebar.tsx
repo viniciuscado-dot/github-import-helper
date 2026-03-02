@@ -187,10 +187,10 @@ export function AppSidebar({ activeView, onViewChange }: AppSidebarProps) {
       </div>
 
       {/* ══════════ BLOCO CENTRAL ROLÁVEL ══════════ */}
-      <SidebarContent className="flex-1 overflow-y-auto pb-10 mb-8 mt-6">
+      <SidebarContent className="flex-1 overflow-y-auto pb-10 mb-8 mt-6 space-y-1">
 
         {/* Performance */}
-        <SidebarGroup className="pt-2">
+        <SidebarGroup className="pt-3 pb-1">
           <SidebarGroupLabel className={groupLabelClass}>Performance</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
