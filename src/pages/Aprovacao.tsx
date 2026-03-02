@@ -1,5 +1,5 @@
 import { useState, useCallback, useMemo, useEffect } from "react";
-import { Plus, LogOut, LayoutDashboard, Columns3, List } from "lucide-react";
+import { Plus, LogOut, LayoutDashboard, Columns3, List, TrendingUp } from "lucide-react";
 import { NotificationCenter } from "@/components/NotificationCenter";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
