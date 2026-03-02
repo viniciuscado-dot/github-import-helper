@@ -239,6 +239,23 @@ export function AppSidebar({ activeView, onViewChange }: AppSidebarProps) {
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
+
+        {/* News */}
+        <SidebarGroup className="pt-2">
+          <SidebarGroupLabel className={groupLabelClass}>News</SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              {newsItems.map((item) => {
+                const active = location.pathname === item.route;
+                return (
+                  <SidebarMenuItem key={item.id}>
+                    {renderMenuItem(item, active)}
+                  </SidebarMenuItem>
+                );
+              })}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
       </SidebarContent>
 
       {/* ══════════ BLOCO INFERIOR FIXO ══════════ */}
