@@ -27,7 +27,7 @@ import { MarkdownRenderer } from '@/components/ui/markdown-renderer'
 
 // Schema de validação do formulário
 const analiseFormSchema = z.object({
-  client_id: z.string().min(1, "Selecione um cliente"),
+  client_id: z.string().optional(),
   
   // Informações do Cliente
   nome_empresa: z.string().optional(),
