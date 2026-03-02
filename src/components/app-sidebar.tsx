@@ -163,8 +163,13 @@ export function AppSidebar({ activeView, onViewChange }: AppSidebarProps) {
           </div>
         )}
 
-        {/* Home - fixed in header */}
-        <SidebarGroup className="mt-2 pb-0">
+      </SidebarHeader>
+
+      {/* ══════════ BLOCO CENTRAL ROLÁVEL ══════════ */}
+      <SidebarContent className="flex-1 overflow-y-auto pb-8">
+
+        {/* Home */}
+        <SidebarGroup className="pt-2 pb-0">
           <SidebarGroupContent>
             <SidebarMenu>
               <SidebarMenuItem>
@@ -177,10 +182,6 @@ export function AppSidebar({ activeView, onViewChange }: AppSidebarProps) {
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
-      </SidebarHeader>
-
-      {/* ══════════ BLOCO CENTRAL ROLÁVEL ══════════ */}
-      <SidebarContent className="flex-1 overflow-y-auto pb-4">
 
         {/* Performance */}
         <SidebarGroup className="pt-2">
