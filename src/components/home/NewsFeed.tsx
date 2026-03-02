@@ -50,7 +50,8 @@ export function NewsFeed() {
 
   const isSearchActive = debouncedQuery.trim().length > 0;
   const heroItem = !isSearchActive && filtered.length > 0 ? filtered[0] : null;
-  const listItems = !isSearchActive ? filtered.slice(1, 7) : filtered;
+  const listItems = !isSearchActive ? filtered.slice(1, 4) : filtered;
+  const hasMore = !isSearchActive && filtered.length > 4;
 
   return (
     <section className={`w-full p-5 ${glassSection}`}>
