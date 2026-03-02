@@ -79,6 +79,11 @@ const App = () => (
                 </ProtectedRoute>
               } />
               <Route path="/aprovacao-cliente/:token" element={<AprovacaoCliente />} />
+              <Route path="/analise/:token" element={
+                <Suspense fallback={<DashboardFallback />}>
+                  <AnaliseArtefato />
+                </Suspense>
+              } />
 
               {/* ── Anúncios ── */}
               <Route path="/performance/anuncios" element={
