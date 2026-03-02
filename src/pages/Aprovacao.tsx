@@ -1,5 +1,5 @@
 import { useState, useCallback, useMemo, useEffect } from "react";
-import { Plus, LogOut, LayoutDashboard, Columns3, List } from "lucide-react";
+import { Plus, LogOut, LayoutDashboard, Columns3, List, TrendingUp } from "lucide-react";
 import { NotificationCenter } from "@/components/NotificationCenter";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -131,9 +131,14 @@ export default function Aprovacao() {
                   </TabsList>
                 </Tabs>
 
-                <Button size="sm" className="gap-1.5 text-white h-9" onClick={handleNewJob}>
-                  <Plus className="h-3.5 w-3.5" /> Aprovar Material
-                </Button>
+                <div className="flex items-center gap-2">
+                  <Button variant="outline" size="sm" className="gap-1.5 h-9" onClick={() => navigate("/aprovacao/evolucao")}>
+                    <TrendingUp className="h-3.5 w-3.5" /> Acompanhar evolução
+                  </Button>
+                  <Button size="sm" className="gap-1.5 text-white h-9" onClick={handleNewJob}>
+                    <Plus className="h-3.5 w-3.5" /> Aprovar Material
+                  </Button>
+                </div>
               </div>
               {/* ── Shared filter (SSOT) ── */}
               <div className={`${layoutTokens.card.base} ${layoutTokens.card.padding}`}>
