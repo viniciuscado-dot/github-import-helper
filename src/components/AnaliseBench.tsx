@@ -477,6 +477,23 @@ export function AnaliseBench() {
     }
   }
 
+  const handleDeleteAnalise = async (id: string) => {
+    try {
+      const { error } = await supabase
+        .from('analise_bench_forms')
+        .delete()
+        .eq('id', id)
+
+      if (error) throw error
+
+      toast.success('Análise excluída com sucesso')
+      await fetchBriefingHistory()
+    } catch (error) {
+      console.error('Erro ao excluir análise:', error)
+      toast.error('Erro ao excluir análise')
+    }
+  }
+
   return (
     <div className="space-y-6">
       {/* Overlay de geração */}
