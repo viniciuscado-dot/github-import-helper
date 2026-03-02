@@ -30,6 +30,7 @@ interface ApprovalDashboardProps {
 }
 
 export function ApprovalDashboard({ filters, filterSetters, onNavigateToKanban }: ApprovalDashboardProps) {
+  const navigate = useNavigate();
   const [kpis, setKpis] = useState({ pendentes: 0, emAjustes: 0, aprovados: 0, total: 0, avgRating: 0, avgRatingTrend: null as "up" | "down" | "stable" | null, squadHighlight: { squad: "—", avgRating: 0 } });
   const [ranking, setRanking] = useState<{ position: number; name: string; materialsEvaluated: number; avgRating: number }[]>([]);
   const [squadRanking, setSquadRanking] = useState<SquadRankingEntry[]>([]);
