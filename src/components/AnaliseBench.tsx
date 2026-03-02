@@ -74,6 +74,19 @@ export function AnaliseBench() {
   const [selectedClient, setSelectedClient] = useState<string>('')
   const [isGeneratingAnalysis, setIsGeneratingAnalysis] = useState(false)
   const [generatingBriefingId, setGeneratingBriefingId] = useState<string | null>(null)
+  const [overlayStatus, setOverlayStatus] = useState<'generating' | 'success' | 'error' | null>(null)
+  const [overlayError, setOverlayError] = useState<string | undefined>(undefined)
+  const [pendingRetryId, setPendingRetryId] = useState<string | null>(null)
+
+  const ANALISE_STEP_MESSAGES = [
+    'Lendo dados da campanha…',
+    'Cruzando métricas de desempenho…',
+    'Comparando benchmarks do setor…',
+    'Identificando gargalos estratégicos…',
+    'Mapeando oportunidades de crescimento…',
+    'Gerando insights estratégicos…',
+    'Finalizando análise…',
+  ]
   
   // Estados para gerenciar prompts padrão
   const [defaultPrompts, setDefaultPrompts] = useState<any[]>([])
