@@ -126,14 +126,32 @@ export function NewsFeed() {
         </div>
       ) : (
         /* Default — editorial hero + side list */
-        <div className="grid grid-cols-1 lg:grid-cols-[2fr_1fr] gap-4 items-start">
-          {heroItem && <NewsHeroCard item={heroItem} />}
-          <div className="flex flex-col gap-3">
-            {listItems.map((item, i) => (
-              <NewsListItem key={item.id} item={item} index={i} />
-            ))}
+        <>
+          <div className="grid grid-cols-1 lg:grid-cols-[1.4fr_1fr] gap-4 items-stretch">
+            {heroItem && <NewsHeroCard item={heroItem} />}
+            <div className="flex flex-col gap-3">
+              {listItems.map((item, i) => (
+                <NewsListItem key={item.id} item={item} index={i} />
+              ))}
+            </div>
           </div>
-        </div>
+          {hasMore && (
+            <div className="flex justify-center mt-4">
+              <Button
+                variant="outline"
+                size="sm"
+                className="text-xs gap-1.5 h-8 px-6 rounded-lg border-border/20 bg-card/[0.06] backdrop-blur-lg hover:border-primary/30"
+                onClick={() => {
+                  /* Expand to show all */
+                  setQuery(" ");
+                  setTimeout(() => setQuery(""), 10);
+                }}
+              >
+                Ver mais notícias
+              </Button>
+            </div>
+          )}
+        </>
       )}
     </section>
   );
