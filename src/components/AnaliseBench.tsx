@@ -12,7 +12,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Badge } from "@/components/ui/badge"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Loader2, Plus, Trash2, FileText, Settings, History, X, Save } from "lucide-react"
+import { Loader2, Plus, Trash2, FileText, Settings, History, X, Save, Eye, Copy, RefreshCw, Search } from "lucide-react"
 import { useAuth } from "@/contexts/AuthContext"
 import { supabase } from "@/integrations/supabase/external-client"
 import { useModulePermissions } from "@/hooks/useModulePermissions"
@@ -21,6 +21,9 @@ import { ptBR } from "date-fns/locale"
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog"
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { CopyGenerationOverlay } from '@/components/CopyGenerationOverlay'
+import { MarkdownRenderer } from '@/components/ui/markdown-renderer'
 
 // Schema de validação do formulário
 const analiseFormSchema = z.object({
