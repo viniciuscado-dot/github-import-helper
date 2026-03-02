@@ -22,6 +22,7 @@ const LaboratorioEditorVideo = lazy(() => import("./pages/LaboratorioEditorVideo
 const LaboratorioBancoIdeias = lazy(() => import("./pages/LaboratorioBancoIdeias"));
 const LaboratorioLPBuilder = lazy(() => import("./pages/LaboratorioLPBuilder"));
 const LaboratorioDiagnosticoVisual = lazy(() => import("./pages/LaboratorioDiagnosticoVisual"));
+const Noticias = lazy(() => import("./pages/Noticias"));
 import AprovacaoCliente from "./pages/AprovacaoCliente";
 
 const queryClient = new QueryClient({
@@ -118,6 +119,15 @@ const App = () => (
                 <ProtectedRoute>
                   <Suspense fallback={<DashboardFallback />}>
                     <LaboratorioDiagnosticoVisual />
+                  </Suspense>
+                </ProtectedRoute>
+              } />
+
+              {/* ── Notícias ── */}
+              <Route path="/noticias" element={
+                <ProtectedRoute>
+                  <Suspense fallback={<DashboardFallback />}>
+                    <Noticias />
                   </Suspense>
                 </ProtectedRoute>
               } />
