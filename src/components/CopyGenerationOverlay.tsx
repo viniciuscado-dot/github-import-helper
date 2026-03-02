@@ -6,7 +6,7 @@ import { CheckCircle2, AlertCircle, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
-const STEP_MESSAGES = [
+const DEFAULT_STEP_MESSAGES = [
   'Lendo dados do briefing…',
   'Analisando diferenciais competitivos…',
   'Estruturando ângulo estratégico…',
@@ -22,9 +22,13 @@ interface CopyGenerationOverlayProps {
   status: 'generating' | 'success' | 'error';
   onRetry?: () => void;
   errorMessage?: string;
+  title?: string;
+  successMessage?: string;
+  stepMessages?: string[];
 }
 
-export function CopyGenerationOverlay({ status, onRetry, errorMessage }: CopyGenerationOverlayProps) {
+export function CopyGenerationOverlay({ status, onRetry, errorMessage, title, successMessage, stepMessages }: CopyGenerationOverlayProps) {
+  const STEP_MESSAGES = stepMessages || DEFAULT_STEP_MESSAGES;
   const [progress, setProgress] = useState(0);
   const [stepIndex, setStepIndex] = useState(0);
 
@@ -103,7 +107,7 @@ export function CopyGenerationOverlay({ status, onRetry, errorMessage }: CopyGen
               exit={{ opacity: 0, y: -8 }}
               className="text-lg font-semibold text-foreground"
             >
-              Gerando copy com IA…
+              {title || 'Gerando copy com IA…'}
             </motion.p>
           )}
           {status === 'success' && (
@@ -120,7 +124,7 @@ export function CopyGenerationOverlay({ status, onRetry, errorMessage }: CopyGen
               >
                 <CheckCircle2 className="h-6 w-6 text-green-500" />
               </motion.div>
-              Copy gerada com sucesso
+              {successMessage || 'Copy gerada com sucesso'}
             </motion.div>
           )}
           {status === 'error' && (

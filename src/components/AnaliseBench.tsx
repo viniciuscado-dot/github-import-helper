@@ -12,7 +12,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Badge } from "@/components/ui/badge"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Loader2, Plus, Trash2, FileText, Settings, History, X, Save } from "lucide-react"
+import { Loader2, Plus, Trash2, FileText, Settings, History, X, Save, Eye, Copy, RefreshCw, Search } from "lucide-react"
 import { useAuth } from "@/contexts/AuthContext"
 import { supabase } from "@/integrations/supabase/external-client"
 import { useModulePermissions } from "@/hooks/useModulePermissions"
@@ -21,6 +21,9 @@ import { ptBR } from "date-fns/locale"
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog"
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
+import { CopyGenerationOverlay } from '@/components/CopyGenerationOverlay'
+import { MarkdownRenderer } from '@/components/ui/markdown-renderer'
 
 // Schema de validação do formulário
 const analiseFormSchema = z.object({
@@ -71,6 +74,19 @@ export function AnaliseBench() {
   const [selectedClient, setSelectedClient] = useState<string>('')
   const [isGeneratingAnalysis, setIsGeneratingAnalysis] = useState(false)
   const [generatingBriefingId, setGeneratingBriefingId] = useState<string | null>(null)
+  const [overlayStatus, setOverlayStatus] = useState<'generating' | 'success' | 'error' | null>(null)
+  const [overlayError, setOverlayError] = useState<string | undefined>(undefined)
+  const [pendingRetryId, setPendingRetryId] = useState<string | null>(null)
+
+  const ANALISE_STEP_MESSAGES = [
+    'Lendo dados da campanha…',
+    'Cruzando métricas de desempenho…',
+    'Comparando benchmarks do setor…',
+    'Identificando gargalos estratégicos…',
+    'Mapeando oportunidades de crescimento…',
+    'Gerando insights estratégicos…',
+    'Finalizando análise…',
+  ]
   
   // Estados para gerenciar prompts padrão
   const [defaultPrompts, setDefaultPrompts] = useState<any[]>([])
@@ -312,6 +328,8 @@ export function AnaliseBench() {
     }
 
     setIsLoading(true)
+    setOverlayStatus('generating')
+    setOverlayError(undefined)
     
     try {
       const { data: authUser } = await supabase.auth.getUser()
@@ -330,7 +348,7 @@ export function AnaliseBench() {
           ...briefingData,
           competitors: competitors as any,
           created_by: createdBy,
-          status: 'processing', // Mudar para processing pois vamos gerar agora
+          status: 'processing',
         })
         .select()
         .single()
@@ -338,7 +356,7 @@ export function AnaliseBench() {
       if (saveError) throw saveError
 
       console.log('✅ Briefing salvo:', savedForm.id)
-      toast.success("Briefing salvo! Gerando análise...")
+      setPendingRetryId(savedForm.id)
       
       // Gerar análise automaticamente
       try {
@@ -354,10 +372,10 @@ export function AnaliseBench() {
         }
 
         console.log('✅ Análise gerada com sucesso!')
-        toast.success("Análise gerada com sucesso!")
+        setOverlayStatus('success')
         
-        // Aguardar um momento para garantir que o banco foi atualizado
-        await new Promise(resolve => setTimeout(resolve, 500))
+        // Aguardar overlay de sucesso ser exibido
+        await new Promise(resolve => setTimeout(resolve, 1500))
         
         // Atualizar histórico
         await fetchBriefingHistory()
@@ -373,11 +391,13 @@ export function AnaliseBench() {
           setSelectedBriefing(updatedBriefing)
         }
         
-        // Mudar para aba de resultados
+        // Fechar overlay e ir para resultados
+        setOverlayStatus(null)
         setActiveTab("resultados")
       } catch (analysisError: any) {
         console.error('❌ Erro ao gerar análise:', analysisError)
-        toast.error(`Erro ao gerar análise: ${analysisError?.message || 'Erro desconhecido'}`)
+        setOverlayStatus('error')
+        setOverlayError(analysisError?.message || 'Erro desconhecido')
         
         // Reverter status para pending
         await supabase
@@ -390,7 +410,8 @@ export function AnaliseBench() {
       setCompetitors([{ id: '1', nome: '', tipo: 'direto', site: '', instagram_linkedin: '', porque_escolhido: '' }])
     } catch (error: any) {
       console.error('Erro ao salvar briefing:', error)
-      toast.error(`Erro ao salvar briefing: ${error?.message || 'Erro desconhecido'}`)
+      setOverlayStatus('error')
+      setOverlayError(error?.message || 'Erro desconhecido')
     } finally {
       setIsLoading(false)
     }
@@ -399,6 +420,9 @@ export function AnaliseBench() {
   const handleGenerateAnalysis = async (briefingId: string) => {
     setIsGeneratingAnalysis(true)
     setGeneratingBriefingId(briefingId)
+    setOverlayStatus('generating')
+    setOverlayError(undefined)
+    setPendingRetryId(briefingId)
     
     try {
       // Atualizar status para processing
@@ -413,10 +437,10 @@ export function AnaliseBench() {
 
       if (error) throw error
 
-      toast.success("Análise gerada com sucesso!")
+      setOverlayStatus('success')
       
-      // Aguardar um momento para garantir que o banco foi atualizado
-      await new Promise(resolve => setTimeout(resolve, 500))
+      // Aguardar overlay de sucesso
+      await new Promise(resolve => setTimeout(resolve, 1500))
       
       // Atualizar histórico
       await fetchBriefingHistory()
@@ -431,9 +455,13 @@ export function AnaliseBench() {
       if (updatedBriefing) {
         setSelectedBriefing(updatedBriefing)
       }
+      
+      setOverlayStatus(null)
+      setActiveTab("resultados")
     } catch (error: any) {
       console.error('Erro ao gerar análise:', error)
-      toast.error(`Erro ao gerar análise: ${error?.message || 'Erro desconhecido'}`)
+      setOverlayStatus('error')
+      setOverlayError(error?.message || 'Erro desconhecido')
       
       // Reverter status para pending em caso de erro
       await supabase
@@ -448,6 +476,20 @@ export function AnaliseBench() {
 
   return (
     <div className="space-y-6">
+      {/* Overlay de geração */}
+      {overlayStatus && (
+        <CopyGenerationOverlay
+          status={overlayStatus}
+          title="Gerando análise com IA…"
+          successMessage="Análise gerada com sucesso"
+          stepMessages={ANALISE_STEP_MESSAGES}
+          errorMessage={overlayError}
+          onRetry={pendingRetryId ? () => {
+            setOverlayStatus(null)
+            handleGenerateAnalysis(pendingRetryId)
+          } : undefined}
+        />
+      )}
       {/* Header com título */}
       <div className="space-y-4">
         <div className="flex items-start gap-4">
@@ -1009,103 +1051,157 @@ export function AnaliseBench() {
         </TabsContent>
 
         {/* Aba Resultados */}
-        <TabsContent value="resultados" className="space-y-4">
-          <Card>
-            <CardHeader>
-              <CardTitle>Histórico de Análises</CardTitle>
-              <CardDescription>
-                Visualize e gerencie as análises criadas
-              </CardDescription>
-            </CardHeader>
-            <CardContent>
-              {briefingHistory.length === 0 ? (
-                <p className="text-muted-foreground text-center py-8">
-                  Nenhuma análise encontrada
-                </p>
-              ) : (
-                <Table>
-                  <TableHeader>
-                    <TableRow>
-                      <TableHead>Data</TableHead>
-                      <TableHead>Cliente</TableHead>
-                      <TableHead>Criado por</TableHead>
-                      <TableHead>Status</TableHead>
-                      <TableHead>Ações</TableHead>
-                    </TableRow>
-                  </TableHeader>
-                  <TableBody>
-                    {briefingHistory.map((briefing) => (
-                      <TableRow key={briefing.id}>
-                        <TableCell>
-                          {format(new Date(briefing.created_at), "dd/MM/yyyy", { locale: ptBR })}
-                        </TableCell>
-                        <TableCell>{briefing.nome_empresa || '-'}</TableCell>
-                        <TableCell>{briefing.profiles?.name || '-'}</TableCell>
-                        <TableCell>
+        <TabsContent value="resultados" className="space-y-6">
+          {/* Cards recentes */}
+          {briefingHistory.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-16 text-center">
+              <div className="w-16 h-16 rounded-2xl bg-muted/60 flex items-center justify-center mb-4">
+                <Search className="h-8 w-8 text-muted-foreground/40" />
+              </div>
+              <p className="text-lg font-medium text-muted-foreground">Nenhuma análise encontrada</p>
+              <p className="text-sm text-muted-foreground/60 mt-1">Crie sua primeira análise na aba Formulário</p>
+            </div>
+          ) : (
+            <>
+              {/* Cards recentes (últimas 6) */}
+              <div>
+                <h3 className="text-lg font-semibold text-foreground mb-4">Análises Recentes</h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {briefingHistory.slice(0, 6).map((briefing) => (
+                    <Card 
+                      key={briefing.id} 
+                      className="cursor-pointer hover:shadow-md transition-all duration-200 bg-card/80 backdrop-blur-sm border-border/40 hover:border-primary/30 group"
+                      onClick={() => setSelectedBriefing(briefing)}
+                    >
+                      <CardContent className="p-5">
+                        <div className="flex items-start justify-between mb-3">
                           <Badge variant={
                             briefing.status === 'completed' ? 'default' : 
                             briefing.status === 'processing' ? 'secondary' :
                             briefing.status === 'failed' ? 'destructive' :
                             'outline'
-                          }>
+                          } className="text-[10px]">
                             {briefing.status === 'completed' ? 'Concluído' : 
                              briefing.status === 'processing' ? 'Processando' :
                              briefing.status === 'failed' ? 'Erro' :
                              'Pendente'}
                           </Badge>
-                        </TableCell>
-                        <TableCell>
-                          <div className="flex gap-2">
+                          <span className="text-[11px] text-muted-foreground">
+                            {format(new Date(briefing.created_at), "dd/MM/yy", { locale: ptBR })}
+                          </span>
+                        </div>
+                        
+                        <h4 className="font-semibold text-sm text-foreground mb-1 truncate group-hover:text-primary transition-colors">
+                          {briefing.nome_empresa || 'Sem nome'}
+                        </h4>
+                        <p className="text-xs text-muted-foreground truncate">
+                          {briefing.nicho_empresa || 'Nicho não especificado'}
+                        </p>
+                        
+                        <div className="flex items-center justify-between mt-4 pt-3 border-t border-border/30">
+                          <span className="text-[11px] text-muted-foreground">
+                            {briefing.profiles?.name || '-'}
+                          </span>
+                          <div className="flex gap-1.5">
                             <Button
                               variant="ghost"
                               size="sm"
-                              onClick={() => setSelectedBriefing(briefing)}
+                              className="h-7 text-xs px-2"
+                              onClick={(e) => { e.stopPropagation(); setSelectedBriefing(briefing); }}
                             >
-                              Ver detalhes
+                              <Eye className="h-3 w-3 mr-1" /> Ver
                             </Button>
+                            {briefing.status === 'completed' && canCreate && (
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                className="h-7 text-xs px-2"
+                                onClick={(e) => { e.stopPropagation(); handleGenerateAnalysis(briefing.id); }}
+                                disabled={isGeneratingAnalysis}
+                              >
+                                <RefreshCw className="h-3 w-3 mr-1" /> Regenerar
+                              </Button>
+                            )}
                             {(briefing.status === 'pending' || briefing.status === 'failed') && canCreate && (
                               <Button
                                 variant="default"
                                 size="sm"
-                                onClick={() => handleGenerateAnalysis(briefing.id)}
-                                disabled={isGeneratingAnalysis && generatingBriefingId === briefing.id}
+                                className="h-7 text-xs px-2"
+                                onClick={(e) => { e.stopPropagation(); handleGenerateAnalysis(briefing.id); }}
+                                disabled={isGeneratingAnalysis}
                               >
-                                {isGeneratingAnalysis && generatingBriefingId === briefing.id ? (
-                                  <>
-                                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                                    Gerando...
-                                  </>
-                                ) : (
-                                  briefing.status === 'failed' ? 'Tentar Novamente' : 'Gerar Análise'
-                                )}
-                              </Button>
-                            )}
-                            {briefing.status === 'completed' && canCreate && (
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => handleGenerateAnalysis(briefing.id)}
-                                disabled={isGeneratingAnalysis && generatingBriefingId === briefing.id}
-                              >
-                                {isGeneratingAnalysis && generatingBriefingId === briefing.id ? (
-                                  <>
-                                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                                    Regenerando...
-                                  </>
-                                ) : (
-                                  'Regenerar'
-                                )}
+                                Gerar
                               </Button>
                             )}
                           </div>
-                        </TableCell>
-                      </TableRow>
-                    ))}
-                  </TableBody>
-                </Table>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              </div>
+
+              {/* Histórico completo em tabela */}
+              {briefingHistory.length > 6 && (
+                <div>
+                  <h3 className="text-lg font-semibold text-foreground mb-4">Histórico Completo</h3>
+                  <Card className="border-border/40">
+                    <CardContent className="p-0">
+                      <Table>
+                        <TableHeader>
+                          <TableRow>
+                            <TableHead>Data</TableHead>
+                            <TableHead>Cliente</TableHead>
+                            <TableHead>Nicho</TableHead>
+                            <TableHead>Criado por</TableHead>
+                            <TableHead>Status</TableHead>
+                            <TableHead>Ações</TableHead>
+                          </TableRow>
+                        </TableHeader>
+                        <TableBody>
+                          {briefingHistory.map((briefing) => (
+                            <TableRow key={briefing.id} className="cursor-pointer hover:bg-muted/50" onClick={() => setSelectedBriefing(briefing)}>
+                              <TableCell className="text-sm">
+                                {format(new Date(briefing.created_at), "dd/MM/yyyy", { locale: ptBR })}
+                              </TableCell>
+                              <TableCell className="font-medium text-sm">{briefing.nome_empresa || '-'}</TableCell>
+                              <TableCell className="text-sm text-muted-foreground">{briefing.nicho_empresa || '-'}</TableCell>
+                              <TableCell className="text-sm">{briefing.profiles?.name || '-'}</TableCell>
+                              <TableCell>
+                                <Badge variant={
+                                  briefing.status === 'completed' ? 'default' : 
+                                  briefing.status === 'processing' ? 'secondary' :
+                                  briefing.status === 'failed' ? 'destructive' :
+                                  'outline'
+                                } className="text-[10px]">
+                                  {briefing.status === 'completed' ? 'Concluído' : 
+                                   briefing.status === 'processing' ? 'Processando' :
+                                   briefing.status === 'failed' ? 'Erro' :
+                                   'Pendente'}
+                                </Badge>
+                              </TableCell>
+                              <TableCell>
+                                <div className="flex gap-1.5">
+                                  <Button variant="ghost" size="sm" className="h-7 text-xs" onClick={(e) => { e.stopPropagation(); setSelectedBriefing(briefing); }}>
+                                    <Eye className="h-3 w-3" />
+                                  </Button>
+                                  {briefing.status === 'completed' && canCreate && (
+                                    <Button variant="ghost" size="sm" className="h-7 text-xs" onClick={(e) => { e.stopPropagation(); handleGenerateAnalysis(briefing.id); }} disabled={isGeneratingAnalysis}>
+                                      <RefreshCw className="h-3 w-3" />
+                                    </Button>
+                                  )}
+                                </div>
+                              </TableCell>
+                            </TableRow>
+                          ))}
+                        </TableBody>
+                      </Table>
+                    </CardContent>
+                  </Card>
+                </div>
               )}
-            </CardContent>
-          </Card>
+            </>
+          )}
         </TabsContent>
 
         {/* Aba Prompts */}
@@ -1332,49 +1428,48 @@ export function AnaliseBench() {
 
       {/* Dialog para ver detalhes do briefing */}
       {selectedBriefing && (
-        <AlertDialog open={!!selectedBriefing} onOpenChange={() => setSelectedBriefing(null)}>
-          <AlertDialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
-            <AlertDialogHeader>
-              <AlertDialogTitle>Detalhes da Análise</AlertDialogTitle>
-              <AlertDialogDescription>
+        <Dialog open={!!selectedBriefing} onOpenChange={() => setSelectedBriefing(null)}>
+          <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle className="text-xl">
+                {selectedBriefing.nome_empresa || 'Detalhes da Análise'}
+              </DialogTitle>
+              <p className="text-sm text-muted-foreground">
                 Criado em {format(new Date(selectedBriefing.created_at), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}
-              </AlertDialogDescription>
-            </AlertDialogHeader>
+                {selectedBriefing.profiles?.name && ` por ${selectedBriefing.profiles.name}`}
+              </p>
+            </DialogHeader>
             
-            <div className="space-y-6 py-4">
-              {/* Informações do briefing */}
-              <div className="space-y-4">
-                <h3 className="font-semibold text-lg">Informações do Cliente</h3>
-                <div className="grid grid-cols-2 gap-4 text-sm">
-                  <div>
-                    <span className="font-medium">Empresa:</span> {selectedBriefing.nome_empresa || '-'}
+            <div className="space-y-6 py-2">
+              {/* Info grid */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                {[
+                  { label: 'Empresa', value: selectedBriefing.nome_empresa },
+                  { label: 'Nicho', value: selectedBriefing.nicho_empresa },
+                  { label: 'Site', value: selectedBriefing.site },
+                  { label: 'Público-alvo', value: selectedBriefing.publico_alvo },
+                ].map((item, i) => (
+                  <div key={i} className="rounded-lg bg-muted/40 p-3">
+                    <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">{item.label}</p>
+                    <p className="text-sm font-medium text-foreground mt-0.5 truncate">{item.value || '-'}</p>
                   </div>
-                  <div>
-                    <span className="font-medium">Nicho:</span> {selectedBriefing.nicho_empresa || '-'}
-                  </div>
-                  <div>
-                    <span className="font-medium">Site:</span> {selectedBriefing.site || '-'}
-                  </div>
-                  <div>
-                    <span className="font-medium">Público-alvo:</span> {selectedBriefing.publico_alvo || '-'}
-                  </div>
-                </div>
+                ))}
               </div>
 
               {/* Concorrentes */}
               {selectedBriefing.competitors && selectedBriefing.competitors.length > 0 && (
-                <div className="space-y-4">
-                  <h3 className="font-semibold text-lg">Concorrentes</h3>
-                  <div className="space-y-3">
+                <div>
+                  <h3 className="font-semibold text-sm text-muted-foreground uppercase tracking-wider mb-3">Concorrentes Analisados</h3>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     {selectedBriefing.competitors.map((comp: any, idx: number) => (
-                      <div key={idx} className="border rounded-lg p-3">
-                        <div className="font-medium">{idx + 1}. {comp.nome}</div>
-                        <div className="text-sm text-muted-foreground mt-1">
-                          Tipo: {comp.tipo === 'direto' ? 'Concorrente Direto' : 'Concorrente Indireto'}
+                      <div key={idx} className="border border-border/40 rounded-lg p-3 bg-card/50">
+                        <div className="flex items-center justify-between">
+                          <span className="font-medium text-sm">{comp.nome || `Concorrente ${idx + 1}`}</span>
+                          <Badge variant="outline" className="text-[10px]">
+                            {comp.tipo === 'direto' ? 'Direto' : 'Indireto'}
+                          </Badge>
                         </div>
-                        {comp.site && (
-                          <div className="text-sm text-muted-foreground">Site: {comp.site}</div>
-                        )}
+                        {comp.site && <p className="text-xs text-muted-foreground mt-1">{comp.site}</p>}
                       </div>
                     ))}
                   </div>
@@ -1383,32 +1478,71 @@ export function AnaliseBench() {
 
               {/* Análise gerada */}
               {selectedBriefing.ai_response && (
-                <div className="space-y-4">
-                  <h3 className="font-semibold text-lg">Análise Gerada</h3>
-                  <div className="prose prose-sm max-w-none bg-muted/50 rounded-lg p-4">
-                    <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                      {selectedBriefing.ai_response}
-                    </ReactMarkdown>
+                <div>
+                  <div className="flex items-center justify-between mb-3">
+                    <h3 className="font-semibold text-sm text-muted-foreground uppercase tracking-wider">Análise Gerada</h3>
+                    <div className="flex gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="h-7 text-xs"
+                        onClick={() => {
+                          navigator.clipboard.writeText(selectedBriefing.ai_response || '')
+                          toast.success('Análise copiada para a área de transferência')
+                        }}
+                      >
+                        <Copy className="h-3 w-3 mr-1" /> Copiar
+                      </Button>
+                      {canCreate && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="h-7 text-xs"
+                          onClick={() => {
+                            setSelectedBriefing(null)
+                            handleGenerateAnalysis(selectedBriefing.id)
+                          }}
+                          disabled={isGeneratingAnalysis}
+                        >
+                          <RefreshCw className="h-3 w-3 mr-1" /> Regenerar
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+                  <div className="prose prose-sm max-w-none bg-muted/30 rounded-xl p-5 border border-border/30">
+                    <MarkdownRenderer content={selectedBriefing.ai_response} />
                   </div>
                 </div>
               )}
 
               {selectedBriefing.status === 'pending' && (
-                <div className="bg-muted rounded-lg p-4 text-center">
-                  <p className="text-sm text-muted-foreground">
-                    Esta análise ainda não foi gerada. Clique em "Gerar Análise" na tabela de resultados.
+                <div className="bg-muted/50 rounded-xl p-6 text-center border border-border/30">
+                  <p className="text-sm text-muted-foreground mb-3">
+                    Esta análise ainda não foi gerada.
                   </p>
+                  {canCreate && (
+                    <Button size="sm" onClick={() => { setSelectedBriefing(null); handleGenerateAnalysis(selectedBriefing.id); }}>
+                      Gerar Análise
+                    </Button>
+                  )}
+                </div>
+              )}
+
+              {selectedBriefing.status === 'failed' && (
+                <div className="bg-destructive/10 rounded-xl p-6 text-center border border-destructive/20">
+                  <p className="text-sm text-destructive mb-3">
+                    Houve um erro ao gerar esta análise.
+                  </p>
+                  {canCreate && (
+                    <Button variant="destructive" size="sm" onClick={() => { setSelectedBriefing(null); handleGenerateAnalysis(selectedBriefing.id); }}>
+                      Tentar Novamente
+                    </Button>
+                  )}
                 </div>
               )}
             </div>
-
-            <AlertDialogFooter>
-              <AlertDialogAction onClick={() => setSelectedBriefing(null)}>
-                Fechar
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
+          </DialogContent>
+        </Dialog>
       )}
     </div>
   )
