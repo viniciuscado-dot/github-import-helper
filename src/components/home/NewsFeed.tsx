@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
-import { RefreshCw, Search, X } from "lucide-react";
+import { RefreshCw, Search, X, ChevronDown } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -23,6 +23,7 @@ export function NewsFeed() {
   const [news, setNews] = useState<NewsItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [query, setQuery] = useState("");
+  const [expanded, setExpanded] = useState(false);
   const debouncedQuery = useDebounce(query, 250);
 
   const load = async () => {
@@ -49,8 +50,13 @@ export function NewsFeed() {
   }, [news, debouncedQuery]);
 
   const isSearchActive = debouncedQuery.trim().length > 0;
-  const heroItem = !isSearchActive && filtered.length > 0 ? filtered[0] : null;
-  const listItems = !isSearchActive ? filtered.slice(1, 7) : filtered;
+  const heroItem = !isSearchActive && !expanded && filtered.length > 0 ? filtered[0] : null;
+  const listItems = isSearchActive
+    ? filtered
+    : expanded
+      ? filtered
+      : filtered.slice(1, 4);
+  const hasMore = !isSearchActive && !expanded && filtered.length > 4;
 
   return (
     <section className={`w-full p-5 ${glassSection}`}>
@@ -95,11 +101,11 @@ export function NewsFeed() {
 
       {loading ? (
         /* Loading skeletons — editorial layout */
-        <div className="grid grid-cols-1 lg:grid-cols-[2fr_1fr] gap-4">
+        <div className="grid grid-cols-1 lg:grid-cols-[1.4fr_1fr] gap-4">
           <Skeleton className="h-64 rounded-2xl" />
           <div className="flex flex-col gap-3">
-            {[1, 2, 3, 4].map((i) => (
-              <Skeleton key={i} className="h-[72px] rounded-xl" />
+            {[1, 2, 3].map((i) => (
+              <Skeleton key={i} className="h-[80px] rounded-xl" />
             ))}
           </div>
         </div>
@@ -116,23 +122,51 @@ export function NewsFeed() {
             <p className="text-sm">Nenhuma notícia disponível.</p>
           )}
         </div>
-      ) : isSearchActive ? (
-        /* Search active — flat list */
-        <div className="flex flex-col gap-3">
-          {listItems.map((item, i) => (
-            <NewsListItem key={item.id} item={item} index={i} />
-          ))}
-        </div>
-      ) : (
-        /* Default — editorial hero + side list */
-        <div className="grid grid-cols-1 lg:grid-cols-[2fr_1fr] gap-4 items-start">
-          {heroItem && <NewsHeroCard item={heroItem} />}
+      ) : isSearchActive || expanded ? (
+        /* Search active or expanded — flat list */
+        <>
           <div className="flex flex-col gap-3">
             {listItems.map((item, i) => (
               <NewsListItem key={item.id} item={item} index={i} />
             ))}
           </div>
-        </div>
+          {expanded && !isSearchActive && (
+            <div className="flex justify-center mt-4">
+              <Button
+                variant="outline"
+                size="sm"
+                className="text-xs gap-1.5 h-8 px-6 rounded-lg border-border/20 bg-card/[0.06] backdrop-blur-lg hover:border-primary/30"
+                onClick={() => setExpanded(false)}
+              >
+                Ver menos
+              </Button>
+            </div>
+          )}
+        </>
+      ) : (
+        /* Default — editorial hero + side list */
+        <>
+          <div className="grid grid-cols-1 lg:grid-cols-[1.4fr_1fr] gap-4 items-stretch">
+            {heroItem && <NewsHeroCard item={heroItem} />}
+            <div className="flex flex-col gap-3">
+              {listItems.map((item, i) => (
+                <NewsListItem key={item.id} item={item} index={i} />
+              ))}
+            </div>
+          </div>
+          {hasMore && (
+            <div className="flex justify-center mt-4">
+              <Button
+                variant="outline"
+                size="sm"
+                className="text-xs gap-1.5 h-8 px-6 rounded-lg border-border/20 bg-card/[0.06] backdrop-blur-lg hover:border-primary/30"
+                onClick={() => setExpanded(true)}
+              >
+                Ver mais notícias
+              </Button>
+            </div>
+          )}
+        </>
       )}
     </section>
   );

@@ -7,7 +7,7 @@ interface HomeCriacaoProps {
 
 export function HomeCriacao({ onNavigate }: HomeCriacaoProps) {
   return (
-    <div className="relative flex flex-col items-center px-4 py-2 w-full max-w-4xl mx-auto space-y-8">
+    <div className="relative flex flex-col items-center px-0 py-2 w-full mx-auto space-y-8">
       {/* Radial gradient background — Home only */}
       <div
         aria-hidden
