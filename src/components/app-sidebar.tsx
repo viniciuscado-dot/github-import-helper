@@ -121,6 +121,10 @@ export function AppSidebar({ activeView, onViewChange }: AppSidebarProps) {
     { id: 'diagnostico-visual', title: 'Diagnóstico Visual', icon: Eye, route: '/laboratorio/diagnostico-visual' },
   ];
 
+  const newsItems = [
+    { id: 'trends-noticias', title: 'Trends e Notícias', icon: TrendingUp, route: '/noticias' },
+  ];
+
   // Group label style
   const groupLabelClass = "text-[#ec4a55] uppercase text-[10px] font-semibold tracking-wider opacity-70";
 
@@ -225,6 +229,23 @@ export function AppSidebar({ activeView, onViewChange }: AppSidebarProps) {
           <SidebarGroupContent>
             <SidebarMenu>
               {laboratorioItems.map((item) => {
+                const active = location.pathname === item.route;
+                return (
+                  <SidebarMenuItem key={item.id}>
+                    {renderMenuItem(item, active)}
+                  </SidebarMenuItem>
+                );
+              })}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+
+        {/* News */}
+        <SidebarGroup className="pt-2">
+          <SidebarGroupLabel className={groupLabelClass}>News</SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              {newsItems.map((item) => {
                 const active = location.pathname === item.route;
                 return (
                   <SidebarMenuItem key={item.id}>

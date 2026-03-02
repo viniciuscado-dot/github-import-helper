@@ -11,6 +11,7 @@ import { AppSidebar } from "@/components/app-sidebar";
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
 import { MobileSidebarTrigger } from "@/components/MobileSidebarTrigger";
 
+/* ── Category tokens ── */
 const categoryGradients: Record<string, string> = {
   Marketing: "from-primary/30 via-primary/10 to-primary/5",
   Ads: "from-blue-500/30 via-blue-500/10 to-blue-500/5",
@@ -32,6 +33,7 @@ const categoryDots: Record<string, string> = {
 const glassCard =
   "rounded-2xl border border-border/10 bg-card/[0.06] backdrop-blur-xl overflow-hidden transition-all duration-300";
 
+/* ── Debounce ── */
 function useDebounce(value: string, ms: number) {
   const [debounced, setDebounced] = useState(value);
   useEffect(() => {
@@ -41,8 +43,10 @@ function useDebounce(value: string, ms: number) {
   return debounced;
 }
 
-/* ── Hero Card (large) ── */
-function HeroCardLarge({ item }: { item: NewsItem }) {
+/* ═══════════════════════════════════════════
+   HERO CARD — full-width featured article
+   ═══════════════════════════════════════════ */
+function HeroCard({ item }: { item: NewsItem }) {
   const gradient = categoryGradients[item.category] || categoryGradients.Marketing;
   const badgeColor = categoryColors[item.category] || "";
 
@@ -51,27 +55,35 @@ function HeroCardLarge({ item }: { item: NewsItem }) {
       href={item.url}
       target="_blank"
       rel="noopener noreferrer"
-      initial={{ opacity: 0, y: 16 }}
+      initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.4 }}
-      className={`group relative flex flex-col ${glassCard} hover:-translate-y-0.5 hover:shadow-lg hover:shadow-primary/5 hover:border-primary/20 row-span-2`}
+      transition={{ duration: 0.45, ease: "easeOut" }}
+      className={`group relative flex flex-col ${glassCard} hover:-translate-y-0.5 hover:shadow-xl hover:shadow-primary/5 hover:border-primary/20`}
     >
-      <div className="relative w-full h-full min-h-[320px] overflow-hidden">
-        <div className={`absolute inset-0 bg-gradient-to-br ${gradient} transition-transform duration-500 group-hover:scale-105`} />
-        <div className="absolute inset-0 opacity-[0.04]" style={{ backgroundImage: "radial-gradient(circle at 25% 25%, hsl(var(--foreground)) 1px, transparent 1px)", backgroundSize: "24px 24px" }} />
-        <div className="absolute inset-x-0 bottom-0 h-3/4 bg-gradient-to-t from-background/95 via-background/50 to-transparent" />
+      <div className="relative w-full min-h-[340px] md:min-h-[380px] overflow-hidden">
+        <div className={`absolute inset-0 bg-gradient-to-br ${gradient} transition-transform duration-500 group-hover:scale-[1.03]`} />
+        <div
+          className="absolute inset-0 opacity-[0.04]"
+          style={{
+            backgroundImage: "radial-gradient(circle at 25% 25%, hsl(var(--foreground)) 1px, transparent 1px)",
+            backgroundSize: "24px 24px",
+          }}
+        />
+        <div className="absolute inset-x-0 bottom-0 h-3/4 bg-gradient-to-t from-background/95 via-background/60 to-transparent" />
 
         <Badge variant="outline" className={`absolute top-4 left-4 text-[11px] font-semibold backdrop-blur-md ${badgeColor}`}>
           {item.category}
         </Badge>
         <ExternalLink className="absolute top-4 right-4 h-4 w-4 text-foreground/30 group-hover:text-primary transition-colors" />
 
-        <div className="absolute inset-x-0 bottom-0 p-5 pb-4 space-y-2">
-          <h2 className="text-xl md:text-2xl font-bold text-foreground leading-snug line-clamp-3 group-hover:text-primary transition-colors">
+        <div className="absolute inset-x-0 bottom-0 p-6 space-y-2">
+          <h2 className="text-2xl md:text-3xl font-bold text-foreground leading-snug line-clamp-3 group-hover:text-primary transition-colors">
             {item.title}
           </h2>
-          <p className="text-sm text-muted-foreground leading-relaxed line-clamp-2">{item.excerpt}</p>
-          <div className="flex items-center gap-2 text-xs text-muted-foreground/60">
+          <p className="text-sm text-muted-foreground leading-relaxed line-clamp-2 max-w-2xl">
+            {item.excerpt}
+          </p>
+          <div className="flex items-center gap-2 text-xs text-muted-foreground/60 pt-1">
             <span>{item.source}</span>
             <span>·</span>
             <span>{new Date(item.published_at).toLocaleDateString("pt-BR", { day: "2-digit", month: "short" })}</span>
@@ -82,8 +94,10 @@ function HeroCardLarge({ item }: { item: NewsItem }) {
   );
 }
 
-/* ── Hero Card (small — right side) ── */
-function HeroCardSmall({ item, index }: { item: NewsItem; index: number }) {
+/* ═══════════════════════════════════════════
+   GRID CARD — medium card for the 2-col grid
+   ═══════════════════════════════════════════ */
+function GridCard({ item, index }: { item: NewsItem; index: number }) {
   const gradient = categoryGradients[item.category] || categoryGradients.Marketing;
   const badgeColor = categoryColors[item.category] || "";
 
@@ -92,38 +106,46 @@ function HeroCardSmall({ item, index }: { item: NewsItem; index: number }) {
       href={item.url}
       target="_blank"
       rel="noopener noreferrer"
-      initial={{ opacity: 0, y: 12 }}
+      initial={{ opacity: 0, y: 14 }}
       animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.35, delay: index * 0.08 }}
+      transition={{ duration: 0.35, delay: index * 0.06, ease: "easeOut" }}
       className={`group relative flex flex-col ${glassCard} hover:-translate-y-0.5 hover:shadow-lg hover:shadow-primary/5 hover:border-primary/20`}
     >
-      <div className="relative w-full h-full min-h-[154px] overflow-hidden">
+      <div className="relative w-full h-40 overflow-hidden">
         <div className={`absolute inset-0 bg-gradient-to-br ${gradient} transition-transform duration-500 group-hover:scale-105`} />
-        <div className="absolute inset-0 opacity-[0.04]" style={{ backgroundImage: "radial-gradient(circle at 25% 25%, hsl(var(--foreground)) 1px, transparent 1px)", backgroundSize: "24px 24px" }} />
-        <div className="absolute inset-x-0 bottom-0 h-3/4 bg-gradient-to-t from-background/95 via-background/50 to-transparent" />
+        <div
+          className="absolute inset-0 opacity-[0.04]"
+          style={{
+            backgroundImage: "radial-gradient(circle at 25% 25%, hsl(var(--foreground)) 1px, transparent 1px)",
+            backgroundSize: "20px 20px",
+          }}
+        />
+        <div className="absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-background/90 via-background/40 to-transparent" />
 
         <Badge variant="outline" className={`absolute top-3 left-3 text-[10px] font-semibold backdrop-blur-md ${badgeColor}`}>
           {item.category}
         </Badge>
+        <ExternalLink className="absolute top-3 right-3 h-3.5 w-3.5 text-foreground/20 group-hover:text-primary transition-colors" />
+      </div>
 
-        <div className="absolute inset-x-0 bottom-0 p-4 pb-3 space-y-1">
-          <h3 className="text-sm md:text-base font-bold text-foreground leading-snug line-clamp-2 group-hover:text-primary transition-colors">
-            {item.title}
-          </h3>
-          <p className="text-xs text-muted-foreground/60 line-clamp-1">{item.excerpt}</p>
-          <div className="flex items-center gap-2 text-[10px] text-muted-foreground/50">
-            <span>{item.source}</span>
-            <span>·</span>
-            <span>{new Date(item.published_at).toLocaleDateString("pt-BR", { day: "2-digit", month: "short" })}</span>
-          </div>
+      <div className="flex flex-col gap-1.5 p-4 pt-3">
+        <h3 className="text-sm md:text-base font-bold text-foreground leading-snug line-clamp-2 group-hover:text-primary transition-colors">
+          {item.title}
+        </h3>
+        <p className="text-xs text-muted-foreground/60 leading-relaxed line-clamp-2">{item.excerpt}</p>
+        <div className="flex items-center justify-between mt-1 text-[10px] text-muted-foreground/50">
+          <span>{item.source}</span>
+          <span>{new Date(item.published_at).toLocaleDateString("pt-BR", { day: "2-digit", month: "short" })}</span>
         </div>
       </div>
     </motion.a>
   );
 }
 
-/* ── List Item (below hero) ── */
-function NewsListRow({ item, index }: { item: NewsItem; index: number }) {
+/* ═══════════════════════════════════════════
+   LIST ROW — compact row for search results
+   ═══════════════════════════════════════════ */
+function ListRow({ item, index }: { item: NewsItem; index: number }) {
   const gradient = categoryGradients[item.category] || categoryGradients.Marketing;
   const dot = categoryDots[item.category] || "bg-primary";
 
@@ -137,19 +159,20 @@ function NewsListRow({ item, index }: { item: NewsItem; index: number }) {
       transition={{ duration: 0.3, delay: index * 0.04 }}
       className={`group flex items-start gap-4 p-4 ${glassCard} hover:border-primary/30 hover:shadow-md hover:shadow-primary/5 hover:-translate-y-px`}
     >
-      {/* Thumbnail */}
-      <div className={`shrink-0 w-36 h-24 rounded-lg bg-gradient-to-br ${gradient} overflow-hidden`}>
-        <div className="w-full h-full opacity-[0.06]" style={{ backgroundImage: "radial-gradient(circle, hsl(var(--foreground)) 1px, transparent 1px)", backgroundSize: "12px 12px" }} />
+      <div className={`shrink-0 w-32 h-22 rounded-lg bg-gradient-to-br ${gradient} overflow-hidden`}>
+        <div
+          className="w-full h-full opacity-[0.06]"
+          style={{
+            backgroundImage: "radial-gradient(circle, hsl(var(--foreground)) 1px, transparent 1px)",
+            backgroundSize: "12px 12px",
+          }}
+        />
       </div>
-
-      {/* Content */}
       <div className="flex flex-col justify-center gap-1.5 min-w-0 flex-1">
         <h4 className="text-sm md:text-base font-semibold text-foreground leading-snug line-clamp-2 group-hover:text-primary transition-colors">
           {item.title}
         </h4>
-        <p className="text-xs text-muted-foreground/60 leading-relaxed line-clamp-2">
-          {item.excerpt}
-        </p>
+        <p className="text-xs text-muted-foreground/60 leading-relaxed line-clamp-2">{item.excerpt}</p>
         <div className="flex items-center gap-2 text-[11px] text-muted-foreground/50">
           <span className={`inline-block w-1.5 h-1.5 rounded-full ${dot}`} />
           <span>{item.source}</span>
@@ -161,13 +184,15 @@ function NewsListRow({ item, index }: { item: NewsItem; index: number }) {
   );
 }
 
-/* ── Page ── */
+/* ═══════════════════════════════════════════
+   PAGE
+   ═══════════════════════════════════════════ */
 export default function Noticias() {
   const navigate = useNavigate();
   const [news, setNews] = useState<NewsItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [query, setQuery] = useState("");
-  const debouncedQuery = useDebounce(query, 250);
+  const debouncedQuery = useDebounce(query, 300);
 
   const load = async () => {
     setLoading(true);
@@ -191,8 +216,9 @@ export default function Noticias() {
   }, [news, debouncedQuery]);
 
   const isSearchActive = debouncedQuery.trim().length > 0;
-  const heroItems = !isSearchActive && filtered.length >= 3 ? filtered.slice(0, 3) : [];
-  const listItems = isSearchActive ? filtered : filtered.slice(heroItems.length > 0 ? 3 : 0);
+  const heroItem = !isSearchActive && filtered.length > 0 ? filtered[0] : null;
+  const gridItems = !isSearchActive ? filtered.slice(1) : [];
+  const searchItems = isSearchActive ? filtered : [];
 
   return (
     <SidebarProvider defaultOpen={true}>
@@ -206,76 +232,82 @@ export default function Noticias() {
         />
         <div className="flex-1 flex h-svh min-h-0 flex-col min-w-0">
           <MobileSidebarTrigger />
-          <SidebarInset className="flex-1 min-h-0" style={{ scrollbarGutter: "stable" }}>
-            <main className="max-w-[1280px] mx-auto px-4 md:px-6 py-6 space-y-6">
-              {/* Top bar: back + search */}
-              <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
-                <div className="flex items-center gap-3">
+          <SidebarInset className="flex-1 min-h-0 overflow-y-auto" style={{ scrollbarGutter: "stable" }}>
+            <main className="max-w-[1280px] mx-auto px-4 md:px-8 py-8 space-y-8">
+
+              {/* ── Header ── */}
+              <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+                <div className="flex items-start gap-4">
                   <Button
                     variant="outline"
                     size="sm"
-                    className="gap-1.5 text-xs h-8 shrink-0"
+                    className="gap-1.5 text-xs h-8 shrink-0 mt-0.5"
                     onClick={() => navigate("/dashboard?view=home-criacao")}
                   >
                     <ArrowLeft className="h-3.5 w-3.5" />
                     Voltar
                   </Button>
                   <div>
-                    <h1 className="text-lg font-semibold text-foreground">Tendências e Notícias</h1>
-                    <p className="text-xs text-muted-foreground">Marketing, publicidade e negócios.</p>
+                    <h1 className="text-xl md:text-2xl font-bold text-foreground">Tendências e Notícias</h1>
+                    <p className="text-sm text-muted-foreground mt-0.5">Marketing, publicidade e negócios.</p>
                   </div>
                 </div>
 
-                <div className="flex items-center gap-2">
-                  <div className="relative flex-1 md:w-60">
-                    <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+                <div className="flex items-center gap-2 w-full md:w-auto">
+                  <div className="relative flex-1 md:w-64">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                     <Input
                       placeholder="Buscar por palavra-chave…"
                       value={query}
                       onChange={(e) => setQuery(e.target.value)}
-                      className="pl-8 pr-8 h-8 text-xs bg-card/[0.06] backdrop-blur-lg border-border/10 rounded-lg"
+                      className="pl-9 pr-9 h-9 text-sm bg-card/[0.06] backdrop-blur-lg border-border/10 rounded-xl"
                     />
                     {query && (
                       <button
                         onClick={() => setQuery("")}
-                        className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
                       >
                         <X className="h-3.5 w-3.5" />
                       </button>
                     )}
                   </div>
-                  <Button variant="outline" size="sm" onClick={load} disabled={loading} className="gap-1.5 text-xs shrink-0 h-8">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={load}
+                    disabled={loading}
+                    className="gap-1.5 text-xs shrink-0 h-9 rounded-xl"
+                  >
                     <RefreshCw className={`h-3.5 w-3.5 ${loading ? "animate-spin" : ""}`} />
                     Atualizar
                   </Button>
                 </div>
               </div>
 
+              {/* ── Result counter ── */}
               {isSearchActive && !loading && (
-                <p className="text-[10px] text-muted-foreground">
-                  Exibindo {filtered.length} de {news.length}
+                <p className="text-xs text-muted-foreground">
+                  {filtered.length} {filtered.length === 1 ? "resultado" : "resultados"} encontrado{filtered.length !== 1 ? "s" : ""}
                 </p>
               )}
 
+              {/* ── Loading skeleton ── */}
               {loading ? (
-                <div className="space-y-4">
-                  <div className="grid grid-cols-1 lg:grid-cols-[1.4fr_1fr] gap-4">
-                    <Skeleton className="h-[320px] rounded-2xl" />
-                    <div className="flex flex-col gap-4">
-                      <Skeleton className="h-[154px] rounded-2xl" />
-                      <Skeleton className="h-[154px] rounded-2xl" />
-                    </div>
+                <div className="space-y-6">
+                  <Skeleton className="h-[380px] rounded-2xl" />
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                    {[1, 2, 3, 4].map((i) => (
+                      <Skeleton key={i} className="h-[260px] rounded-2xl" />
+                    ))}
                   </div>
-                  {[1, 2, 3].map((i) => (
-                    <Skeleton key={i} className="h-[100px] rounded-2xl" />
-                  ))}
                 </div>
               ) : filtered.length === 0 ? (
-                <div className="flex flex-col items-center justify-center rounded-xl border border-border/10 bg-card/[0.03] backdrop-blur-lg p-10 text-muted-foreground">
+                /* ── Empty state ── */
+                <div className="flex flex-col items-center justify-center rounded-2xl border border-border/10 bg-card/[0.03] backdrop-blur-lg p-16 text-muted-foreground">
                   {isSearchActive ? (
                     <>
-                      <p className="text-sm">Nenhum resultado para "{debouncedQuery}"</p>
-                      <Button variant="link" size="sm" onClick={() => setQuery("")} className="mt-1 text-xs">
+                      <p className="text-sm">Nenhum resultado para "<span className="text-foreground font-medium">{debouncedQuery}</span>"</p>
+                      <Button variant="link" size="sm" onClick={() => setQuery("")} className="mt-2 text-xs">
                         Limpar busca
                       </Button>
                     </>
@@ -283,24 +315,22 @@ export default function Noticias() {
                     <p className="text-sm">Nenhuma notícia disponível.</p>
                   )}
                 </div>
+              ) : isSearchActive ? (
+                /* ── Search results: flat list ── */
+                <div className="flex flex-col gap-3">
+                  {searchItems.map((item, i) => (
+                    <ListRow key={item.id} item={item} index={i} />
+                  ))}
+                </div>
               ) : (
+                /* ── Default editorial layout ── */
                 <div className="space-y-6">
-                  {/* Hero grid — 1 large left + 2 small right */}
-                  {heroItems.length === 3 && (
-                    <div className="grid grid-cols-1 lg:grid-cols-[1.4fr_1fr] gap-4">
-                      <HeroCardLarge item={heroItems[0]} />
-                      <div className="flex flex-col gap-4">
-                        <HeroCardSmall item={heroItems[1]} index={1} />
-                        <HeroCardSmall item={heroItems[2]} index={2} />
-                      </div>
-                    </div>
-                  )}
+                  {heroItem && <HeroCard item={heroItem} />}
 
-                  {/* List items */}
-                  {listItems.length > 0 && (
-                    <div className="flex flex-col gap-3">
-                      {listItems.map((item, i) => (
-                        <NewsListRow key={item.id} item={item} index={i} />
+                  {gridItems.length > 0 && (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                      {gridItems.map((item, i) => (
+                        <GridCard key={item.id} item={item} index={i} />
                       ))}
                     </div>
                   )}
