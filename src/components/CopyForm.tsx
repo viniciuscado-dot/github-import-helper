@@ -2330,11 +2330,7 @@ EX: Mais de 1.000 projetos de placas solares instalados em todo o Rio Grande do 
                          </CardHeader>
                           {!collapsedPrompts.has(prompt.id) && (
                             <CardContent>
-                              <div className="text-sm text-muted-foreground prose prose-sm max-w-none prose-table:border prose-table:border-border prose-th:border prose-th:border-border prose-th:bg-muted prose-td:border prose-td:border-border">
-                                <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                                  {prompt.content}
-                                </ReactMarkdown>
-                              </div>
+                              <MarkdownRenderer content={prompt.content} />
                             </CardContent>
                           )}
                       </Card>
