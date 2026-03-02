@@ -1,5 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
-import { RefreshCw, Search, X, ChevronDown } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { RefreshCw, Search, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -20,10 +21,10 @@ function useDebounce(value: string, ms: number) {
 }
 
 export function NewsFeed() {
+  const navigate = useNavigate();
   const [news, setNews] = useState<NewsItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [query, setQuery] = useState("");
-  const [expanded, setExpanded] = useState(false);
   const debouncedQuery = useDebounce(query, 250);
 
   const load = async () => {
@@ -50,13 +51,9 @@ export function NewsFeed() {
   }, [news, debouncedQuery]);
 
   const isSearchActive = debouncedQuery.trim().length > 0;
-  const heroItem = !isSearchActive && !expanded && filtered.length > 0 ? filtered[0] : null;
-  const listItems = isSearchActive
-    ? filtered
-    : expanded
-      ? filtered
-      : filtered.slice(1, 4);
-  const hasMore = !isSearchActive && !expanded && filtered.length > 4;
+  const heroItem = !isSearchActive && filtered.length > 0 ? filtered[0] : null;
+  const listItems = isSearchActive ? filtered : filtered.slice(1, 4);
+  const hasMore = !isSearchActive && filtered.length > 4;
 
   return (
     <section className={`w-full p-5 ${glassSection}`}>
@@ -122,27 +119,13 @@ export function NewsFeed() {
             <p className="text-sm">Nenhuma notícia disponível.</p>
           )}
         </div>
-      ) : isSearchActive || expanded ? (
-        /* Search active or expanded — flat list */
-        <>
-          <div className="flex flex-col gap-3">
-            {listItems.map((item, i) => (
-              <NewsListItem key={item.id} item={item} index={i} />
-            ))}
-          </div>
-          {expanded && !isSearchActive && (
-            <div className="flex justify-center mt-4">
-              <Button
-                variant="outline"
-                size="sm"
-                className="text-xs gap-1.5 h-8 px-6 rounded-lg border-border/20 bg-card/[0.06] backdrop-blur-lg hover:border-primary/30"
-                onClick={() => setExpanded(false)}
-              >
-                Ver menos
-              </Button>
-            </div>
-          )}
-        </>
+      ) : isSearchActive ? (
+        /* Search active — flat list */
+        <div className="flex flex-col gap-3">
+          {listItems.map((item, i) => (
+            <NewsListItem key={item.id} item={item} index={i} />
+          ))}
+        </div>
       ) : (
         /* Default — editorial hero + side list */
         <>
@@ -157,7 +140,7 @@ export function NewsFeed() {
                   variant="outline"
                   size="sm"
                   className="text-xs gap-1.5 h-8 w-full rounded-lg border-border/20 bg-card/[0.06] backdrop-blur-lg hover:border-primary/30"
-                  onClick={() => setExpanded(true)}
+                  onClick={() => navigate("/noticias")}
                 >
                   Ver mais notícias
                 </Button>
