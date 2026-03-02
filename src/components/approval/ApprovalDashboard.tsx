@@ -121,18 +121,21 @@ export function ApprovalDashboard({ filters, filterSetters, onNavigateToKanban }
         />
       </div>
 
-      {/* Squad Ranking */}
-      <div className={`${layoutTokens.card.base} ${layoutTokens.card.padding}`}>
-        <div className="flex items-center gap-2 mb-1">
-          <Users className="h-5 w-5 text-primary" />
-          <h2 className="text-lg font-semibold text-foreground">Ranking por Squad</h2>
+      {/* Squad + Client Rankings side by side */}
+      <div className={`${layoutTokens.grid.cols2} ${layoutTokens.spacing.gridGap}`}>
+        {/* Squad Ranking */}
+        <div className={`${layoutTokens.card.base} ${layoutTokens.card.padding}`}>
+          <div className="flex items-center gap-2 mb-1">
+            <Users className="h-5 w-5 text-primary" />
+            <h2 className="text-lg font-semibold text-foreground">Ranking por Squad</h2>
+          </div>
+          <p className="text-xs text-muted-foreground mb-5">Desempenho das squads no período filtrado</p>
+          <SquadRankingTable data={squadRanking} />
         </div>
-        <p className="text-xs text-muted-foreground mb-5">Desempenho das squads no período filtrado</p>
-        <SquadRankingTable data={squadRanking} />
-      </div>
 
-      {/* Client Ranking */}
-      <ClientRankingCard filters={filters} />
+        {/* Client Ranking */}
+        <ClientRankingCard filters={filters} />
+      </div>
     </>
   );
 }
