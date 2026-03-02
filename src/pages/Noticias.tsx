@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, RefreshCw, Search, X, ExternalLink } from "lucide-react";
+import { RefreshCw, Search, X, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -224,7 +224,7 @@ export default function Noticias() {
     <SidebarProvider defaultOpen={true}>
       <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/30 flex w-full">
         <AppSidebar
-          activeView="home-criacao"
+          activeView={"" as any}
           onViewChange={(view: any) => {
             if (view === "aprovacao") navigate("/aprovacao");
             else navigate(`/dashboard?view=${view}`);
@@ -237,20 +237,9 @@ export default function Noticias() {
 
               {/* ── Header ── */}
               <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
-                <div className="flex items-start gap-4">
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    className="gap-1.5 text-xs h-8 shrink-0 mt-0.5"
-                    onClick={() => navigate("/dashboard?view=home-criacao")}
-                  >
-                    <ArrowLeft className="h-3.5 w-3.5" />
-                    Voltar
-                  </Button>
-                  <div>
-                    <h1 className="text-xl md:text-2xl font-bold text-foreground">Tendências e Notícias</h1>
-                    <p className="text-sm text-muted-foreground mt-0.5">Marketing, publicidade e negócios.</p>
-                  </div>
+                <div>
+                  <h1 className="text-xl md:text-2xl font-bold text-foreground">Tendências e Notícias</h1>
+                  <p className="text-sm text-muted-foreground mt-0.5">Marketing, publicidade e negócios.</p>
                 </div>
 
                 <div className="flex items-center gap-2 w-full md:w-auto">
