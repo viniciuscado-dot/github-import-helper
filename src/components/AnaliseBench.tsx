@@ -1341,7 +1341,12 @@ export function AnaliseBench() {
 
       {/* Dialog para ver detalhes do briefing */}
       {selectedBriefing && (
-        <Dialog open={!!selectedBriefing} onOpenChange={() => setSelectedBriefing(null)}>
+        <Dialog open={!!selectedBriefing} onOpenChange={(open) => {
+          if (!open) {
+            setSelectedBriefing(null)
+            setIsEditingResponse(false)
+          }
+        }}>
           <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle className="text-xl">
