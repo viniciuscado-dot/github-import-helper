@@ -6,7 +6,7 @@ import { CheckCircle2, AlertCircle, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
-const STEP_MESSAGES = [
+const DEFAULT_STEP_MESSAGES = [
   'Lendo dados do briefing…',
   'Analisando diferenciais competitivos…',
   'Estruturando ângulo estratégico…',
@@ -22,6 +22,9 @@ interface CopyGenerationOverlayProps {
   status: 'generating' | 'success' | 'error';
   onRetry?: () => void;
   errorMessage?: string;
+  title?: string;
+  successMessage?: string;
+  stepMessages?: string[];
 }
 
 export function CopyGenerationOverlay({ status, onRetry, errorMessage }: CopyGenerationOverlayProps) {
