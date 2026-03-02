@@ -137,7 +137,8 @@ const [isLoading, setIsLoading] = useState(false)
   const [expandedMeetings, setExpandedMeetings] = useState<Set<string>>(new Set())
   
   // Estado para controlar aba principal (Onboarding/Ongoing)
-  const [mainTab, setMainTab] = useState<'onboarding' | 'ongoing'>('onboarding')
+const [mainTab, setMainTab] = useState<'onboarding' | 'ongoing'>('onboarding')
+  const [activeTab, setActiveTab] = useState<string>('form')
   const [materialType, setMaterialType] = useState<'criativos' | 'roteiros' | 'landing'>('criativos')
   const [selectedClient, setSelectedClient] = useState<string>('')
   const [crmClients, setCrmClients] = useState<any[]>([])
@@ -295,15 +296,32 @@ const [isLoading, setIsLoading] = useState(false)
       // Show success state
       setGenerationStatus('success')
       
-      // Wait a moment to show success, then redirect
-      setTimeout(() => {
+      // Wait a moment to show success, then redirect to Resultados tab
+      setTimeout(async () => {
         toast.success(`✅ Briefing salvo e copy gerada${totalDocs > 0 ? ` com ${totalDocs} documento(s)` : ''}!`)
         form.reset()
         setUploadedDocuments([])
         lastFormDataRef.current = null
-        if (canViewHistory) fetchBriefingHistory()
+        if (canViewHistory) await fetchBriefingHistory()
         setCurrentView('form')
         setIsLoading(false)
+        
+        // Redirect to Resultados tab and auto-open the generated copy
+        setActiveTab('history')
+        // Fetch the freshly saved record to auto-open it
+        const { data: freshRecord } = await supabase
+          .from('copy_forms')
+          .select('id, created_at, created_by, status, nome_empresa, document_files, ai_response, ai_provider, response_generated_at, copy_type')
+          .eq('id', savedForm.id)
+          .single()
+        if (freshRecord) {
+          const { data: profileData } = await supabase
+            .from('profiles')
+            .select('name, email')
+            .eq('id', freshRecord.created_by)
+            .single()
+          setViewingCopy({ ...freshRecord, profiles: profileData || { name: 'Usuário desconhecido', email: '' } })
+        }
       }, 1500)
     } catch (error: any) {
       console.error('Erro ao salvar briefing:', error)
@@ -1017,7 +1035,7 @@ const [isLoading, setIsLoading] = useState(false)
 
       {/* Conteúdo - as mesmas tabs servem tanto para Onboarding quanto Ongoing */}
       {/* Os dados são filtrados automaticamente baseado no mainTab selecionado */}
-      <Tabs defaultValue="form" className="space-y-4">
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
         <div className="flex items-center justify-between gap-4">
           {/* Lado esquerdo - Tabs */}
           <TabsList>
