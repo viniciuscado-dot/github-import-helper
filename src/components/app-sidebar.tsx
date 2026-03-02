@@ -43,6 +43,7 @@ export function AppSidebar({ activeView, onViewChange }: AppSidebarProps) {
     { id: 'copy', title: 'Copy', view: 'copy' as const, icon: Copy },
     { id: 'aprovacao', title: 'Aprovação', view: 'aprovacao' as const, icon: CheckCircle, route: '/aprovacao' },
     { id: 'analise-bench', title: 'Análise e Bench', view: 'analise-bench' as const, icon: BarChart2 },
+    { id: 'anuncios', title: 'Anúncios', view: 'anuncios' as const, icon: Megaphone, route: '/performance/anuncios' },
   ], []);
 
   const isCollapsed = state === "collapsed"
