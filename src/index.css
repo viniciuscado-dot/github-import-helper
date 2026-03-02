@@ -700,3 +700,85 @@ html[data-scroll-locked] {
   padding-right: 0px !important;
   margin-right: 0px !important;
 }
+
+/* Prose / Markdown content styling */
+.prose-content {
+  @apply text-sm leading-relaxed text-foreground;
+}
+
+.prose-content h1,
+.prose-content h2,
+.prose-content h3,
+.prose-content h4 {
+  @apply font-semibold text-foreground mt-6 mb-3;
+}
+
+.prose-content h2 {
+  @apply text-lg border-b border-border/40 pb-2;
+}
+
+.prose-content h3 {
+  @apply text-base;
+}
+
+.prose-content p {
+  @apply mb-3 leading-relaxed;
+}
+
+.prose-content strong {
+  @apply font-semibold text-foreground;
+}
+
+.prose-content ul,
+.prose-content ol {
+  @apply pl-5 mb-3 space-y-1;
+}
+
+.prose-content li {
+  @apply leading-relaxed;
+}
+
+/* Markdown tables — full legibility in light & dark */
+.prose-content .table-wrapper {
+  @apply overflow-x-auto mb-4 rounded-md border border-border;
+}
+
+.prose-content table {
+  @apply w-full text-sm border-collapse;
+}
+
+.prose-content thead th {
+  @apply px-4 py-2.5 text-left font-semibold text-foreground bg-muted border-b border-border whitespace-nowrap;
+}
+
+.prose-content tbody td {
+  @apply px-4 py-2.5 text-foreground/90 border-b border-border/50 align-top;
+}
+
+.prose-content tbody tr:last-child td {
+  @apply border-b-0;
+}
+
+.prose-content tbody tr:hover {
+  @apply bg-muted/30;
+}
+
+.prose-content code {
+  @apply px-1.5 py-0.5 rounded bg-muted text-foreground text-xs;
+}
+
+.prose-content pre {
+  @apply p-4 rounded-md bg-muted overflow-x-auto mb-4;
+}
+
+.prose-content pre code {
+  @apply p-0 bg-transparent;
+}
+
+.prose-content blockquote {
+  @apply border-l-2 border-primary/40 pl-4 italic text-muted-foreground my-4;
+}
+
+.prose-content hr {
+  @apply border-border/50 my-6;
+}

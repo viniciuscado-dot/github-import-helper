@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 import { Copy, FileSpreadsheet, ChevronDown, ChevronRight, Building2, Calendar, Sparkles } from 'lucide-react';
+import { MarkdownRenderer } from '@/components/ui/markdown-renderer';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import ReactMarkdown from 'react-markdown';
@@ -157,11 +158,7 @@ export function CopyDetailDialog({ copy, open, onOpenChange }: CopyDetailDialogP
                   {/* Content */}
                   {isExpanded && (
                     <div className="border-t border-border/40 px-6 py-5 bg-muted/10">
-                      <div className="prose prose-sm max-w-none text-foreground/90 prose-headings:text-foreground prose-p:leading-relaxed prose-table:border prose-table:border-border prose-th:border prose-th:border-border prose-th:bg-muted prose-td:border prose-td:border-border prose-strong:text-foreground">
-                        <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                          {content.trim()}
-                        </ReactMarkdown>
-                      </div>
+                      <MarkdownRenderer content={content.trim()} />
                     </div>
                   )}
                 </div>
