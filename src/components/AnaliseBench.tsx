@@ -1033,17 +1033,14 @@ export function AnaliseBench() {
                 <Button 
                   type="submit" 
                   disabled={isLoading || (!permissionsLoading && !canCreate)}
-                  size="lg"
-                  className="min-w-[240px]"
+                  className="flex-1"
                 >
                   {isLoading ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Gerando análise...
-                    </>
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                   ) : (
-                    'SALVAR E GERAR ANÁLISE'
+                    <Send className="h-4 w-4 mr-2" />
                   )}
+                  Salvar e gerar análise
                 </Button>
               </div>
             </form>
