@@ -224,7 +224,7 @@ export default function Noticias() {
     <SidebarProvider defaultOpen={true}>
       <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/30 flex w-full">
         <AppSidebar
-          activeView="home-criacao"
+          activeView={"" as any}
           onViewChange={(view: any) => {
             if (view === "aprovacao") navigate("/aprovacao");
             else navigate(`/dashboard?view=${view}`);
