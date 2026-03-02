@@ -14,6 +14,39 @@ export type Database = {
   }
   public: {
     Tables: {
+      default_prompts: {
+        Row: {
+          content: string
+          copy_type: string
+          created_at: string
+          id: string
+          is_active: boolean
+          position: number
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          content: string
+          copy_type?: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          position?: number
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          content?: string
+          copy_type?: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          position?: number
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       evaluations: {
         Row: {
           approval_status: string | null
