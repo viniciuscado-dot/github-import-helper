@@ -29,6 +29,7 @@ import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import * as XLSX from 'xlsx'
 import { DotLogo } from '@/components/DotLogo';
+import { CopyGenerationOverlay } from '@/components/CopyGenerationOverlay';
 
 const copyFormSchema = z.object({
   // Transcrições das reuniões
@@ -82,8 +83,11 @@ interface CopyFormProps {
 export function CopyForm({ onBack }: CopyFormProps = {}) {
   const { profile } = useAuth()
   const { checkModulePermission } = useModulePermissions()
-  const [isLoading, setIsLoading] = useState(false)
+const [isLoading, setIsLoading] = useState(false)
   const [currentView, setCurrentView] = useState<'form' | 'loading'>('form')
+  const [generationStatus, setGenerationStatus] = useState<'generating' | 'success' | 'error'>('generating')
+  const [generationError, setGenerationError] = useState<string | undefined>(undefined)
+  const lastFormDataRef = useRef<CopyFormData | null>(null)
   const [briefingHistory, setBriefingHistory] = useState<CopyFormRecord[]>([])
   const [uploadedDocuments, setUploadedDocuments] = useState<File[]>([])
   const [uploadingDocs, setUploadingDocs] = useState(false)
@@ -217,7 +221,10 @@ export function CopyForm({ onBack }: CopyFormProps = {}) {
 
   const onSubmit = async (data: CopyFormData) => {
     setIsLoading(true)
+    setGenerationStatus('generating')
+    setGenerationError(undefined)
     setCurrentView('loading')
+    lastFormDataRef.current = data
     
     try {
       // Upload documentos extras se houver
@@ -253,7 +260,7 @@ export function CopyForm({ onBack }: CopyFormProps = {}) {
           ...filtered,
           created_by: createdBy,
           status: 'processing',
-          copy_type: mainTab, // Adiciona o tipo de copy (onboarding ou ongoing)
+          copy_type: mainTab,
           document_files: extraDocumentPaths.length > 0 ? extraDocumentPaths : null
         })
         .select()
@@ -279,16 +286,33 @@ export function CopyForm({ onBack }: CopyFormProps = {}) {
       }
 
       const totalDocs = extraDocumentPaths.length
-      toast.success(`✅ Briefing salvo e copy gerada${totalDocs > 0 ? ` com ${totalDocs} documento(s)` : ''}!`)
-      form.reset()
-      setUploadedDocuments([])
-      if (canViewHistory) fetchBriefingHistory()
-      setCurrentView('form')
-      setIsLoading(false)
+      
+      // Show success state
+      setGenerationStatus('success')
+      
+      // Wait a moment to show success, then redirect
+      setTimeout(() => {
+        toast.success(`✅ Briefing salvo e copy gerada${totalDocs > 0 ? ` com ${totalDocs} documento(s)` : ''}!`)
+        form.reset()
+        setUploadedDocuments([])
+        lastFormDataRef.current = null
+        if (canViewHistory) fetchBriefingHistory()
+        setCurrentView('form')
+        setIsLoading(false)
+      }, 1500)
     } catch (error: any) {
       console.error('Erro ao salvar briefing:', error)
       const serverMsg = error?.message || error?.hint || 'Erro ao salvar briefing'
-      toast.error(`Erro ao salvar briefing: ${serverMsg}`)
+      setGenerationStatus('error')
+      setGenerationError(serverMsg)
+      setIsLoading(false)
+    }
+  }
+
+  const handleRetryGeneration = () => {
+    if (lastFormDataRef.current) {
+      onSubmit(lastFormDataRef.current)
+    } else {
       setCurrentView('form')
       setIsLoading(false)
     }
@@ -937,12 +961,11 @@ export function CopyForm({ onBack }: CopyFormProps = {}) {
 
   if (currentView === 'loading') {
     return (
-      <div className="flex flex-col items-center justify-center py-12 space-y-4">
-        <DotLogo size={56} animate />
-        <Loader2 className="h-8 w-8 animate-spin" />
-        <p className="text-lg font-medium">Gerando copy com IA...</p>
-        <p className="text-sm text-muted-foreground">Isso pode levar alguns minutos</p>
-      </div>
+      <CopyGenerationOverlay
+        status={generationStatus}
+        onRetry={handleRetryGeneration}
+        errorMessage={generationError}
+      />
     )
   }
 
