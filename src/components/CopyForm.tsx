@@ -961,12 +961,11 @@ const [isLoading, setIsLoading] = useState(false)
 
   if (currentView === 'loading') {
     return (
-      <div className="flex flex-col items-center justify-center py-12 space-y-4">
-        <DotLogo size={56} animate />
-        <Loader2 className="h-8 w-8 animate-spin" />
-        <p className="text-lg font-medium">Gerando copy com IA...</p>
-        <p className="text-sm text-muted-foreground">Isso pode levar alguns minutos</p>
-      </div>
+      <CopyGenerationOverlay
+        status={generationStatus}
+        onRetry={handleRetryGeneration}
+        errorMessage={generationError}
+      />
     )
   }
 
