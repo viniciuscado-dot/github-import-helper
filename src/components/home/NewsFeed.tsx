@@ -23,6 +23,7 @@ export function NewsFeed() {
   const [news, setNews] = useState<NewsItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [query, setQuery] = useState("");
+  const [expanded, setExpanded] = useState(false);
   const debouncedQuery = useDebounce(query, 250);
 
   const load = async () => {
