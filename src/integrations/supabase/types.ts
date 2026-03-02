@@ -35,6 +35,7 @@ export type Database = {
           publico_alvo: string | null
           response_generated_at: string | null
           servicos_produtos: string | null
+          share_token: string | null
           site: string | null
           status: string
           updated_at: string
@@ -59,6 +60,7 @@ export type Database = {
           publico_alvo?: string | null
           response_generated_at?: string | null
           servicos_produtos?: string | null
+          share_token?: string | null
           site?: string | null
           status?: string
           updated_at?: string
@@ -83,6 +85,7 @@ export type Database = {
           publico_alvo?: string | null
           response_generated_at?: string | null
           servicos_produtos?: string | null
+          share_token?: string | null
           site?: string | null
           status?: string
           updated_at?: string
