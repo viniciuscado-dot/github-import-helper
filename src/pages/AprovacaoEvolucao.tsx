@@ -29,12 +29,7 @@ import {
   type MaterialTypeEvolution,
   type SquadComparison,
 } from "@/services/evolutionDataService";
-// @ts-ignore - WidthProvider is exported but types are incomplete
-import ReactGridLayout from "react-grid-layout";
-import "react-grid-layout/css/styles.css";
-import "react-resizable/css/styles.css";
-
-const ResponsiveGridLayout = WidthProvider(Responsive);
+import GridLayout from "react-grid-layout";
 
 const CHART_META: Record<string, { title: string; subtitle: string; icon: React.ElementType }> = {
   overall: { title: "Aprovação Geral", subtitle: "Média histórica das notas ao longo do tempo", icon: TrendingUp },
