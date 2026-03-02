@@ -476,6 +476,20 @@ export function AnaliseBench() {
 
   return (
     <div className="space-y-6">
+      {/* Overlay de geração */}
+      {overlayStatus && (
+        <CopyGenerationOverlay
+          status={overlayStatus}
+          title="Gerando análise com IA…"
+          successMessage="Análise gerada com sucesso"
+          stepMessages={ANALISE_STEP_MESSAGES}
+          errorMessage={overlayError}
+          onRetry={pendingRetryId ? () => {
+            setOverlayStatus(null)
+            handleGenerateAnalysis(pendingRetryId)
+          } : undefined}
+        />
+      )}
       {/* Header com título */}
       <div className="space-y-4">
         <div className="flex items-start gap-4">
