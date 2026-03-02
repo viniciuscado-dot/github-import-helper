@@ -134,7 +134,7 @@ export function AppSidebar({ activeView, onViewChange }: AppSidebarProps) {
 
   return (
     <TooltipProvider delayDuration={100}>
-      <Sidebar side="left" collapsible="icon" className="border-r transition-all duration-300 ease-in-out">
+      <Sidebar side="left" collapsible="icon" className="border-r border-border/30 transition-all duration-300 ease-in-out">
 
       {/* ══════════ BLOCO SUPERIOR FIXO ══════════ */}
       <SidebarHeader className={`flex-shrink-0 ${shouldShowText ? "p-4 pb-1" : "py-4 pb-1"}`}>
