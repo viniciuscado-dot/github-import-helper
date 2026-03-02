@@ -220,7 +220,10 @@ const [isLoading, setIsLoading] = useState(false)
 
   const onSubmit = async (data: CopyFormData) => {
     setIsLoading(true)
+    setGenerationStatus('generating')
+    setGenerationError(undefined)
     setCurrentView('loading')
+    lastFormDataRef.current = data
     
     try {
       // Upload documentos extras se houver
@@ -256,7 +259,7 @@ const [isLoading, setIsLoading] = useState(false)
           ...filtered,
           created_by: createdBy,
           status: 'processing',
-          copy_type: mainTab, // Adiciona o tipo de copy (onboarding ou ongoing)
+          copy_type: mainTab,
           document_files: extraDocumentPaths.length > 0 ? extraDocumentPaths : null
         })
         .select()
@@ -282,16 +285,33 @@ const [isLoading, setIsLoading] = useState(false)
       }
 
       const totalDocs = extraDocumentPaths.length
-      toast.success(`✅ Briefing salvo e copy gerada${totalDocs > 0 ? ` com ${totalDocs} documento(s)` : ''}!`)
-      form.reset()
-      setUploadedDocuments([])
-      if (canViewHistory) fetchBriefingHistory()
-      setCurrentView('form')
-      setIsLoading(false)
+      
+      // Show success state
+      setGenerationStatus('success')
+      
+      // Wait a moment to show success, then redirect
+      setTimeout(() => {
+        toast.success(`✅ Briefing salvo e copy gerada${totalDocs > 0 ? ` com ${totalDocs} documento(s)` : ''}!`)
+        form.reset()
+        setUploadedDocuments([])
+        lastFormDataRef.current = null
+        if (canViewHistory) fetchBriefingHistory()
+        setCurrentView('form')
+        setIsLoading(false)
+      }, 1500)
     } catch (error: any) {
       console.error('Erro ao salvar briefing:', error)
       const serverMsg = error?.message || error?.hint || 'Erro ao salvar briefing'
-      toast.error(`Erro ao salvar briefing: ${serverMsg}`)
+      setGenerationStatus('error')
+      setGenerationError(serverMsg)
+      setIsLoading(false)
+    }
+  }
+
+  const handleRetryGeneration = () => {
+    if (lastFormDataRef.current) {
+      onSubmit(lastFormDataRef.current)
+    } else {
       setCurrentView('form')
       setIsLoading(false)
     }
