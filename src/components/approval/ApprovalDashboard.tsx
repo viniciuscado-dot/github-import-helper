@@ -43,7 +43,14 @@ export function ApprovalDashboard({ filters, filterSetters, onNavigateToKanban }
 
   return (
     <>
-      <PageHeader title="Aprovação" />
+      <PageHeader
+        title="Aprovação"
+        actions={
+          <Button variant="outline" size="sm" className="gap-1.5 h-9" onClick={() => navigate("/aprovacao/evolucao")}>
+            <TrendingUp className="h-3.5 w-3.5" /> Acompanhar evolução
+          </Button>
+        }
+      />
 
       {/* KPIs */}
       <div className={`${layoutTokens.grid.cols3} ${layoutTokens.spacing.gridGap}`}>
