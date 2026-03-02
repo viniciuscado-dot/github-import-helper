@@ -50,9 +50,13 @@ export function NewsFeed() {
   }, [news, debouncedQuery]);
 
   const isSearchActive = debouncedQuery.trim().length > 0;
-  const heroItem = !isSearchActive && filtered.length > 0 ? filtered[0] : null;
-  const listItems = !isSearchActive ? filtered.slice(1, 4) : filtered;
-  const hasMore = !isSearchActive && filtered.length > 4;
+  const heroItem = !isSearchActive && !expanded && filtered.length > 0 ? filtered[0] : null;
+  const listItems = isSearchActive
+    ? filtered
+    : expanded
+      ? filtered
+      : filtered.slice(1, 4);
+  const hasMore = !isSearchActive && !expanded && filtered.length > 4;
 
   return (
     <section className={`w-full p-5 ${glassSection}`}>
