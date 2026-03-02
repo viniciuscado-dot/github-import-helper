@@ -1,21 +1,14 @@
 import { useState, useEffect, useMemo } from "react";
-import { ExternalLink, RefreshCw, Search, X } from "lucide-react";
+import { RefreshCw, Search, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { fetchNews, type NewsItem } from "@/services/newsService";
-
-const categoryColors: Record<string, string> = {
-  Marketing: "bg-primary/10 text-primary border-primary/20",
-  Ads: "bg-blue-500/10 text-blue-500 border-blue-500/20",
-  Negócios: "bg-emerald-500/10 text-emerald-500 border-emerald-500/20",
-};
+import { NewsHeroCard } from "@/components/home/NewsHeroCard";
+import { NewsListItem } from "@/components/home/NewsListItem";
 
 const glassSection =
   "rounded-2xl border border-border/10 bg-card/[0.04] backdrop-blur-xl shadow-sm";
-const glassCard =
-  "rounded-xl border border-border/10 bg-card/[0.06] backdrop-blur-lg transition-all duration-200 hover:border-primary/30 hover:shadow-lg hover:shadow-primary/5 hover:-translate-y-0.5";
 
 function useDebounce(value: string, ms: number) {
   const [debounced, setDebounced] = useState(value);
@@ -55,6 +48,10 @@ export function NewsFeed() {
     );
   }, [news, debouncedQuery]);
 
+  const isSearchActive = debouncedQuery.trim().length > 0;
+  const heroItem = !isSearchActive && filtered.length > 0 ? filtered[0] : null;
+  const listItems = !isSearchActive ? filtered.slice(1, 7) : filtered;
+
   return (
     <section className={`w-full p-5 ${glassSection}`}>
       {/* Header row */}
@@ -90,21 +87,25 @@ export function NewsFeed() {
       </div>
 
       {/* Result count when searching */}
-      {debouncedQuery.trim() && !loading && (
+      {isSearchActive && !loading && (
         <p className="text-[10px] text-muted-foreground mb-2">
           Exibindo {filtered.length} de {news.length}
         </p>
       )}
 
       {loading ? (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-          {[1, 2, 3, 4].map((i) => (
-            <Skeleton key={i} className="h-32 rounded-xl" />
-          ))}
+        /* Loading skeletons — editorial layout */
+        <div className="grid grid-cols-1 lg:grid-cols-[2fr_1fr] gap-4">
+          <Skeleton className="h-64 rounded-2xl" />
+          <div className="flex flex-col gap-3">
+            {[1, 2, 3, 4].map((i) => (
+              <Skeleton key={i} className="h-[72px] rounded-xl" />
+            ))}
+          </div>
         </div>
       ) : filtered.length === 0 ? (
         <div className="flex flex-col items-center justify-center rounded-xl border border-border/10 bg-card/[0.03] backdrop-blur-lg p-10 text-muted-foreground">
-          {debouncedQuery.trim() ? (
+          {isSearchActive ? (
             <>
               <p className="text-sm">Nenhum resultado para "{debouncedQuery}"</p>
               <Button variant="link" size="sm" onClick={() => setQuery("")} className="mt-1 text-xs">
@@ -115,34 +116,22 @@ export function NewsFeed() {
             <p className="text-sm">Nenhuma notícia disponível.</p>
           )}
         </div>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-          {filtered.map((item) => (
-            <a
-              key={item.id}
-              href={item.url}
-              target="_blank"
-              rel="noopener noreferrer"
-              className={`group flex flex-col gap-2 p-4 ${glassCard}`}
-            >
-              <div className="flex items-center justify-between gap-2">
-                <Badge variant="outline" className={`text-[10px] font-medium ${categoryColors[item.category] || ""}`}>
-                  {item.category}
-                </Badge>
-                <span className="text-[10px] text-muted-foreground shrink-0">
-                  {new Date(item.published_at).toLocaleDateString("pt-BR", { day: "2-digit", month: "short" })}
-                </span>
-              </div>
-              <h3 className="text-sm font-semibold text-foreground leading-snug line-clamp-2 group-hover:text-primary transition-colors">
-                {item.title}
-              </h3>
-              <p className="text-xs text-muted-foreground leading-relaxed line-clamp-2">{item.excerpt}</p>
-              <div className="flex items-center justify-between mt-auto pt-1">
-                <span className="text-[10px] text-muted-foreground">{item.source}</span>
-                <ExternalLink className="h-3 w-3 text-muted-foreground/40 group-hover:text-primary transition-colors" />
-              </div>
-            </a>
+      ) : isSearchActive ? (
+        /* Search active — flat list */
+        <div className="flex flex-col gap-3">
+          {listItems.map((item, i) => (
+            <NewsListItem key={item.id} item={item} index={i} />
           ))}
+        </div>
+      ) : (
+        /* Default — editorial hero + side list */
+        <div className="grid grid-cols-1 lg:grid-cols-[2fr_1fr] gap-4 items-start">
+          {heroItem && <NewsHeroCard item={heroItem} />}
+          <div className="flex flex-col gap-3">
+            {listItems.map((item, i) => (
+              <NewsListItem key={item.id} item={item} index={i} />
+            ))}
+          </div>
         </div>
       )}
     </section>
