@@ -551,7 +551,7 @@ export function AnaliseBench() {
           <div className="flex items-center gap-6">
             {/* Seletor de Cliente - sempre visível */}
             <div className="flex items-center gap-3">
-              <span className="text-sm font-medium">Cliente: <span className="text-destructive">*</span></span>
+              <span className="text-sm font-medium">Cliente:</span>
               <Select 
                 value={selectedClient} 
                 onValueChange={(value) => {
