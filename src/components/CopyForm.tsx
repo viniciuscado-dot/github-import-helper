@@ -29,6 +29,7 @@ import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import * as XLSX from 'xlsx'
 import { DotLogo } from '@/components/DotLogo';
+import { CopyGenerationOverlay } from '@/components/CopyGenerationOverlay';
 
 const copyFormSchema = z.object({
   // Transcrições das reuniões
