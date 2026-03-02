@@ -12,7 +12,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Badge } from "@/components/ui/badge"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Loader2, Plus, Trash2, FileText, Settings, X, Save, Eye, Copy, RefreshCw, Search, Send, Sparkles } from "lucide-react"
+import { Loader2, Plus, Trash2, FileText, Settings, X, Save, Eye, Copy, RefreshCw, Search, Send, Sparkles, Link, Pencil } from "lucide-react"
 import { useAuth } from "@/contexts/AuthContext"
 import { supabase } from "@/integrations/supabase/external-client"
 import { useModulePermissions } from "@/hooks/useModulePermissions"
@@ -80,7 +80,9 @@ export function AnaliseBench() {
   const [overlayError, setOverlayError] = useState<string | undefined>(undefined)
   const [pendingRetryId, setPendingRetryId] = useState<string | null>(null)
   const [showFullHistory, setShowFullHistory] = useState(false)
-
+  const [isEditingResponse, setIsEditingResponse] = useState(false)
+  const [editedResponse, setEditedResponse] = useState('')
+  const [isSavingEdit, setIsSavingEdit] = useState(false)
   const ANALISE_STEP_MESSAGES = [
     'Lendo dados da campanha…',
     'Cruzando métricas de desempenho…',
@@ -492,6 +494,37 @@ export function AnaliseBench() {
       console.error('Erro ao excluir análise:', error)
       toast.error('Erro ao excluir análise')
     }
+  }
+
+  const handleSaveEditedResponse = async () => {
+    if (!selectedBriefing) return
+    setIsSavingEdit(true)
+    try {
+      const { error } = await supabase
+        .from('analise_bench_forms')
+        .update({ ai_response: editedResponse })
+        .eq('id', selectedBriefing.id)
+      if (error) throw error
+      setSelectedBriefing({ ...selectedBriefing, ai_response: editedResponse })
+      setIsEditingResponse(false)
+      toast.success('Análise atualizada com sucesso')
+      fetchBriefingHistory()
+    } catch (error) {
+      console.error('Erro ao salvar edição:', error)
+      toast.error('Erro ao salvar edição')
+    } finally {
+      setIsSavingEdit(false)
+    }
+  }
+
+  const handleCopyShareLink = () => {
+    if (!selectedBriefing?.share_token) {
+      toast.error('Token de compartilhamento não disponível')
+      return
+    }
+    const url = `${window.location.origin}/analise/${selectedBriefing.share_token}`
+    navigator.clipboard.writeText(url)
+    toast.success('Link copiado para a área de transferência!')
   }
 
   return (
@@ -1308,7 +1341,12 @@ export function AnaliseBench() {
 
       {/* Dialog para ver detalhes do briefing */}
       {selectedBriefing && (
-        <Dialog open={!!selectedBriefing} onOpenChange={() => setSelectedBriefing(null)}>
+        <Dialog open={!!selectedBriefing} onOpenChange={(open) => {
+          if (!open) {
+            setSelectedBriefing(null)
+            setIsEditingResponse(false)
+          }
+        }}>
           <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle className="text-xl">
@@ -1366,6 +1404,49 @@ export function AnaliseBench() {
                         variant="outline"
                         size="sm"
                         className="h-7 text-xs"
+                        onClick={handleCopyShareLink}
+                      >
+                        <Link className="h-3 w-3 mr-1" /> Gerar Link
+                      </Button>
+                      {canEdit && !isEditingResponse && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="h-7 text-xs"
+                          onClick={() => {
+                            setIsEditingResponse(true)
+                            setEditedResponse(selectedBriefing.ai_response || '')
+                          }}
+                        >
+                          <Pencil className="h-3 w-3 mr-1" /> Editar
+                        </Button>
+                      )}
+                      {isEditingResponse && (
+                        <>
+                          <Button
+                            variant="default"
+                            size="sm"
+                            className="h-7 text-xs"
+                            onClick={handleSaveEditedResponse}
+                            disabled={isSavingEdit}
+                          >
+                            {isSavingEdit ? <Loader2 className="h-3 w-3 mr-1 animate-spin" /> : <Save className="h-3 w-3 mr-1" />}
+                            Salvar
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-7 text-xs"
+                            onClick={() => setIsEditingResponse(false)}
+                          >
+                            <X className="h-3 w-3 mr-1" /> Cancelar
+                          </Button>
+                        </>
+                      )}
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="h-7 text-xs"
                         onClick={() => {
                           navigator.clipboard.writeText(selectedBriefing.ai_response || '')
                           toast.success('Análise copiada para a área de transferência')
@@ -1389,9 +1470,17 @@ export function AnaliseBench() {
                       )}
                     </div>
                   </div>
-                  <div className="prose prose-sm max-w-none bg-muted/30 rounded-xl p-5 border border-border/30">
-                    <MarkdownRenderer content={selectedBriefing.ai_response} />
-                  </div>
+                  {isEditingResponse ? (
+                    <Textarea
+                      value={editedResponse}
+                      onChange={(e) => setEditedResponse(e.target.value)}
+                      className="min-h-[400px] font-mono text-sm bg-muted/30 rounded-xl border border-border/30"
+                    />
+                  ) : (
+                    <div className="prose prose-sm max-w-none bg-muted/30 rounded-xl p-5 border border-border/30">
+                      <MarkdownRenderer content={selectedBriefing.ai_response} />
+                    </div>
+                  )}
                 </div>
               )}
 
