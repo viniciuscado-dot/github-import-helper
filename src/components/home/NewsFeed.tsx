@@ -101,11 +101,11 @@ export function NewsFeed() {
 
       {loading ? (
         /* Loading skeletons — editorial layout */
-        <div className="grid grid-cols-1 lg:grid-cols-[2fr_1fr] gap-4">
+        <div className="grid grid-cols-1 lg:grid-cols-[1.4fr_1fr] gap-4">
           <Skeleton className="h-64 rounded-2xl" />
           <div className="flex flex-col gap-3">
-            {[1, 2, 3, 4].map((i) => (
-              <Skeleton key={i} className="h-[72px] rounded-xl" />
+            {[1, 2, 3].map((i) => (
+              <Skeleton key={i} className="h-[80px] rounded-xl" />
             ))}
           </div>
         </div>
