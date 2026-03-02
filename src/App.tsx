@@ -15,6 +15,7 @@ const Auth = lazy(() => import("./pages/Auth"));
 
 import NotFound from "./pages/NotFound";
 const Aprovacao = lazy(() => import("./pages/Aprovacao"));
+const AprovacaoEvolucao = lazy(() => import("./pages/AprovacaoEvolucao"));
 const SocialMediaPlanejamento = lazy(() => import("./pages/SocialMediaPlanejamento"));
 const SocialMediaVarredura = lazy(() => import("./pages/SocialMediaVarredura"));
 const SocialMediaCentralPosts = lazy(() => import("./pages/SocialMediaCentralPosts"));
