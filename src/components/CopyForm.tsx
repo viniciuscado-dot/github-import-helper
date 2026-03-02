@@ -350,7 +350,7 @@ export function CopyForm({ onBack }: CopyFormProps = {}) {
           const { data: profileData } = await supabase
             .from('profiles')
             .select('name, email')
-            .eq('user_id', briefing.created_by)
+            .eq('id', briefing.created_by)
             .single()
 
           return {

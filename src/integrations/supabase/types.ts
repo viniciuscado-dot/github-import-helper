@@ -14,11 +14,177 @@ export type Database = {
   }
   public: {
     Tables: {
+      briefing_form_labels: {
+        Row: {
+          created_at: string
+          description_text: string | null
+          field_key: string
+          id: string
+          label_text: string | null
+          section_description: string | null
+          section_title: string | null
+          updated_at: string
+          updated_by: string | null
+        }
+        Insert: {
+          created_at?: string
+          description_text?: string | null
+          field_key: string
+          id?: string
+          label_text?: string | null
+          section_description?: string | null
+          section_title?: string | null
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Update: {
+          created_at?: string
+          description_text?: string | null
+          field_key?: string
+          id?: string
+          label_text?: string | null
+          section_description?: string | null
+          section_title?: string | null
+          updated_at?: string
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
+      copy_forms: {
+        Row: {
+          ai_provider: string | null
+          ai_response: string | null
+          avatar_principal: string | null
+          cases_impressionantes: string | null
+          copy_type: string
+          created_at: string
+          created_by: string
+          diferencial_competitivo: string | null
+          document_files: Json | null
+          id: string
+          informacao_extra: string | null
+          investimento_medio: string | null
+          maior_objecao: string | null
+          momento_jornada: string | null
+          nicho_empresa: string | null
+          nome_empresa: string | null
+          nomes_empresas: string | null
+          numeros_certificados: string | null
+          pergunta_qualificatoria: string | null
+          principal_inimigo: string | null
+          publico_alvo: string | null
+          response_generated_at: string | null
+          reuniao_boas_vindas: string | null
+          reuniao_brainstorm: string | null
+          reuniao_kick_off: string | null
+          servicos_produtos: string | null
+          status: string
+          tamanho_lp: string | null
+          updated_at: string
+        }
+        Insert: {
+          ai_provider?: string | null
+          ai_response?: string | null
+          avatar_principal?: string | null
+          cases_impressionantes?: string | null
+          copy_type?: string
+          created_at?: string
+          created_by: string
+          diferencial_competitivo?: string | null
+          document_files?: Json | null
+          id?: string
+          informacao_extra?: string | null
+          investimento_medio?: string | null
+          maior_objecao?: string | null
+          momento_jornada?: string | null
+          nicho_empresa?: string | null
+          nome_empresa?: string | null
+          nomes_empresas?: string | null
+          numeros_certificados?: string | null
+          pergunta_qualificatoria?: string | null
+          principal_inimigo?: string | null
+          publico_alvo?: string | null
+          response_generated_at?: string | null
+          reuniao_boas_vindas?: string | null
+          reuniao_brainstorm?: string | null
+          reuniao_kick_off?: string | null
+          servicos_produtos?: string | null
+          status?: string
+          tamanho_lp?: string | null
+          updated_at?: string
+        }
+        Update: {
+          ai_provider?: string | null
+          ai_response?: string | null
+          avatar_principal?: string | null
+          cases_impressionantes?: string | null
+          copy_type?: string
+          created_at?: string
+          created_by?: string
+          diferencial_competitivo?: string | null
+          document_files?: Json | null
+          id?: string
+          informacao_extra?: string | null
+          investimento_medio?: string | null
+          maior_objecao?: string | null
+          momento_jornada?: string | null
+          nicho_empresa?: string | null
+          nome_empresa?: string | null
+          nomes_empresas?: string | null
+          numeros_certificados?: string | null
+          pergunta_qualificatoria?: string | null
+          principal_inimigo?: string | null
+          publico_alvo?: string | null
+          response_generated_at?: string | null
+          reuniao_boas_vindas?: string | null
+          reuniao_brainstorm?: string | null
+          reuniao_kick_off?: string | null
+          servicos_produtos?: string | null
+          status?: string
+          tamanho_lp?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      default_briefing_documents: {
+        Row: {
+          copy_type: string
+          created_at: string
+          file_name: string
+          file_path: string
+          file_size: number | null
+          id: string
+          is_active: boolean
+          uploaded_by: string
+        }
+        Insert: {
+          copy_type?: string
+          created_at?: string
+          file_name: string
+          file_path: string
+          file_size?: number | null
+          id?: string
+          is_active?: boolean
+          uploaded_by: string
+        }
+        Update: {
+          copy_type?: string
+          created_at?: string
+          file_name?: string
+          file_path?: string
+          file_size?: number | null
+          id?: string
+          is_active?: boolean
+          uploaded_by?: string
+        }
+        Relationships: []
+      }
       default_prompts: {
         Row: {
           content: string
           copy_type: string
           created_at: string
+          created_by: string | null
           id: string
           is_active: boolean
           position: number
@@ -29,6 +195,7 @@ export type Database = {
           content: string
           copy_type?: string
           created_at?: string
+          created_by?: string | null
           id?: string
           is_active?: boolean
           position?: number
@@ -39,6 +206,7 @@ export type Database = {
           content?: string
           copy_type?: string
           created_at?: string
+          created_by?: string | null
           id?: string
           is_active?: boolean
           position?: number

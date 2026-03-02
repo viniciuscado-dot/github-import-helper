@@ -81,11 +81,14 @@ serve(async (req) => {
       }
     }
 
-    // Buscar prompts padrão do sistema para enriquecer a resposta
+    // Buscar prompts padrão do sistema filtrando pelo tipo de copy do briefing
+    const copyType = formData.copy_type || 'onboarding';
+    console.log('📋 Buscando prompts do tipo:', copyType);
     const { data: prompts } = await supabase
       .from('default_prompts')
       .select('*')
       .eq('is_active', true)
+      .eq('copy_type', copyType)
       .order('position', { ascending: true });
 
     let systemPrompt = '';
