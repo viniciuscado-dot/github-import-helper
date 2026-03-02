@@ -496,6 +496,37 @@ export function AnaliseBench() {
     }
   }
 
+  const handleSaveEditedResponse = async () => {
+    if (!selectedBriefing) return
+    setIsSavingEdit(true)
+    try {
+      const { error } = await supabase
+        .from('analise_bench_forms')
+        .update({ ai_response: editedResponse })
+        .eq('id', selectedBriefing.id)
+      if (error) throw error
+      setSelectedBriefing({ ...selectedBriefing, ai_response: editedResponse })
+      setIsEditingResponse(false)
+      toast.success('Análise atualizada com sucesso')
+      fetchBriefingHistory()
+    } catch (error) {
+      console.error('Erro ao salvar edição:', error)
+      toast.error('Erro ao salvar edição')
+    } finally {
+      setIsSavingEdit(false)
+    }
+  }
+
+  const handleCopyShareLink = () => {
+    if (!selectedBriefing?.share_token) {
+      toast.error('Token de compartilhamento não disponível')
+      return
+    }
+    const url = `${window.location.origin}/analise/${selectedBriefing.share_token}`
+    navigator.clipboard.writeText(url)
+    toast.success('Link copiado para a área de transferência!')
+  }
+
   return (
     <div className="space-y-6">
       {/* Overlay de geração */}
