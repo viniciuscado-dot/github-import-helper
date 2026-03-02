@@ -1404,6 +1404,49 @@ export function AnaliseBench() {
                         variant="outline"
                         size="sm"
                         className="h-7 text-xs"
+                        onClick={handleCopyShareLink}
+                      >
+                        <Link className="h-3 w-3 mr-1" /> Gerar Link
+                      </Button>
+                      {canEdit && !isEditingResponse && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="h-7 text-xs"
+                          onClick={() => {
+                            setIsEditingResponse(true)
+                            setEditedResponse(selectedBriefing.ai_response || '')
+                          }}
+                        >
+                          <Pencil className="h-3 w-3 mr-1" /> Editar
+                        </Button>
+                      )}
+                      {isEditingResponse && (
+                        <>
+                          <Button
+                            variant="default"
+                            size="sm"
+                            className="h-7 text-xs"
+                            onClick={handleSaveEditedResponse}
+                            disabled={isSavingEdit}
+                          >
+                            {isSavingEdit ? <Loader2 className="h-3 w-3 mr-1 animate-spin" /> : <Save className="h-3 w-3 mr-1" />}
+                            Salvar
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-7 text-xs"
+                            onClick={() => setIsEditingResponse(false)}
+                          >
+                            <X className="h-3 w-3 mr-1" /> Cancelar
+                          </Button>
+                        </>
+                      )}
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="h-7 text-xs"
                         onClick={() => {
                           navigator.clipboard.writeText(selectedBriefing.ai_response || '')
                           toast.success('Análise copiada para a área de transferência')
@@ -1427,9 +1470,17 @@ export function AnaliseBench() {
                       )}
                     </div>
                   </div>
-                  <div className="prose prose-sm max-w-none bg-muted/30 rounded-xl p-5 border border-border/30">
-                    <MarkdownRenderer content={selectedBriefing.ai_response} />
-                  </div>
+                  {isEditingResponse ? (
+                    <Textarea
+                      value={editedResponse}
+                      onChange={(e) => setEditedResponse(e.target.value)}
+                      className="min-h-[400px] font-mono text-sm bg-muted/30 rounded-xl border border-border/30"
+                    />
+                  ) : (
+                    <div className="prose prose-sm max-w-none bg-muted/30 rounded-xl p-5 border border-border/30">
+                      <MarkdownRenderer content={selectedBriefing.ai_response} />
+                    </div>
+                  )}
                 </div>
               )}
 
