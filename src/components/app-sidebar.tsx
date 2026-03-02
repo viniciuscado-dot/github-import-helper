@@ -1,4 +1,4 @@
-import { Users, Settings, Copy, CheckCircle, BarChart2, Sparkles, LogOut, TrendingUp, Shield, Home, Video, Lightbulb, Layout, Eye, Newspaper, ClipboardList, Activity } from "lucide-react"
+import { Users, Settings, Copy, CheckCircle, BarChart2, Sparkles, LogOut, TrendingUp, Shield, Home, Video, Lightbulb, Layout, Eye, Newspaper, ClipboardList, Activity, Megaphone } from "lucide-react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { UserProfilePopover } from "./UserProfilePopover"
 import { useAuth } from "@/contexts/AuthContext"
@@ -25,8 +25,8 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog"
 
 interface AppSidebarProps {
-  activeView: 'home-criacao' | 'users' | 'profile' | 'copy' | 'aprovacao' | 'analise-bench' | 'preferencias-interface' | 'planejamento-conteudo' | 'varredura'
-  onViewChange: (view: 'home-criacao' | 'users' | 'profile' | 'copy' | 'aprovacao' | 'analise-bench' | 'preferencias-interface' | 'planejamento-conteudo' | 'varredura') => void
+  activeView: 'home-criacao' | 'users' | 'profile' | 'copy' | 'aprovacao' | 'analise-bench' | 'anuncios' | 'preferencias-interface' | 'planejamento-conteudo' | 'varredura'
+  onViewChange: (view: 'home-criacao' | 'users' | 'profile' | 'copy' | 'aprovacao' | 'analise-bench' | 'anuncios' | 'preferencias-interface' | 'planejamento-conteudo' | 'varredura') => void
 }
 
 export function AppSidebar({ activeView, onViewChange }: AppSidebarProps) {
@@ -43,6 +43,7 @@ export function AppSidebar({ activeView, onViewChange }: AppSidebarProps) {
     { id: 'copy', title: 'Copy', view: 'copy' as const, icon: Copy },
     { id: 'aprovacao', title: 'Aprovação', view: 'aprovacao' as const, icon: CheckCircle, route: '/aprovacao' },
     { id: 'analise-bench', title: 'Análise e Bench', view: 'analise-bench' as const, icon: BarChart2 },
+    { id: 'anuncios', title: 'Anúncios', view: 'anuncios' as const, icon: Megaphone, route: '/performance/anuncios' },
   ], []);
 
   const isCollapsed = state === "collapsed"

@@ -25,6 +25,7 @@ const LaboratorioLPBuilder = lazy(() => import("./pages/LaboratorioLPBuilder"));
 const LaboratorioDiagnosticoVisual = lazy(() => import("./pages/LaboratorioDiagnosticoVisual"));
 const Noticias = lazy(() => import("./pages/Noticias"));
 import AprovacaoCliente from "./pages/AprovacaoCliente";
+const Anuncios = lazy(() => import("./pages/Anuncios"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -77,6 +78,15 @@ const App = () => (
                 </ProtectedRoute>
               } />
               <Route path="/aprovacao-cliente/:token" element={<AprovacaoCliente />} />
+
+              {/* ── Anúncios ── */}
+              <Route path="/performance/anuncios" element={
+                <ProtectedRoute>
+                  <Suspense fallback={<DashboardFallback />}>
+                    <Anuncios />
+                  </Suspense>
+                </ProtectedRoute>
+              } />
 
               {/* ── Social Media ── */}
               <Route path="/social-media/planejamento" element={
