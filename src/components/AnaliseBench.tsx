@@ -24,6 +24,8 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { CopyGenerationOverlay } from '@/components/CopyGenerationOverlay'
 import { MarkdownRenderer } from '@/components/ui/markdown-renderer'
+import { AnaliseResultsRecent } from '@/components/analise/AnaliseResultsRecent'
+import { AnaliseHistoryFull } from '@/components/analise/AnaliseHistoryFull'
 
 // Schema de validação do formulário
 const analiseFormSchema = z.object({
