@@ -137,6 +137,13 @@ export interface OfficialRatings {
   perCreative?: Record<number, { copyRating: number; designRating: number }>;
 }
 
+export interface ClientRankingEntry {
+  position: number;
+  clientName: string;
+  avgRating: number;
+  totalReviews: number;
+}
+
 // ─── Helper: map DB row to ApprovalJobData ────────────
 
 function rowToJob(row: any): ApprovalJobData {
@@ -466,6 +473,55 @@ export async function computeDesignerRanking(filters?: Parameters<typeof getJobs
 
 export async function computeCopywriterRanking(filters?: Parameters<typeof getJobs>[0]) {
   return computeDesignerRanking(filters);
+}
+
+// ─── Client Ranking ───────────────────────────────────
+
+export async function computeClientRanking(filters?: Parameters<typeof getJobs>[0]): Promise<ClientRankingEntry[]> {
+  const jobs = await getJobs(filters);
+  const jobIds = jobs.map(j => j.id);
+
+  if (jobIds.length === 0) return [];
+
+  const { data: evals } = await supabase
+    .from("evaluations")
+    .select("copy_score, design_score, project_id")
+    .in("project_id", jobIds)
+    .eq("is_official", true);
+
+  // Map evaluations to their project's client_name
+  const jobClientMap = new Map<string, string>();
+  jobs.forEach(j => {
+    if (j.client_name) jobClientMap.set(j.id, j.client_name);
+  });
+
+  const clientMap = new Map<string, { totalRating: number; count: number }>();
+
+  (evals || []).forEach((e: any) => {
+    const clientName = jobClientMap.get(e.project_id);
+    if (!clientName) return;
+
+    const ratings: number[] = [];
+    if (e.copy_score) ratings.push(Number(e.copy_score));
+    if (e.design_score) ratings.push(Number(e.design_score));
+    if (ratings.length === 0) return;
+
+    const avg = ratings.reduce((s, r) => s + r, 0) / ratings.length;
+    const entry = clientMap.get(clientName) || { totalRating: 0, count: 0 };
+    entry.totalRating += avg;
+    entry.count++;
+    clientMap.set(clientName, entry);
+  });
+
+  return Array.from(clientMap.entries())
+    .map(([clientName, data]) => ({
+      position: 0,
+      clientName,
+      avgRating: data.count > 0 ? data.totalRating / data.count : 0,
+      totalReviews: data.count,
+    }))
+    .sort((a, b) => b.avgRating - a.avgRating || b.totalReviews - a.totalReviews)
+    .map((e, i) => ({ ...e, position: i + 1 }));
 }
 
 // ─── CRUD operations ─────────────────────────────────
