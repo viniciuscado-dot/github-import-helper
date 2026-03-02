@@ -59,11 +59,11 @@ export function AppSidebar({ activeView, onViewChange }: AppSidebarProps) {
   };
 
   // Shared menu button classes
-  const menuBtnBase = "w-full transition-all duration-150 ease-in-out"
-  const menuBtnExpanded = `${menuBtnBase} justify-start py-2.5 gap-3`
+  const menuBtnBase = "w-full transition-all duration-150 ease-in-out rounded-lg"
+  const menuBtnExpanded = `${menuBtnBase} justify-start py-2.5 px-3 gap-3`
   const menuBtnCollapsed = `${menuBtnBase} justify-center py-2.5`
 
-  const activeStyle = { backgroundColor: '#ec4a55', color: 'white' }
+  const activeClass = "bg-[#ec4a55]/15 text-[#ec4a55] font-medium"
 
   // Helper to render a menu item with tooltip support
   const renderMenuItem = (
