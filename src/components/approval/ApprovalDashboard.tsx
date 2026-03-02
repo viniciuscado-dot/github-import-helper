@@ -4,6 +4,7 @@ import { PageHeader } from "./layout/PageHeader";
 import { KPICard } from "./layout/KPICard";
 import { RankingTable } from "./layout/RankingTable";
 import { SquadRankingTable } from "./layout/SquadRankingTable";
+import { ClientRankingCard } from "./ClientRankingCard";
 import { layoutTokens } from "./layout/layoutTokens";
 import {
   computeKPIs,
@@ -129,6 +130,9 @@ export function ApprovalDashboard({ filters, filterSetters, onNavigateToKanban }
         <p className="text-xs text-muted-foreground mb-5">Desempenho das squads no período filtrado</p>
         <SquadRankingTable data={squadRanking} />
       </div>
+
+      {/* Client Ranking */}
+      <ClientRankingCard filters={filters} />
     </>
   );
 }
