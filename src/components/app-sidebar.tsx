@@ -165,23 +165,21 @@ export function AppSidebar({ activeView, onViewChange }: AppSidebarProps) {
 
       </SidebarHeader>
 
+      {/* ══════════ HOME FIXO ══════════ */}
+      <div className="flex-shrink-0 px-2 pt-2 pb-0">
+        <SidebarMenu>
+          <SidebarMenuItem>
+            {renderMenuItem(
+              { id: 'home', title: 'Home', icon: Home },
+              activeView === 'home-criacao',
+              () => onViewChange('home-criacao')
+            )}
+          </SidebarMenuItem>
+        </SidebarMenu>
+      </div>
+
       {/* ══════════ BLOCO CENTRAL ROLÁVEL ══════════ */}
       <SidebarContent className="flex-1 overflow-y-auto pb-10 mb-8">
-
-        {/* Home */}
-        <SidebarGroup className="pt-2 pb-0">
-          <SidebarGroupContent>
-            <SidebarMenu>
-              <SidebarMenuItem>
-                {renderMenuItem(
-                  { id: 'home', title: 'Home', icon: Home },
-                  activeView === 'home-criacao',
-                  () => onViewChange('home-criacao')
-                )}
-              </SidebarMenuItem>
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
 
         {/* Performance */}
         <SidebarGroup className="pt-2">
