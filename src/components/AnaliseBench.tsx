@@ -83,6 +83,9 @@ export function AnaliseBench() {
   const [isEditingResponse, setIsEditingResponse] = useState(false)
   const [editedResponse, setEditedResponse] = useState('')
   const [isSavingEdit, setIsSavingEdit] = useState(false)
+  const [logoFile, setLogoFile] = useState<File | null>(null)
+  const [logoPreview, setLogoPreview] = useState<string | null>(null)
+  const [isUploadingLogo, setIsUploadingLogo] = useState(false)
   const ANALISE_STEP_MESSAGES = [
     'Lendo dados da campanha…',
     'Cruzando métricas de desempenho…',
@@ -343,6 +346,27 @@ export function AnaliseBench() {
 
       console.log('💾 Salvando briefing...')
       
+      // Upload logo if provided
+      let clientLogoUrl: string | null = null
+      if (logoFile) {
+        setIsUploadingLogo(true)
+        const ext = logoFile.name.split('.').pop()
+        const filePath = `analise-logos/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`
+        const { error: uploadError } = await supabase.storage
+          .from('material-files')
+          .upload(filePath, logoFile, { contentType: logoFile.type })
+        setIsUploadingLogo(false)
+        if (uploadError) {
+          console.error('Erro ao fazer upload do logo:', uploadError)
+          toast.error('Erro ao fazer upload do logo')
+        } else {
+          const { data: publicUrl } = supabase.storage
+            .from('material-files')
+            .getPublicUrl(filePath)
+          clientLogoUrl = publicUrl.publicUrl
+        }
+      }
+      
       // Remover campo quantos_concorrentes que não existe no banco
       const { quantos_concorrentes, ...briefingData } = data;
       
@@ -354,6 +378,7 @@ export function AnaliseBench() {
           competitors: competitors as any,
           created_by: createdBy,
           status: 'processing',
+          client_logo_url: clientLogoUrl,
         })
         .select()
         .single()
@@ -413,6 +438,8 @@ export function AnaliseBench() {
       
       form.reset()
       setCompetitors([{ id: '1', nome: '', tipo: 'direto', site: '', instagram_linkedin: '', porque_escolhido: '' }])
+      setLogoFile(null)
+      setLogoPreview(null)
     } catch (error: any) {
       console.error('Erro ao salvar briefing:', error)
       setOverlayStatus('error')
@@ -653,6 +680,51 @@ export function AnaliseBench() {
                     <CardDescription className="text-xs">descrição (criar)</CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-4">
+                    {/* Logo upload */}
+                    <div className="space-y-2">
+                      <FormLabel>Logo do Cliente</FormLabel>
+                      <FormDescription className="text-xs">
+                        Anexe o logo do cliente (PNG, JPEG, SVG ou PDF) para análise de identidade visual
+                      </FormDescription>
+                      <div className="flex items-center gap-3">
+                        <label className="flex items-center gap-2 px-3 py-2 border border-input rounded-md cursor-pointer hover:bg-accent transition-colors text-sm">
+                          <Plus className="h-4 w-4" />
+                          {logoFile ? logoFile.name : 'Selecionar arquivo'}
+                          <input
+                            type="file"
+                            accept=".png,.jpg,.jpeg,.svg,.pdf"
+                            className="hidden"
+                            onChange={(e) => {
+                              const file = e.target.files?.[0]
+                              if (file) {
+                                if (file.size > 5 * 1024 * 1024) {
+                                  toast.error('Arquivo muito grande (máx. 5MB)')
+                                  return
+                                }
+                                setLogoFile(file)
+                                if (file.type.startsWith('image/')) {
+                                  const url = URL.createObjectURL(file)
+                                  setLogoPreview(url)
+                                } else {
+                                  setLogoPreview(null)
+                                }
+                              }
+                            }}
+                          />
+                        </label>
+                        {logoFile && (
+                          <Button type="button" variant="ghost" size="sm" onClick={() => { setLogoFile(null); setLogoPreview(null) }}>
+                            <X className="h-4 w-4" />
+                          </Button>
+                        )}
+                      </div>
+                      {logoPreview && (
+                        <div className="mt-2 rounded-md border border-border/40 p-2 bg-muted/30 w-fit">
+                          <img src={logoPreview} alt="Logo preview" className="max-h-16 max-w-[120px] object-contain" />
+                        </div>
+                      )}
+                    </div>
+
                     <FormField
                       control={form.control}
                       name="nome_empresa"
