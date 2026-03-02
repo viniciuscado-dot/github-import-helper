@@ -2347,118 +2347,12 @@ EX: Mais de 1.000 projetos de placas solares instalados em todo o Rio Grande do 
         )}
       </Tabs>
 
-      {/* Dialog para visualizar copy */}
-      <Dialog open={!!viewingCopy} onOpenChange={() => setViewingCopy(null)}>
-        <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>
-              Copy - {viewingCopy?.nome_empresa || 'Sem nome'}
-            </DialogTitle>
-          </DialogHeader>
-          {viewingCopy && (
-            <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-4 text-sm">
-                <div>
-                  <span className="font-medium">Status:</span>
-                  <Badge className={`ml-2 ${
-                    viewingCopy.status === 'completed' ? 'bg-green-500 text-white border-green-500' : ''
-                  }`} variant={
-                    viewingCopy.status === 'completed' ? 'default' : 
-                    viewingCopy.status === 'processing' ? 'secondary' : 'destructive'
-                  }>
-                    {viewingCopy.status === 'completed' ? 'Concluído' : 
-                     viewingCopy.status === 'processing' ? 'Processando' : 'Erro'}
-                  </Badge>
-                </div>
-                <div>
-                  <span className="font-medium">Criado em:</span>
-                  <span className="ml-2">{new Date(viewingCopy.created_at).toLocaleString('pt-BR')}</span>
-                </div>
-              </div>
-              
-              {viewingCopy.ai_response && (
-                <div>
-                  <div className="space-y-4">
-                    {(() => {
-                      const copies = viewingCopy.ai_response.split('\n\n=== NOVA COPY ===\n\n');
-                      return copies.map((copyContent, index) => {
-                        const isExpanded = expandedCopies.has(index);
-                        const toggleExpanded = () => {
-                          const newExpanded = new Set(expandedCopies);
-                          if (isExpanded) {
-                            newExpanded.delete(index);
-                          } else {
-                            newExpanded.add(index);
-                          }
-                          setExpandedCopies(newExpanded);
-                        };
-                        
-                        // Extract date from the copy content or use the briefing creation date
-                        const copyDate = index === 0 
-                          ? new Date(viewingCopy.created_at) 
-                          : new Date(viewingCopy.response_generated_at || viewingCopy.created_at);
-                        
-                        const formattedDate = copyDate.toLocaleDateString('pt-BR', {
-                          day: '2-digit',
-                          month: '2-digit', 
-                          year: 'numeric'
-                        }) + ', ' + copyDate.toLocaleTimeString('pt-BR', {
-                          hour: '2-digit',
-                          minute: '2-digit'
-                        });
-
-                        return (
-                          <div key={index} className="border rounded-lg">
-                            <button
-                              onClick={toggleExpanded}
-                              className="w-full text-left p-3 hover:bg-muted/50 transition-colors flex items-center justify-between"
-                            >
-                              <span className="font-medium text-sm">
-                                Copy versão {index + 1} - Criado em {formattedDate}
-                              </span>
-                              <div className="flex items-center gap-2">
-                                <Button
-                                  size="sm"
-                                  variant="outline"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    navigator.clipboard.writeText(copyContent);
-                                    toast.success(`Copy versão ${index + 1} copiada para a área de transferência!`);
-                                  }}
-                                >
-                                  <Copy className="h-3 w-3" />
-                                </Button>
-                                <Button
-                                  size="sm"
-                                  variant="outline"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    exportMarkdownTableToExcel(copyContent, `copy-${viewingCopy?.nome_empresa?.replace(/[^a-zA-Z0-9]/g, '-') || 'sem-nome'}-v${index + 1}`);
-                                  }}
-                                >
-                                  <FileSpreadsheet className="h-3 w-3" />
-                                </Button>
-                                <Eye className={`h-4 w-4 transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
-                              </div>
-                            </button>
-                            {isExpanded && (
-                              <div className="border-t bg-muted/20 p-4 text-sm prose prose-sm max-w-none prose-table:border prose-table:border-border prose-th:border prose-th:border-border prose-th:bg-muted prose-td:border prose-td:border-border">
-                                <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                                  {copyContent.trim()}
-                                </ReactMarkdown>
-                              </div>
-                            )}
-                          </div>
-                        );
-                      });
-                    })()}
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
-        </DialogContent>
-      </Dialog>
+      {/* Dialog para visualizar copy - Premium */}
+      <CopyDetailDialog
+        copy={viewingCopy}
+        open={!!viewingCopy}
+        onOpenChange={() => setViewingCopy(null)}
+      />
 
       {/* Dialog para editar prompt */}
       <Dialog open={!!editingPrompt} onOpenChange={() => setEditingPrompt(null)}>
