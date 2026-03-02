@@ -3,7 +3,7 @@
  */
 export const featureFlags = {
   /** When false, all Anthropic/AI features show a "disabled" message */
-  AI_ENABLED: false,
+  AI_ENABLED: true,
   /** When false, the app uses a local mock data layer instead of Supabase */
   SUPABASE_ENABLED: true,
 };
