@@ -63,6 +63,11 @@ export default function AnaliseArtefato() {
       <main className="max-w-5xl mx-auto px-4 sm:px-6 py-8 sm:py-12 space-y-8">
         {/* Hero */}
         <div className="text-center space-y-3">
+          {data.client_logo_url && (
+            <div className="flex justify-center mb-4">
+              <img src={data.client_logo_url} alt="Logo do cliente" className="max-h-20 max-w-[200px] object-contain" />
+            </div>
+          )}
           <h1 className="text-3xl sm:text-4xl font-bold text-white">
             {data.nome_empresa || "Análise de Benchmarking"}
           </h1>
