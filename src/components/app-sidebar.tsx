@@ -245,7 +245,7 @@ export function AppSidebar({ activeView, onViewChange }: AppSidebarProps) {
         </SidebarGroup>
 
         {/* News */}
-        <SidebarGroup className="pt-2">
+        <SidebarGroup className="pt-3 pb-1">
           <SidebarGroupLabel className={groupLabelClass}>News</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
