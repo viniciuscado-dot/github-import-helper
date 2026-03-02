@@ -290,9 +290,9 @@ export function AppSidebar({ activeView, onViewChange }: AppSidebarProps) {
                     <TooltipContent side="right"><p>Voltar para módulos</p></TooltipContent>
                   </Tooltip>
                 ) : (
-                  <SidebarMenuButton className={menuBtnExpanded}>
+                  <SidebarMenuButton className={`${menuBtnExpanded} text-muted-foreground hover:text-foreground hover:bg-muted/50`}>
                     <Settings className="h-4 w-4 flex-shrink-0 text-[#ec4a55]" />
-                    <span className="text-xs">Voltar para módulos</span>
+                    <span className="text-[13px]">Voltar para módulos</span>
                   </SidebarMenuButton>
                 )}
               </DialogTrigger>
