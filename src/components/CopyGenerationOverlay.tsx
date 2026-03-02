@@ -27,7 +27,8 @@ interface CopyGenerationOverlayProps {
   stepMessages?: string[];
 }
 
-export function CopyGenerationOverlay({ status, onRetry, errorMessage }: CopyGenerationOverlayProps) {
+export function CopyGenerationOverlay({ status, onRetry, errorMessage, title, successMessage, stepMessages }: CopyGenerationOverlayProps) {
+  const STEP_MESSAGES = stepMessages || DEFAULT_STEP_MESSAGES;
   const [progress, setProgress] = useState(0);
   const [stepIndex, setStepIndex] = useState(0);
 
