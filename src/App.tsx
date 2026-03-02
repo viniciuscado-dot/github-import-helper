@@ -26,6 +26,7 @@ const LaboratorioDiagnosticoVisual = lazy(() => import("./pages/LaboratorioDiagn
 const Noticias = lazy(() => import("./pages/Noticias"));
 import AprovacaoCliente from "./pages/AprovacaoCliente";
 const Anuncios = lazy(() => import("./pages/Anuncios"));
+const AnaliseArtefato = lazy(() => import("./pages/AnaliseArtefato"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
