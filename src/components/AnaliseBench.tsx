@@ -500,7 +500,7 @@ export function AnaliseBench() {
       {overlayStatus && (
         <CopyGenerationOverlay
           status={overlayStatus}
-          title="Gerando análise com IA…"
+          title="Gerando análise de mercado..."
           successMessage="Análise gerada com sucesso"
           stepMessages={ANALISE_STEP_MESSAGES}
           errorMessage={overlayError}
