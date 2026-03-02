@@ -122,13 +122,27 @@ export function NewsFeed() {
             <p className="text-sm">Nenhuma notícia disponível.</p>
           )}
         </div>
-      ) : isSearchActive ? (
-        /* Search active — flat list */
-        <div className="flex flex-col gap-3">
-          {listItems.map((item, i) => (
-            <NewsListItem key={item.id} item={item} index={i} />
-          ))}
-        </div>
+      ) : isSearchActive || expanded ? (
+        /* Search active or expanded — flat list */
+        <>
+          <div className="flex flex-col gap-3">
+            {listItems.map((item, i) => (
+              <NewsListItem key={item.id} item={item} index={i} />
+            ))}
+          </div>
+          {expanded && !isSearchActive && (
+            <div className="flex justify-center mt-4">
+              <Button
+                variant="outline"
+                size="sm"
+                className="text-xs gap-1.5 h-8 px-6 rounded-lg border-border/20 bg-card/[0.06] backdrop-blur-lg hover:border-primary/30"
+                onClick={() => setExpanded(false)}
+              >
+                Ver menos
+              </Button>
+            </div>
+          )}
+        </>
       ) : (
         /* Default — editorial hero + side list */
         <>
@@ -146,11 +160,7 @@ export function NewsFeed() {
                 variant="outline"
                 size="sm"
                 className="text-xs gap-1.5 h-8 px-6 rounded-lg border-border/20 bg-card/[0.06] backdrop-blur-lg hover:border-primary/30"
-                onClick={() => {
-                  /* Expand to show all */
-                  setQuery(" ");
-                  setTimeout(() => setQuery(""), 10);
-                }}
+                onClick={() => setExpanded(true)}
               >
                 Ver mais notícias
               </Button>
