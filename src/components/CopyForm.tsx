@@ -12,7 +12,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Badge } from "@/components/ui/badge"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Pagination, PaginationContent, PaginationEllipsis, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination"
-import { Settings, FileText, Users, Mic, History, Loader2, ArrowLeft, Eye, Upload, RefreshCw, Send, X, Save, Copy, Trash2, Calendar, CalendarIcon, FileSpreadsheet, Plus } from "lucide-react"
+import { Settings, FileText, Users, Mic, History, Loader2, ArrowLeft, Eye, Upload, RefreshCw, Send, X, Save, Copy, Trash2, Calendar, CalendarIcon, FileSpreadsheet, Plus, Sparkles } from "lucide-react"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog"
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover"
@@ -30,6 +30,9 @@ import remarkGfm from 'remark-gfm'
 import * as XLSX from 'xlsx'
 import { DotLogo } from '@/components/DotLogo';
 import { CopyGenerationOverlay } from '@/components/CopyGenerationOverlay';
+import { CopyResultsRecent } from '@/components/copy/CopyResultsRecent';
+import { CopyDetailDialog } from '@/components/copy/CopyDetailDialog';
+import { CopyHistoryFull } from '@/components/copy/CopyHistoryFull';
 
 const copyFormSchema = z.object({
   // Transcrições das reuniões
@@ -85,6 +88,7 @@ export function CopyForm({ onBack }: CopyFormProps = {}) {
   const { checkModulePermission } = useModulePermissions()
 const [isLoading, setIsLoading] = useState(false)
   const [currentView, setCurrentView] = useState<'form' | 'loading'>('form')
+  const [showFullHistory, setShowFullHistory] = useState(false)
   const [generationStatus, setGenerationStatus] = useState<'generating' | 'success' | 'error'>('generating')
   const [generationError, setGenerationError] = useState<string | undefined>(undefined)
   const lastFormDataRef = useRef<CopyFormData | null>(null)
@@ -1023,7 +1027,7 @@ const [isLoading, setIsLoading] = useState(false)
             
             {canViewHistory && (
               <TabsTrigger value="history" className="flex items-center gap-2">
-                <History className="h-4 w-4" />
+                <Sparkles className="h-4 w-4" />
                 Resultados
               </TabsTrigger>
             )}
@@ -2129,278 +2133,36 @@ EX: Mais de 1.000 projetos de placas solares instalados em todo o Rio Grande do 
         {/* Aba de Histórico */}
         {canViewHistory && (
           <TabsContent value="history" className="space-y-6">
-            <Card>
-              <CardHeader>
-                <div className="flex items-center justify-between">
-                  <div>
-                    <CardTitle>Histórico de Briefings</CardTitle>
-                    <CardDescription>
-                      Visualize todos os briefings salvos e suas respectivas copies geradas
-                    </CardDescription>
-                  </div>
-                  <Button onClick={fetchBriefingHistory} variant="outline" size="sm">
-                    <RefreshCw className="h-4 w-4 mr-2" />
-                    Atualizar
-                  </Button>
-                </div>
-              </CardHeader>
-              <CardContent>
-                {/* Filtros */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                  <div>
-                    <label className="text-sm font-medium mb-2 block">Filtrar por Cliente</label>
-                    <Input
-                      placeholder="Nome do cliente..."
-                      value={clientNameFilter}
-                      onChange={(e) => setClientNameFilter(e.target.value)}
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <label className="text-sm font-medium mb-2 block">Filtrar por Data</label>
-                    <div className="grid grid-cols-2 gap-2">
-                      <div>
-                        <Popover>
-                          <PopoverTrigger asChild>
-                            <Button
-                              variant="outline"
-                              className={cn(
-                                "w-full justify-start text-left font-normal",
-                                !startDate && "text-muted-foreground"
-                              )}
-                            >
-                              <CalendarIcon className="mr-2 h-4 w-4" />
-                              {startDate ? format(startDate, "dd/MM/yyyy", { locale: ptBR }) : "De"}
-                            </Button>
-                          </PopoverTrigger>
-                          <PopoverContent className="w-auto p-0">
-                            <CalendarComponent
-                              mode="single"
-                              selected={startDate}
-                              onSelect={setStartDate}
-                              initialFocus
-                              className="pointer-events-auto"
-                            />
-                          </PopoverContent>
-                        </Popover>
-                      </div>
-                      <div>
-                        <Popover>
-                          <PopoverTrigger asChild>
-                            <Button
-                              variant="outline"
-                              className={cn(
-                                "w-full justify-start text-left font-normal",
-                                !endDate && "text-muted-foreground"
-                              )}
-                            >
-                              <CalendarIcon className="mr-2 h-4 w-4" />
-                              {endDate ? format(endDate, "dd/MM/yyyy", { locale: ptBR }) : "Até"}
-                            </Button>
-                          </PopoverTrigger>
-                          <PopoverContent className="w-auto p-0">
-                            <CalendarComponent
-                              mode="single"
-                              selected={endDate}
-                              onSelect={setEndDate}
-                              initialFocus
-                              className="pointer-events-auto"
-                            />
-                          </PopoverContent>
-                        </Popover>
-                      </div>
-                    </div>
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium mb-2 block">Filtrar por Criador</label>
-                    <Select value={creatorFilter} onValueChange={setCreatorFilter}>
-                      <SelectTrigger>
-                        <SelectValue placeholder="Selecionar criador..." />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="all">Todos os criadores</SelectItem>
-                        {uniqueCreators.map((creator) => (
-                          <SelectItem key={creator} value={creator}>
-                            {creator}
-                          </SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-
-                {filteredBriefingHistory.length === 0 ? (
-                  <div className="text-center py-8 text-muted-foreground">
-                    <FileText className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                    <p>{briefingHistory.length === 0 ? 'Nenhum briefing encontrado' : 'Nenhum resultado encontrado para os filtros aplicados'}</p>
-                  </div>
-                ) : (
-                  <div className="overflow-x-auto">
-                    <Table>
-                      <TableHeader>
-                        <TableRow>
-                          <TableHead>Empresa</TableHead>
-                          <TableHead>Criado em</TableHead>
-                          <TableHead>Status</TableHead>
-                          <TableHead>Criado por</TableHead>
-                          <TableHead>Ações</TableHead>
-                        </TableRow>
-                      </TableHeader>
-                      <TableBody>
-                        {paginatedHistory.map((briefing) => (
-                          <TableRow key={briefing.id}>
-                            <TableCell className="font-medium">
-                              {briefing.nome_empresa || 'Sem nome'}
-                            </TableCell>
-                            <TableCell>
-                              {new Date(briefing.created_at).toLocaleDateString('pt-BR')}
-                            </TableCell>
-                             <TableCell>
-                                <Badge variant={
-                                  briefing.status === 'completed' ? 'default' : 
-                                  briefing.status === 'processing' ? 'secondary' : 'destructive'
-                                } className={
-                                  briefing.status === 'completed' ? 'bg-green-500 text-white border-green-500' : ''
-                                }>
-                                  {briefing.status === 'completed' ? 'Concluído' : 
-                                   briefing.status === 'processing' ? 'Processando' : 'Erro'}
-                                </Badge>
-                             </TableCell>
-                            <TableCell>
-                              {briefing.profiles?.name || 'Usuário desconhecido'}
-                            </TableCell>
-                              <TableCell>
-                               <div className="flex items-center gap-2">
-                                 <Button
-                                   size="sm"
-                                   variant="outline"
-                                   onClick={() => setViewingCopy(briefing)}
-                                   title="Ver resultado da IA"
-                                 >
-                                   <Eye className="h-4 w-4" />
-                                 </Button>
-                                 <Button
-                                   size="sm"
-                                   variant="outline"
-                                   onClick={async () => {
-                                     // Buscar dados completos do briefing
-                                     const { data, error } = await supabase
-                                       .from('copy_forms')
-                                       .select('*')
-                                       .eq('id', briefing.id)
-                                       .single()
-                                     
-                                     if (!error && data) {
-                                       setViewingBriefing(data)
-                                     } else {
-                                       toast.error('Erro ao carregar briefing')
-                                     }
-                                   }}
-                                   title="Ver respostas do briefing"
-                                 >
-                                   <FileText className="h-4 w-4" />
-                                 </Button>
-                                  <Button
-                                    size="sm"
-                                    variant="outline"
-                                    onClick={() => {
-                                      setSelectedBriefingForNewCopy(briefing)
-                                      setShowNewCopyModal(true)
-                                    }}
-                                    disabled={briefing.status !== 'completed'}
-                                  >
-                                    <RefreshCw className="h-4 w-4 mr-2" />
-                                    Nova versão de copy
-                                  </Button>
-                                 {canDeleteCopies && (
-                                  <AlertDialog>
-                                    <AlertDialogTrigger asChild>
-                                      <Button size="sm" variant="outline">
-                                        <Trash2 className="h-4 w-4" />
-                                      </Button>
-                                    </AlertDialogTrigger>
-                                    <AlertDialogContent>
-                                      <AlertDialogHeader>
-                                        <AlertDialogTitle>Excluir Copy</AlertDialogTitle>
-                                        <AlertDialogDescription>
-                                          Esta ação não pode ser desfeita. Isso excluirá permanentemente a copy.
-                                        </AlertDialogDescription>
-                                      </AlertDialogHeader>
-                                      <AlertDialogFooter>
-                                        <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                                        <AlertDialogAction
-                                          onClick={() => handleDeleteCopy(briefing.id)}
-                                          className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-                                        >
-                                          Excluir
-                                        </AlertDialogAction>
-                                      </AlertDialogFooter>
-                                    </AlertDialogContent>
-                                  </AlertDialog>
-                                )}
-                              </div>
-                            </TableCell>
-                          </TableRow>
-                        ))}
-                      </TableBody>
-                    </Table>
-                    
-                    {/* Paginação */}
-                    {totalPages > 1 && (
-                      <div className="mt-6 flex justify-center">
-                        <Pagination>
-                          <PaginationContent>
-                            <PaginationItem>
-                              <PaginationPrevious 
-                                onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
-                                className={currentPage === 1 ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
-                              />
-                            </PaginationItem>
-                            
-                            {Array.from({ length: Math.min(5, totalPages) }, (_, i) => {
-                              let pageNumber: number;
-                              if (totalPages <= 5) {
-                                pageNumber = i + 1;
-                              } else if (currentPage <= 3) {
-                                pageNumber = i + 1;
-                              } else if (currentPage >= totalPages - 2) {
-                                pageNumber = totalPages - 4 + i;
-                              } else {
-                                pageNumber = currentPage - 2 + i;
-                              }
-                              
-                              return (
-                                <PaginationItem key={pageNumber}>
-                                  <PaginationLink
-                                    onClick={() => setCurrentPage(pageNumber)}
-                                    isActive={currentPage === pageNumber}
-                                    className="cursor-pointer"
-                                  >
-                                    {pageNumber}
-                                  </PaginationLink>
-                                </PaginationItem>
-                              );
-                            })}
-                            
-                            {totalPages > 5 && currentPage < totalPages - 2 && (
-                              <PaginationItem>
-                                <PaginationEllipsis />
-                              </PaginationItem>
-                            )}
-                            
-                            <PaginationItem>
-                              <PaginationNext 
-                                onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
-                                className={currentPage === totalPages ? 'pointer-events-none opacity-50' : 'cursor-pointer'}
-                              />
-                            </PaginationItem>
-                          </PaginationContent>
-                        </Pagination>
-                      </div>
-                    )}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
+            {showFullHistory ? (
+              <CopyHistoryFull
+                briefings={briefingHistory}
+                onBack={() => setShowFullHistory(false)}
+                onView={(b) => setViewingCopy(b)}
+                onViewBriefing={async (b) => {
+                  const { data, error } = await supabase
+                    .from('copy_forms')
+                    .select('*')
+                    .eq('id', b.id)
+                    .single()
+                  if (!error && data) setViewingBriefing(data)
+                  else toast.error('Erro ao carregar briefing')
+                }}
+                onNewVersion={(b) => {
+                  setSelectedBriefingForNewCopy(b)
+                  setShowNewCopyModal(true)
+                }}
+                onDelete={handleDeleteCopy}
+                onRefresh={fetchBriefingHistory}
+                canDelete={canDeleteCopies}
+              />
+            ) : (
+              <CopyResultsRecent
+                briefings={briefingHistory}
+                onView={(b) => setViewingCopy(b)}
+                onViewHistory={() => setShowFullHistory(true)}
+                isEmpty={briefingHistory.length === 0}
+              />
+            )}
           </TabsContent>
         )}
 
@@ -2585,118 +2347,12 @@ EX: Mais de 1.000 projetos de placas solares instalados em todo o Rio Grande do 
         )}
       </Tabs>
 
-      {/* Dialog para visualizar copy */}
-      <Dialog open={!!viewingCopy} onOpenChange={() => setViewingCopy(null)}>
-        <DialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>
-              Copy - {viewingCopy?.nome_empresa || 'Sem nome'}
-            </DialogTitle>
-          </DialogHeader>
-          {viewingCopy && (
-            <div className="space-y-4">
-              <div className="grid grid-cols-2 gap-4 text-sm">
-                <div>
-                  <span className="font-medium">Status:</span>
-                  <Badge className={`ml-2 ${
-                    viewingCopy.status === 'completed' ? 'bg-green-500 text-white border-green-500' : ''
-                  }`} variant={
-                    viewingCopy.status === 'completed' ? 'default' : 
-                    viewingCopy.status === 'processing' ? 'secondary' : 'destructive'
-                  }>
-                    {viewingCopy.status === 'completed' ? 'Concluído' : 
-                     viewingCopy.status === 'processing' ? 'Processando' : 'Erro'}
-                  </Badge>
-                </div>
-                <div>
-                  <span className="font-medium">Criado em:</span>
-                  <span className="ml-2">{new Date(viewingCopy.created_at).toLocaleString('pt-BR')}</span>
-                </div>
-              </div>
-              
-              {viewingCopy.ai_response && (
-                <div>
-                  <div className="space-y-4">
-                    {(() => {
-                      const copies = viewingCopy.ai_response.split('\n\n=== NOVA COPY ===\n\n');
-                      return copies.map((copyContent, index) => {
-                        const isExpanded = expandedCopies.has(index);
-                        const toggleExpanded = () => {
-                          const newExpanded = new Set(expandedCopies);
-                          if (isExpanded) {
-                            newExpanded.delete(index);
-                          } else {
-                            newExpanded.add(index);
-                          }
-                          setExpandedCopies(newExpanded);
-                        };
-                        
-                        // Extract date from the copy content or use the briefing creation date
-                        const copyDate = index === 0 
-                          ? new Date(viewingCopy.created_at) 
-                          : new Date(viewingCopy.response_generated_at || viewingCopy.created_at);
-                        
-                        const formattedDate = copyDate.toLocaleDateString('pt-BR', {
-                          day: '2-digit',
-                          month: '2-digit', 
-                          year: 'numeric'
-                        }) + ', ' + copyDate.toLocaleTimeString('pt-BR', {
-                          hour: '2-digit',
-                          minute: '2-digit'
-                        });
-
-                        return (
-                          <div key={index} className="border rounded-lg">
-                            <button
-                              onClick={toggleExpanded}
-                              className="w-full text-left p-3 hover:bg-muted/50 transition-colors flex items-center justify-between"
-                            >
-                              <span className="font-medium text-sm">
-                                Copy versão {index + 1} - Criado em {formattedDate}
-                              </span>
-                              <div className="flex items-center gap-2">
-                                <Button
-                                  size="sm"
-                                  variant="outline"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    navigator.clipboard.writeText(copyContent);
-                                    toast.success(`Copy versão ${index + 1} copiada para a área de transferência!`);
-                                  }}
-                                >
-                                  <Copy className="h-3 w-3" />
-                                </Button>
-                                <Button
-                                  size="sm"
-                                  variant="outline"
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    exportMarkdownTableToExcel(copyContent, `copy-${viewingCopy?.nome_empresa?.replace(/[^a-zA-Z0-9]/g, '-') || 'sem-nome'}-v${index + 1}`);
-                                  }}
-                                >
-                                  <FileSpreadsheet className="h-3 w-3" />
-                                </Button>
-                                <Eye className={`h-4 w-4 transition-transform ${isExpanded ? 'rotate-180' : ''}`} />
-                              </div>
-                            </button>
-                            {isExpanded && (
-                              <div className="border-t bg-muted/20 p-4 text-sm prose prose-sm max-w-none prose-table:border prose-table:border-border prose-th:border prose-th:border-border prose-th:bg-muted prose-td:border prose-td:border-border">
-                                <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                                  {copyContent.trim()}
-                                </ReactMarkdown>
-                              </div>
-                            )}
-                          </div>
-                        );
-                      });
-                    })()}
-                  </div>
-                </div>
-              )}
-            </div>
-          )}
-        </DialogContent>
-      </Dialog>
+      {/* Dialog para visualizar copy - Premium */}
+      <CopyDetailDialog
+        copy={viewingCopy}
+        open={!!viewingCopy}
+        onOpenChange={() => setViewingCopy(null)}
+      />
 
       {/* Dialog para editar prompt */}
       <Dialog open={!!editingPrompt} onOpenChange={() => setEditingPrompt(null)}>
