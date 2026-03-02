@@ -88,6 +88,7 @@ export function CopyForm({ onBack }: CopyFormProps = {}) {
   const { checkModulePermission } = useModulePermissions()
 const [isLoading, setIsLoading] = useState(false)
   const [currentView, setCurrentView] = useState<'form' | 'loading'>('form')
+  const [showFullHistory, setShowFullHistory] = useState(false)
   const [generationStatus, setGenerationStatus] = useState<'generating' | 'success' | 'error'>('generating')
   const [generationError, setGenerationError] = useState<string | undefined>(undefined)
   const lastFormDataRef = useRef<CopyFormData | null>(null)
