@@ -80,7 +80,9 @@ export function AnaliseBench() {
   const [overlayError, setOverlayError] = useState<string | undefined>(undefined)
   const [pendingRetryId, setPendingRetryId] = useState<string | null>(null)
   const [showFullHistory, setShowFullHistory] = useState(false)
-
+  const [isEditingResponse, setIsEditingResponse] = useState(false)
+  const [editedResponse, setEditedResponse] = useState('')
+  const [isSavingEdit, setIsSavingEdit] = useState(false)
   const ANALISE_STEP_MESSAGES = [
     'Lendo dados da campanha…',
     'Cruzando métricas de desempenho…',
