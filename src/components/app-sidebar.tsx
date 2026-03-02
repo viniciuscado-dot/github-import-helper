@@ -25,8 +25,8 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog"
 
 interface AppSidebarProps {
-  activeView: 'home-criacao' | 'users' | 'profile' | 'copy' | 'aprovacao' | 'analise-bench' | 'preferencias-interface' | 'planejamento-conteudo' | 'varredura'
-  onViewChange: (view: 'home-criacao' | 'users' | 'profile' | 'copy' | 'aprovacao' | 'analise-bench' | 'preferencias-interface' | 'planejamento-conteudo' | 'varredura') => void
+  activeView: 'home-criacao' | 'users' | 'profile' | 'copy' | 'aprovacao' | 'analise-bench' | 'anuncios' | 'preferencias-interface' | 'planejamento-conteudo' | 'varredura'
+  onViewChange: (view: 'home-criacao' | 'users' | 'profile' | 'copy' | 'aprovacao' | 'analise-bench' | 'anuncios' | 'preferencias-interface' | 'planejamento-conteudo' | 'varredura') => void
 }
 
 export function AppSidebar({ activeView, onViewChange }: AppSidebarProps) {
