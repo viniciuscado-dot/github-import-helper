@@ -1,5 +1,7 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { Send, CheckCircle, PenLine, TrendingUp, TrendingDown, Minus, Star, Trophy, Users } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { PageHeader } from "./layout/PageHeader";
 import { KPICard } from "./layout/KPICard";
 import { RankingTable } from "./layout/RankingTable";
