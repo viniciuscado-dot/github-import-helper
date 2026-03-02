@@ -29,7 +29,8 @@ import {
   type MaterialTypeEvolution,
   type SquadComparison,
 } from "@/services/evolutionDataService";
-import { Responsive, WidthProvider } from "react-grid-layout";
+import { Responsive } from "react-grid-layout";
+import WidthProvider from "react-grid-layout/lib/components/WidthProvider";
 import "react-grid-layout/css/styles.css";
 import "react-resizable/css/styles.css";
 
