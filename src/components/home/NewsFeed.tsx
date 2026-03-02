@@ -152,20 +152,18 @@ export function NewsFeed() {
               {listItems.map((item, i) => (
                 <NewsListItem key={item.id} item={item} index={i} />
               ))}
+              {hasMore && (
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="text-xs gap-1.5 h-8 w-full rounded-lg border-border/20 bg-card/[0.06] backdrop-blur-lg hover:border-primary/30"
+                  onClick={() => setExpanded(true)}
+                >
+                  Ver mais notícias
+                </Button>
+              )}
             </div>
           </div>
-          {hasMore && (
-            <div className="flex justify-center mt-4">
-              <Button
-                variant="outline"
-                size="sm"
-                className="text-xs gap-1.5 h-8 px-6 rounded-lg border-border/20 bg-card/[0.06] backdrop-blur-lg hover:border-primary/30"
-                onClick={() => setExpanded(true)}
-              >
-                Ver mais notícias
-              </Button>
-            </div>
-          )}
         </>
       )}
     </section>
