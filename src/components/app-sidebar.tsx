@@ -59,11 +59,11 @@ export function AppSidebar({ activeView, onViewChange }: AppSidebarProps) {
   };
 
   // Shared menu button classes
-  const menuBtnBase = "w-full transition-all duration-150 ease-in-out"
-  const menuBtnExpanded = `${menuBtnBase} justify-start py-2.5 gap-3`
+  const menuBtnBase = "w-full transition-all duration-150 ease-in-out rounded-lg"
+  const menuBtnExpanded = `${menuBtnBase} justify-start py-2.5 px-3 gap-3`
   const menuBtnCollapsed = `${menuBtnBase} justify-center py-2.5`
 
-  const activeStyle = { backgroundColor: '#ec4a55', color: 'white' }
+  const activeClass = "bg-[#ec4a55]/15 text-[#ec4a55] font-medium"
 
   // Helper to render a menu item with tooltip support
   const renderMenuItem = (
@@ -72,16 +72,20 @@ export function AppSidebar({ activeView, onViewChange }: AppSidebarProps) {
     onClick?: () => void
   ) => {
     const Icon = item.icon;
+    const btnClass = isActive
+      ? `${shouldShowText ? menuBtnExpanded : menuBtnCollapsed} ${activeClass}`
+      : `${shouldShowText ? menuBtnExpanded : menuBtnCollapsed} text-muted-foreground hover:text-foreground hover:bg-muted/50`;
+
     if (!shouldShowText) {
       return (
         <Tooltip>
           <TooltipTrigger asChild>
             {item.route ? (
-              <SidebarMenuButton asChild isActive={isActive} className={menuBtnCollapsed} style={isActive ? activeStyle : {}}>
+              <SidebarMenuButton asChild isActive={isActive} className={btnClass}>
                 <Link to={item.route}><Icon className="h-4 w-4 flex-shrink-0" /></Link>
               </SidebarMenuButton>
             ) : (
-              <SidebarMenuButton onClick={onClick} isActive={isActive} className={menuBtnCollapsed} style={isActive ? activeStyle : {}}>
+              <SidebarMenuButton onClick={onClick} isActive={isActive} className={btnClass}>
                 <Icon className="h-4 w-4 flex-shrink-0" />
               </SidebarMenuButton>
             )}
@@ -92,18 +96,18 @@ export function AppSidebar({ activeView, onViewChange }: AppSidebarProps) {
     }
     if (item.route) {
       return (
-        <SidebarMenuButton asChild isActive={isActive} className={menuBtnExpanded} style={isActive ? activeStyle : {}}>
+        <SidebarMenuButton asChild isActive={isActive} className={btnClass}>
           <Link to={item.route}>
             <Icon className="h-4 w-4 flex-shrink-0" />
-            <span className="text-xs">{item.title}</span>
+            <span className="text-[13px]">{item.title}</span>
           </Link>
         </SidebarMenuButton>
       );
     }
     return (
-      <SidebarMenuButton onClick={onClick} isActive={isActive} className={menuBtnExpanded} style={isActive ? activeStyle : {}}>
+      <SidebarMenuButton onClick={onClick} isActive={isActive} className={btnClass}>
         <Icon className="h-4 w-4 flex-shrink-0" />
-        <span className="text-xs">{item.title}</span>
+        <span className="text-[13px]">{item.title}</span>
       </SidebarMenuButton>
     );
   };
@@ -126,11 +130,11 @@ export function AppSidebar({ activeView, onViewChange }: AppSidebarProps) {
   ];
 
   // Group label style
-  const groupLabelClass = "text-[#ec4a55] uppercase text-[10px] font-semibold tracking-wider opacity-70";
+  const groupLabelClass = "text-muted-foreground/60 uppercase text-[10px] font-semibold tracking-[0.15em] px-3";
 
   return (
     <TooltipProvider delayDuration={100}>
-      <Sidebar side="left" collapsible="icon" className="border-r transition-all duration-300 ease-in-out">
+      <Sidebar side="left" collapsible="icon" className="border-r border-border/30 transition-all duration-300 ease-in-out">
 
       {/* ══════════ BLOCO SUPERIOR FIXO ══════════ */}
       <SidebarHeader className={`flex-shrink-0 ${shouldShowText ? "p-4 pb-1" : "py-4 pb-1"}`}>
@@ -183,10 +187,10 @@ export function AppSidebar({ activeView, onViewChange }: AppSidebarProps) {
       </div>
 
       {/* ══════════ BLOCO CENTRAL ROLÁVEL ══════════ */}
-      <SidebarContent className="flex-1 overflow-y-auto pb-10 mb-8 mt-6">
+      <SidebarContent className="flex-1 overflow-y-auto pb-10 mb-8 mt-6 space-y-1">
 
         {/* Performance */}
-        <SidebarGroup className="pt-2">
+        <SidebarGroup className="pt-3 pb-1">
           <SidebarGroupLabel className={groupLabelClass}>Performance</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
@@ -207,7 +211,7 @@ export function AppSidebar({ activeView, onViewChange }: AppSidebarProps) {
         </SidebarGroup>
 
         {/* Social Media */}
-        <SidebarGroup className="pt-2">
+        <SidebarGroup className="pt-3 pb-1">
           <SidebarGroupLabel className={groupLabelClass}>Social Media</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
@@ -224,7 +228,7 @@ export function AppSidebar({ activeView, onViewChange }: AppSidebarProps) {
         </SidebarGroup>
 
         {/* Laboratório */}
-        <SidebarGroup className="pt-2">
+        <SidebarGroup className="pt-3 pb-1">
           <SidebarGroupLabel className={groupLabelClass}>Laboratório</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
@@ -241,7 +245,7 @@ export function AppSidebar({ activeView, onViewChange }: AppSidebarProps) {
         </SidebarGroup>
 
         {/* News */}
-        <SidebarGroup className="pt-2">
+        <SidebarGroup className="pt-3 pb-1">
           <SidebarGroupLabel className={groupLabelClass}>News</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
@@ -259,7 +263,7 @@ export function AppSidebar({ activeView, onViewChange }: AppSidebarProps) {
       </SidebarContent>
 
       {/* ══════════ BLOCO INFERIOR FIXO ══════════ */}
-      <SidebarFooter className={`flex-shrink-0 border-t border-border/10 ${shouldShowText ? "px-2 pt-4 pb-2" : "py-3"}`}>
+      <SidebarFooter className={`flex-shrink-0 border-t border-border/20 ${shouldShowText ? "px-2 pt-4 pb-2" : "py-3"}`}>
         <SidebarMenu>
           {/* Usuários - admin only */}
           {profile?.effectiveRole === 'admin' && checkModulePermission('users', 'view') && (
@@ -286,9 +290,9 @@ export function AppSidebar({ activeView, onViewChange }: AppSidebarProps) {
                     <TooltipContent side="right"><p>Voltar para módulos</p></TooltipContent>
                   </Tooltip>
                 ) : (
-                  <SidebarMenuButton className={menuBtnExpanded}>
+                  <SidebarMenuButton className={`${menuBtnExpanded} text-muted-foreground hover:text-foreground hover:bg-muted/50`}>
                     <Settings className="h-4 w-4 flex-shrink-0 text-[#ec4a55]" />
-                    <span className="text-xs">Voltar para módulos</span>
+                    <span className="text-[13px]">Voltar para módulos</span>
                   </SidebarMenuButton>
                 )}
               </DialogTrigger>
@@ -363,10 +367,10 @@ export function AppSidebar({ activeView, onViewChange }: AppSidebarProps) {
             ) : (
               <SidebarMenuButton
                 onClick={handleLogout}
-                className={`${menuBtnExpanded} hover:bg-destructive/10 hover:text-destructive`}
+                className={`${menuBtnExpanded} text-muted-foreground hover:bg-destructive/10 hover:text-destructive`}
               >
                 <LogOut className="h-4 w-4 flex-shrink-0" />
-                <span className="text-xs">Sair</span>
+                <span className="text-[13px]">Sair</span>
               </SidebarMenuButton>
             )}
           </SidebarMenuItem>
