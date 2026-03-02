@@ -656,6 +656,51 @@ export function AnaliseBench() {
                     <CardDescription className="text-xs">descrição (criar)</CardDescription>
                   </CardHeader>
                   <CardContent className="space-y-4">
+                    {/* Logo upload */}
+                    <div className="space-y-2">
+                      <FormLabel>Logo do Cliente</FormLabel>
+                      <FormDescription className="text-xs">
+                        Anexe o logo do cliente (PNG, JPEG, SVG ou PDF) para análise de identidade visual
+                      </FormDescription>
+                      <div className="flex items-center gap-3">
+                        <label className="flex items-center gap-2 px-3 py-2 border border-input rounded-md cursor-pointer hover:bg-accent transition-colors text-sm">
+                          <Plus className="h-4 w-4" />
+                          {logoFile ? logoFile.name : 'Selecionar arquivo'}
+                          <input
+                            type="file"
+                            accept=".png,.jpg,.jpeg,.svg,.pdf"
+                            className="hidden"
+                            onChange={(e) => {
+                              const file = e.target.files?.[0]
+                              if (file) {
+                                if (file.size > 5 * 1024 * 1024) {
+                                  toast.error('Arquivo muito grande (máx. 5MB)')
+                                  return
+                                }
+                                setLogoFile(file)
+                                if (file.type.startsWith('image/')) {
+                                  const url = URL.createObjectURL(file)
+                                  setLogoPreview(url)
+                                } else {
+                                  setLogoPreview(null)
+                                }
+                              }
+                            }}
+                          />
+                        </label>
+                        {logoFile && (
+                          <Button type="button" variant="ghost" size="sm" onClick={() => { setLogoFile(null); setLogoPreview(null) }}>
+                            <X className="h-4 w-4" />
+                          </Button>
+                        )}
+                      </div>
+                      {logoPreview && (
+                        <div className="mt-2 rounded-md border border-border/40 p-2 bg-muted/30 w-fit">
+                          <img src={logoPreview} alt="Logo preview" className="max-h-16 max-w-[120px] object-contain" />
+                        </div>
+                      )}
+                    </div>
+
                     <FormField
                       control={form.control}
                       name="nome_empresa"
