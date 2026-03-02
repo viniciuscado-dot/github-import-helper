@@ -586,13 +586,6 @@ export function AnaliseBench() {
             <form onSubmit={form.handleSubmit(
               (data) => {
                 console.log('✅ Formulário válido, chamando onSubmit:', data);
-                
-                // Validação extra para garantir que o cliente foi selecionado
-                if (!data.client_id || !selectedClient) {
-                  toast.error('Por favor, selecione um cliente antes de continuar');
-                  return;
-                }
-                
                 onSubmit(data);
               },
               (errors) => {
