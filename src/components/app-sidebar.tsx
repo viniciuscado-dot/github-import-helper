@@ -121,6 +121,10 @@ export function AppSidebar({ activeView, onViewChange }: AppSidebarProps) {
     { id: 'diagnostico-visual', title: 'Diagnóstico Visual', icon: Eye, route: '/laboratorio/diagnostico-visual' },
   ];
 
+  const newsItems = [
+    { id: 'trends-noticias', title: 'Trends e Notícias', icon: TrendingUp, route: '/noticias' },
+  ];
+
   // Group label style
   const groupLabelClass = "text-[#ec4a55] uppercase text-[10px] font-semibold tracking-wider opacity-70";
 
