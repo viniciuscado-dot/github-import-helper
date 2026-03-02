@@ -590,13 +590,7 @@ export function AnaliseBench() {
               },
               (errors) => {
                 console.error('❌ Erros de validação no formulário:', errors);
-                
-                // Mensagem específica se o cliente não foi selecionado
-                if (errors.client_id || !selectedClient) {
-                  toast.error('Por favor, selecione um cliente no topo da página');
-                } else {
-                  toast.error('Preencha todos os campos obrigatórios corretamente');
-                }
+                toast.error('Preencha todos os campos obrigatórios corretamente');
               }
             )} className="space-y-6">
               {/* Campo oculto para client_id - garante validação correta */}
