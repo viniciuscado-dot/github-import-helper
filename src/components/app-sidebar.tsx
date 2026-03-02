@@ -164,19 +164,23 @@ export function AppSidebar({ activeView, onViewChange }: AppSidebarProps) {
         )}
 
         {/* Home - fixed in header */}
-        <SidebarMenu className="mt-2 px-2">
-          <SidebarMenuItem>
-            {renderMenuItem(
-              { id: 'home', title: 'Home', icon: Home },
-              activeView === 'home-criacao',
-              () => onViewChange('home-criacao')
-            )}
-          </SidebarMenuItem>
-        </SidebarMenu>
+        <SidebarGroup className="mt-2 pb-0">
+          <SidebarGroupContent>
+            <SidebarMenu>
+              <SidebarMenuItem>
+                {renderMenuItem(
+                  { id: 'home', title: 'Home', icon: Home },
+                  activeView === 'home-criacao',
+                  () => onViewChange('home-criacao')
+                )}
+              </SidebarMenuItem>
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
       </SidebarHeader>
 
       {/* ══════════ BLOCO CENTRAL ROLÁVEL ══════════ */}
-      <SidebarContent className="flex-1 overflow-y-auto">
+      <SidebarContent className="flex-1 overflow-y-auto pb-4">
 
         {/* Performance */}
         <SidebarGroup className="pt-2">
@@ -235,7 +239,7 @@ export function AppSidebar({ activeView, onViewChange }: AppSidebarProps) {
       </SidebarContent>
 
       {/* ══════════ BLOCO INFERIOR FIXO ══════════ */}
-      <SidebarFooter className={`flex-shrink-0 border-t border-border/10 ${shouldShowText ? "p-4 pt-3" : "py-3"}`}>
+      <SidebarFooter className={`flex-shrink-0 border-t border-border/10 ${shouldShowText ? "px-2 pt-4 pb-2" : "py-3"}`}>
         <SidebarMenu>
           {/* Usuários - admin only */}
           {profile?.effectiveRole === 'admin' && checkModulePermission('users', 'view') && (
