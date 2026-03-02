@@ -5,6 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 import { Copy, FileSpreadsheet, ChevronDown, ChevronRight, Building2, Calendar, Sparkles } from 'lucide-react';
 import { MarkdownRenderer } from '@/components/ui/markdown-renderer';
+import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
