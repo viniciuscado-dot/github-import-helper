@@ -1,5 +1,7 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { Send, CheckCircle, PenLine, TrendingUp, TrendingDown, Minus, Star, Trophy, Users } from "lucide-react";
+import { Button } from "@/components/ui/button";
 import { PageHeader } from "./layout/PageHeader";
 import { KPICard } from "./layout/KPICard";
 import { RankingTable } from "./layout/RankingTable";
@@ -28,6 +30,7 @@ interface ApprovalDashboardProps {
 }
 
 export function ApprovalDashboard({ filters, filterSetters, onNavigateToKanban }: ApprovalDashboardProps) {
+  const navigate = useNavigate();
   const [kpis, setKpis] = useState({ pendentes: 0, emAjustes: 0, aprovados: 0, total: 0, avgRating: 0, avgRatingTrend: null as "up" | "down" | "stable" | null, squadHighlight: { squad: "—", avgRating: 0 } });
   const [ranking, setRanking] = useState<{ position: number; name: string; materialsEvaluated: number; avgRating: number }[]>([]);
   const [squadRanking, setSquadRanking] = useState<SquadRankingEntry[]>([]);
@@ -40,7 +43,14 @@ export function ApprovalDashboard({ filters, filterSetters, onNavigateToKanban }
 
   return (
     <>
-      <PageHeader title="Aprovação" />
+      <PageHeader
+        title="Aprovação"
+        actions={
+          <Button variant="outline" size="sm" className="gap-1.5 h-9" onClick={() => navigate("/aprovacao/evolucao")}>
+            <TrendingUp className="h-3.5 w-3.5" /> Acompanhar evolução
+          </Button>
+        }
+      />
 
       {/* KPIs */}
       <div className={`${layoutTokens.grid.cols3} ${layoutTokens.spacing.gridGap}`}>
