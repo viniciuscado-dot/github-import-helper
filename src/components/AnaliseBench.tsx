@@ -514,7 +514,7 @@ export function AnaliseBench() {
             
             {canView && (
               <TabsTrigger value="resultados" className="flex items-center gap-2">
-                <History className="h-4 w-4" />
+                <Sparkles className="h-4 w-4" />
                 Resultados
               </TabsTrigger>
             )}
