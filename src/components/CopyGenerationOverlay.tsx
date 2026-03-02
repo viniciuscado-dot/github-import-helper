@@ -124,7 +124,7 @@ export function CopyGenerationOverlay({ status, onRetry, errorMessage, title, su
               >
                 <CheckCircle2 className="h-6 w-6 text-green-500" />
               </motion.div>
-              Copy gerada com sucesso
+              {successMessage || 'Copy gerada com sucesso'}
             </motion.div>
           )}
           {status === 'error' && (
