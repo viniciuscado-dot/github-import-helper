@@ -551,7 +551,7 @@ export function AnaliseBench() {
           <div className="flex items-center gap-6">
             {/* Seletor de Cliente - sempre visível */}
             <div className="flex items-center gap-3">
-              <span className="text-sm font-medium">Cliente: <span className="text-destructive">*</span></span>
+              <span className="text-sm font-medium">Cliente:</span>
               <Select 
                 value={selectedClient} 
                 onValueChange={(value) => {
@@ -560,7 +560,7 @@ export function AnaliseBench() {
                   form.clearErrors('client_id');
                 }}
               >
-                <SelectTrigger className={`w-[200px] ${!selectedClient && 'border-destructive'}`}>
+                <SelectTrigger className="w-[200px]">
                   <SelectValue placeholder="Selecione um cliente" />
                 </SelectTrigger>
                 <SelectContent className="z-50 bg-popover">
@@ -586,24 +586,11 @@ export function AnaliseBench() {
             <form onSubmit={form.handleSubmit(
               (data) => {
                 console.log('✅ Formulário válido, chamando onSubmit:', data);
-                
-                // Validação extra para garantir que o cliente foi selecionado
-                if (!data.client_id || !selectedClient) {
-                  toast.error('Por favor, selecione um cliente antes de continuar');
-                  return;
-                }
-                
                 onSubmit(data);
               },
               (errors) => {
                 console.error('❌ Erros de validação no formulário:', errors);
-                
-                // Mensagem específica se o cliente não foi selecionado
-                if (errors.client_id || !selectedClient) {
-                  toast.error('Por favor, selecione um cliente no topo da página');
-                } else {
-                  toast.error('Preencha todos os campos obrigatórios corretamente');
-                }
+                toast.error('Preencha todos os campos obrigatórios corretamente');
               }
             )} className="space-y-6">
               {/* Campo oculto para client_id - garante validação correta */}
