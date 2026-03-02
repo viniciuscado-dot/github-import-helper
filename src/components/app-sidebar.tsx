@@ -130,7 +130,7 @@ export function AppSidebar({ activeView, onViewChange }: AppSidebarProps) {
   ];
 
   // Group label style
-  const groupLabelClass = "text-[#ec4a55] uppercase text-[10px] font-semibold tracking-wider opacity-70";
+  const groupLabelClass = "text-muted-foreground/60 uppercase text-[10px] font-semibold tracking-[0.15em] px-3";
 
   return (
     <TooltipProvider delayDuration={100}>
