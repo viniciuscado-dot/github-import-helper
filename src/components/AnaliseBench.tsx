@@ -416,9 +416,6 @@ export function AnaliseBench() {
       setIsLoading(false)
     }
   }
-      setIsLoading(false)
-    }
-  }
 
   const handleGenerateAnalysis = async (briefingId: string) => {
     setIsGeneratingAnalysis(true)
