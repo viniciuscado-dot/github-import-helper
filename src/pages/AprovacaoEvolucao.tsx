@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, TrendingUp, Users, Layers, BarChart3, Expand, BarChart2, GripVertical, Settings2, RotateCcw } from "lucide-react";
+import { ArrowLeft, TrendingUp, Users, Layers, BarChart3, Expand, GripVertical, Settings2, RotateCcw } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -29,98 +29,102 @@ import {
   type MaterialTypeEvolution,
   type SquadComparison,
 } from "@/services/evolutionDataService";
-import GridLayout from "react-grid-layout";
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  type DragEndEvent,
+} from "@dnd-kit/core";
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  useSortable,
+  rectSortingStrategy,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 
-const CHART_META: Record<string, { title: string; subtitle: string; icon: React.ElementType }> = {
-  overall: { title: "Aprovação Geral", subtitle: "Média histórica das notas ao longo do tempo", icon: TrendingUp },
-  squad: { title: "Evolução por Squad", subtitle: "Desempenho comparativo entre squads", icon: Users },
-  person: { title: "Evolução por Pessoa", subtitle: "Performance individual ao longo do tempo", icon: Users },
-  material: { title: "Evolução por Material", subtitle: "Notas por tipo de material criativo", icon: Layers },
-  comparison: { title: "Comparativo de Squads", subtitle: "Médias atuais de Copy e Design por squad", icon: BarChart3 },
+const CHART_META: Record<string, { title: string; subtitle: string; icon: React.ElementType; span?: number }> = {
+  overall: { title: "Aprovação Geral", subtitle: "Média histórica das notas", icon: TrendingUp },
+  squad: { title: "Evolução por Squad", subtitle: "Desempenho comparativo", icon: Users },
+  material: { title: "Evolução por Material", subtitle: "Notas por tipo de criativo", icon: Layers },
+  person: { title: "Evolução por Pessoa", subtitle: "Performance individual", icon: Users },
+  comparison: { title: "Comparativo de Squads", subtitle: "Copy vs Design por squad", icon: BarChart3, span: 2 },
 };
 
-const DEFAULT_LAYOUTS = {
-  lg: [
-    { i: "overall", x: 0, y: 0, w: 1, h: 1, minW: 1, maxW: 3 },
-    { i: "squad", x: 1, y: 0, w: 1, h: 1, minW: 1, maxW: 3 },
-    { i: "material", x: 2, y: 0, w: 1, h: 1, minW: 1, maxW: 3 },
-    { i: "person", x: 0, y: 1, w: 1, h: 1, minW: 1, maxW: 3 },
-    { i: "comparison", x: 1, y: 1, w: 2, h: 1, minW: 1, maxW: 3 },
-  ],
-  md: [
-    { i: "overall", x: 0, y: 0, w: 1, h: 1 },
-    { i: "squad", x: 1, y: 0, w: 1, h: 1 },
-    { i: "material", x: 0, y: 1, w: 1, h: 1 },
-    { i: "person", x: 1, y: 1, w: 1, h: 1 },
-    { i: "comparison", x: 0, y: 2, w: 2, h: 1 },
-  ],
-  sm: [
-    { i: "overall", x: 0, y: 0, w: 1, h: 1 },
-    { i: "squad", x: 0, y: 1, w: 1, h: 1 },
-    { i: "material", x: 0, y: 2, w: 1, h: 1 },
-    { i: "person", x: 0, y: 3, w: 1, h: 1 },
-    { i: "comparison", x: 0, y: 4, w: 1, h: 1 },
-  ],
-};
+const DEFAULT_ORDER = ["overall", "squad", "material", "person", "comparison"];
+const LAYOUT_KEY = "evolution-dashboard-order";
 
-const LAYOUT_STORAGE_KEY = "evolution-dashboard-layout";
-
-function loadSavedLayouts() {
+function loadOrder(): string[] {
   try {
-    const saved = localStorage.getItem(LAYOUT_STORAGE_KEY);
+    const saved = localStorage.getItem(LAYOUT_KEY);
     if (saved) return JSON.parse(saved);
   } catch {}
-  return DEFAULT_LAYOUTS;
+  return DEFAULT_ORDER;
 }
 
 function ChartSkeleton() {
   return <Skeleton className="w-full h-full rounded-xl" />;
 }
 
-/* ── Chart card wrapper ── */
-function ChartCard({
-  chartKey,
+/* ── Sortable chart card ── */
+function SortableChartCard({
+  id,
   isEditing,
   children,
   onExpand,
 }: {
-  chartKey: string;
+  id: string;
   isEditing: boolean;
   children: React.ReactNode;
   onExpand: () => void;
 }) {
-  const meta = CHART_META[chartKey];
+  const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id, disabled: !isEditing });
+  const meta = CHART_META[id];
   if (!meta) return null;
   const Icon = meta.icon;
 
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+    gridColumn: meta.span && !isEditing ? `span ${meta.span}` : undefined,
+    zIndex: isDragging ? 50 : undefined,
+    opacity: isDragging ? 0.85 : 1,
+  };
+
   return (
-    <div className={`h-full rounded-2xl border bg-card/80 backdrop-blur-sm shadow-sm flex flex-col overflow-hidden transition-all duration-200 ${isEditing ? "border-primary/40 ring-1 ring-primary/20" : "border-border/40 hover:shadow-md"}`}>
-      {/* Header */}
-      <div className="flex items-start justify-between px-5 pt-4 pb-2">
-        <div className="flex items-start gap-2.5 min-w-0">
-          {isEditing && (
-            <div className="mt-0.5 cursor-grab active:cursor-grabbing text-muted-foreground/60 hover:text-muted-foreground">
-              <GripVertical className="h-4 w-4" />
+    <div ref={setNodeRef} style={style} {...attributes} className="min-h-[420px]">
+      <div className={`h-full rounded-2xl border bg-card/80 backdrop-blur-sm shadow-sm flex flex-col overflow-hidden transition-all duration-200 ${isEditing ? "border-primary/40 ring-1 ring-primary/20" : "border-border/40 hover:shadow-md"}`}>
+        {/* Header */}
+        <div className="flex items-start justify-between px-5 pt-4 pb-2">
+          <div className="flex items-start gap-2.5 min-w-0">
+            {isEditing && (
+              <div {...listeners} className="mt-0.5 cursor-grab active:cursor-grabbing text-muted-foreground/60 hover:text-muted-foreground touch-none">
+                <GripVertical className="h-4 w-4" />
+              </div>
+            )}
+            <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+              <Icon className="h-4 w-4 text-primary" />
             </div>
+            <div className="min-w-0">
+              <h3 className="text-sm font-semibold text-foreground leading-tight truncate">{meta.title}</h3>
+              <p className="text-[11px] text-muted-foreground mt-0.5 truncate">{meta.subtitle}</p>
+            </div>
+          </div>
+          {!isEditing && (
+            <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground hover:text-foreground shrink-0" onClick={onExpand}>
+              <Expand className="h-3.5 w-3.5" />
+            </Button>
           )}
-          <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
-            <Icon className="h-4 w-4 text-primary" />
-          </div>
-          <div className="min-w-0">
-            <h3 className="text-sm font-semibold text-foreground leading-tight truncate">{meta.title}</h3>
-            <p className="text-[11px] text-muted-foreground mt-0.5 truncate">{meta.subtitle}</p>
-          </div>
         </div>
-        {!isEditing && (
-          <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground hover:text-foreground shrink-0" onClick={onExpand}>
-            <Expand className="h-3.5 w-3.5" />
-          </Button>
-        )}
-      </div>
-      <div className="mx-5 border-t border-border/30" />
-      {/* Chart */}
-      <div className="flex-1 px-3 pb-3 pt-3 min-h-0">
-        {children}
+        <div className="mx-5 border-t border-border/30" />
+        {/* Chart */}
+        <div className="flex-1 px-3 pb-3 pt-3 min-h-0">
+          {children}
+        </div>
       </div>
     </div>
   );
@@ -154,7 +158,12 @@ export default function AprovacaoEvolucao() {
   const [selectedPerson, setSelectedPerson] = useState("");
   const [expandedChart, setExpandedChart] = useState<string | null>(null);
   const [isEditing, setIsEditing] = useState(false);
-  const [layouts, setLayouts] = useState(loadSavedLayouts);
+  const [chartOrder, setChartOrder] = useState(loadOrder);
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 5 } }),
+    useSensor(KeyboardSensor, { coordinateGetter: sortableKeyboardCoordinates })
+  );
 
   const loadAll = useCallback(async () => {
     setLoading(true);
@@ -181,14 +190,21 @@ export default function AprovacaoEvolucao() {
 
   useEffect(() => { loadAll(); }, [loadAll]);
 
-  const handleLayoutChange = useCallback((_: any, allLayouts: any) => {
-    setLayouts(allLayouts);
-    localStorage.setItem(LAYOUT_STORAGE_KEY, JSON.stringify(allLayouts));
+  const handleDragEnd = useCallback((event: DragEndEvent) => {
+    const { active, over } = event;
+    if (!over || active.id === over.id) return;
+    setChartOrder(prev => {
+      const oldIdx = prev.indexOf(active.id as string);
+      const newIdx = prev.indexOf(over.id as string);
+      const next = arrayMove(prev, oldIdx, newIdx);
+      localStorage.setItem(LAYOUT_KEY, JSON.stringify(next));
+      return next;
+    });
   }, []);
 
   const resetLayout = useCallback(() => {
-    setLayouts(DEFAULT_LAYOUTS);
-    localStorage.setItem(LAYOUT_STORAGE_KEY, JSON.stringify(DEFAULT_LAYOUTS));
+    setChartOrder(DEFAULT_ORDER);
+    localStorage.setItem(LAYOUT_KEY, JSON.stringify(DEFAULT_ORDER));
   }, []);
 
   const modalRenderers: Record<string, { title: string; render: (s?: string, e?: string) => React.ReactNode }> = useMemo(() => ({
@@ -244,8 +260,6 @@ export default function AprovacaoEvolucao() {
     }
   };
 
-  const chartKeys = ["overall", "squad", "material", "person", "comparison"];
-
   return (
     <SidebarProvider defaultOpen={true}>
       <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/30 flex w-full">
@@ -260,7 +274,7 @@ export default function AprovacaoEvolucao() {
               </div>
             </div>
 
-            <main className="px-4 md:px-6 py-6 space-y-5">
+            <main className="px-4 md:px-6 py-5 space-y-4">
               {/* Header */}
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                 <div>
@@ -289,34 +303,22 @@ export default function AprovacaoEvolucao() {
               </div>
 
               {/* Grid */}
-              <div className="evolution-grid-wrapper">
-                <ResponsiveGridLayout
-                  className="layout"
-                  layouts={layouts}
-                  breakpoints={{ lg: 1200, md: 768, sm: 0 }}
-                  cols={{ lg: 3, md: 2, sm: 1 }}
-                  rowHeight={420}
-                  margin={[16, 16]}
-                  containerPadding={[0, 0]}
-                  isDraggable={isEditing}
-                  isResizable={isEditing}
-                  onLayoutChange={handleLayoutChange}
-                  draggableHandle=".cursor-grab"
-                  resizeHandles={["se"]}
-                >
-                  {chartKeys.map(key => (
-                    <div key={key}>
-                      <ChartCard
-                        chartKey={key}
+              <DndContext sensors={sensors} collisionDetection={closestCenter} onDragEnd={handleDragEnd}>
+                <SortableContext items={chartOrder} strategy={rectSortingStrategy}>
+                  <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 auto-rows-[420px]">
+                    {chartOrder.map(key => (
+                      <SortableChartCard
+                        key={key}
+                        id={key}
                         isEditing={isEditing}
                         onExpand={() => setExpandedChart(key)}
                       >
                         {renderChart(key)}
-                      </ChartCard>
-                    </div>
-                  ))}
-                </ResponsiveGridLayout>
-              </div>
+                      </SortableChartCard>
+                    ))}
+                  </div>
+                </SortableContext>
+              </DndContext>
             </main>
           </SidebarInset>
         </div>
