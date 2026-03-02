@@ -61,7 +61,7 @@ export function AppSidebar({ activeView, onViewChange }: AppSidebarProps) {
   return (
     <TooltipProvider delayDuration={100}>
       <Sidebar side="left" collapsible="icon" className="border-r transition-all duration-300 ease-in-out">
-      <SidebarHeader className={shouldShowText ? "p-4" : "py-4"}>
+      <SidebarHeader className={`flex-shrink-0 ${shouldShowText ? "p-4 pb-2" : "py-4 pb-2"}`}>
         {shouldShowText ? (
           <div className="flex items-center justify-between w-full px-4">
             <img 
@@ -94,44 +94,40 @@ export function AppSidebar({ activeView, onViewChange }: AppSidebarProps) {
             </SidebarMenu>
           </div>
         )}
-      </SidebarHeader>
 
-      <SidebarContent>
-        {/* Home button */}
-        <SidebarGroup>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              <SidebarMenuItem>
-                {!shouldShowText ? (
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <SidebarMenuButton
-                        onClick={() => onViewChange('home-criacao')}
-                        isActive={activeView === 'home-criacao'}
-                        className="w-full transition-all duration-200 justify-center"
-                        style={activeView === 'home-criacao' ? { backgroundColor: '#ec4a55', color: 'white' } : {}}
-                      >
-                        <Home className="h-4 w-4 flex-shrink-0" />
-                      </SidebarMenuButton>
-                    </TooltipTrigger>
-                    <TooltipContent side="right"><p>Home</p></TooltipContent>
-                  </Tooltip>
-                ) : (
+        {/* Home button - fixed in header */}
+        <SidebarMenu className="mt-2">
+          <SidebarMenuItem>
+            {!shouldShowText ? (
+              <Tooltip>
+                <TooltipTrigger asChild>
                   <SidebarMenuButton
                     onClick={() => onViewChange('home-criacao')}
                     isActive={activeView === 'home-criacao'}
-                    className="w-full transition-all duration-200 justify-start"
+                    className="w-full transition-all duration-150 ease-in-out justify-center py-2.5"
                     style={activeView === 'home-criacao' ? { backgroundColor: '#ec4a55', color: 'white' } : {}}
                   >
                     <Home className="h-4 w-4 flex-shrink-0" />
-                    <span className="text-xs">Home</span>
                   </SidebarMenuButton>
-                )}
-              </SidebarMenuItem>
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
+                </TooltipTrigger>
+                <TooltipContent side="right"><p>Home</p></TooltipContent>
+              </Tooltip>
+            ) : (
+              <SidebarMenuButton
+                onClick={() => onViewChange('home-criacao')}
+                isActive={activeView === 'home-criacao'}
+                className="w-full transition-all duration-150 ease-in-out justify-start py-2.5 gap-3"
+                style={activeView === 'home-criacao' ? { backgroundColor: '#ec4a55', color: 'white' } : {}}
+              >
+                <Home className="h-4 w-4 flex-shrink-0" />
+                <span className="text-xs">Home</span>
+              </SidebarMenuButton>
+            )}
+          </SidebarMenuItem>
+        </SidebarMenu>
+      </SidebarHeader>
 
+      <SidebarContent className="flex-1 overflow-y-auto scrollbar-thin scrollbar-thumb-border/30 scrollbar-track-transparent">
         {/* Seção Performance (Criação) */}
         <SidebarGroup>
           <SidebarGroupLabel className="text-[#ec4a55]">Performance</SidebarGroupLabel>
