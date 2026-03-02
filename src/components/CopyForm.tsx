@@ -82,8 +82,11 @@ interface CopyFormProps {
 export function CopyForm({ onBack }: CopyFormProps = {}) {
   const { profile } = useAuth()
   const { checkModulePermission } = useModulePermissions()
-  const [isLoading, setIsLoading] = useState(false)
+const [isLoading, setIsLoading] = useState(false)
   const [currentView, setCurrentView] = useState<'form' | 'loading'>('form')
+  const [generationStatus, setGenerationStatus] = useState<'generating' | 'success' | 'error'>('generating')
+  const [generationError, setGenerationError] = useState<string | undefined>(undefined)
+  const lastFormDataRef = useRef<CopyFormData | null>(null)
   const [briefingHistory, setBriefingHistory] = useState<CopyFormRecord[]>([])
   const [uploadedDocuments, setUploadedDocuments] = useState<File[]>([])
   const [uploadingDocs, setUploadingDocs] = useState(false)
