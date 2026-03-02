@@ -438,6 +438,8 @@ export function AnaliseBench() {
       
       form.reset()
       setCompetitors([{ id: '1', nome: '', tipo: 'direto', site: '', instagram_linkedin: '', porque_escolhido: '' }])
+      setLogoFile(null)
+      setLogoPreview(null)
     } catch (error: any) {
       console.error('Erro ao salvar briefing:', error)
       setOverlayStatus('error')
