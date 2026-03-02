@@ -1428,49 +1428,48 @@ export function AnaliseBench() {
 
       {/* Dialog para ver detalhes do briefing */}
       {selectedBriefing && (
-        <AlertDialog open={!!selectedBriefing} onOpenChange={() => setSelectedBriefing(null)}>
-          <AlertDialogContent className="max-w-4xl max-h-[80vh] overflow-y-auto">
-            <AlertDialogHeader>
-              <AlertDialogTitle>Detalhes da Análise</AlertDialogTitle>
-              <AlertDialogDescription>
+        <Dialog open={!!selectedBriefing} onOpenChange={() => setSelectedBriefing(null)}>
+          <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle className="text-xl">
+                {selectedBriefing.nome_empresa || 'Detalhes da Análise'}
+              </DialogTitle>
+              <p className="text-sm text-muted-foreground">
                 Criado em {format(new Date(selectedBriefing.created_at), "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}
-              </AlertDialogDescription>
-            </AlertDialogHeader>
+                {selectedBriefing.profiles?.name && ` por ${selectedBriefing.profiles.name}`}
+              </p>
+            </DialogHeader>
             
-            <div className="space-y-6 py-4">
-              {/* Informações do briefing */}
-              <div className="space-y-4">
-                <h3 className="font-semibold text-lg">Informações do Cliente</h3>
-                <div className="grid grid-cols-2 gap-4 text-sm">
-                  <div>
-                    <span className="font-medium">Empresa:</span> {selectedBriefing.nome_empresa || '-'}
+            <div className="space-y-6 py-2">
+              {/* Info grid */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                {[
+                  { label: 'Empresa', value: selectedBriefing.nome_empresa },
+                  { label: 'Nicho', value: selectedBriefing.nicho_empresa },
+                  { label: 'Site', value: selectedBriefing.site },
+                  { label: 'Público-alvo', value: selectedBriefing.publico_alvo },
+                ].map((item, i) => (
+                  <div key={i} className="rounded-lg bg-muted/40 p-3">
+                    <p className="text-[11px] font-medium text-muted-foreground uppercase tracking-wider">{item.label}</p>
+                    <p className="text-sm font-medium text-foreground mt-0.5 truncate">{item.value || '-'}</p>
                   </div>
-                  <div>
-                    <span className="font-medium">Nicho:</span> {selectedBriefing.nicho_empresa || '-'}
-                  </div>
-                  <div>
-                    <span className="font-medium">Site:</span> {selectedBriefing.site || '-'}
-                  </div>
-                  <div>
-                    <span className="font-medium">Público-alvo:</span> {selectedBriefing.publico_alvo || '-'}
-                  </div>
-                </div>
+                ))}
               </div>
 
               {/* Concorrentes */}
               {selectedBriefing.competitors && selectedBriefing.competitors.length > 0 && (
-                <div className="space-y-4">
-                  <h3 className="font-semibold text-lg">Concorrentes</h3>
-                  <div className="space-y-3">
+                <div>
+                  <h3 className="font-semibold text-sm text-muted-foreground uppercase tracking-wider mb-3">Concorrentes Analisados</h3>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     {selectedBriefing.competitors.map((comp: any, idx: number) => (
-                      <div key={idx} className="border rounded-lg p-3">
-                        <div className="font-medium">{idx + 1}. {comp.nome}</div>
-                        <div className="text-sm text-muted-foreground mt-1">
-                          Tipo: {comp.tipo === 'direto' ? 'Concorrente Direto' : 'Concorrente Indireto'}
+                      <div key={idx} className="border border-border/40 rounded-lg p-3 bg-card/50">
+                        <div className="flex items-center justify-between">
+                          <span className="font-medium text-sm">{comp.nome || `Concorrente ${idx + 1}`}</span>
+                          <Badge variant="outline" className="text-[10px]">
+                            {comp.tipo === 'direto' ? 'Direto' : 'Indireto'}
+                          </Badge>
                         </div>
-                        {comp.site && (
-                          <div className="text-sm text-muted-foreground">Site: {comp.site}</div>
-                        )}
+                        {comp.site && <p className="text-xs text-muted-foreground mt-1">{comp.site}</p>}
                       </div>
                     ))}
                   </div>
@@ -1479,32 +1478,71 @@ export function AnaliseBench() {
 
               {/* Análise gerada */}
               {selectedBriefing.ai_response && (
-                <div className="space-y-4">
-                  <h3 className="font-semibold text-lg">Análise Gerada</h3>
-                  <div className="prose prose-sm max-w-none bg-muted/50 rounded-lg p-4">
-                    <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                      {selectedBriefing.ai_response}
-                    </ReactMarkdown>
+                <div>
+                  <div className="flex items-center justify-between mb-3">
+                    <h3 className="font-semibold text-sm text-muted-foreground uppercase tracking-wider">Análise Gerada</h3>
+                    <div className="flex gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="h-7 text-xs"
+                        onClick={() => {
+                          navigator.clipboard.writeText(selectedBriefing.ai_response || '')
+                          toast.success('Análise copiada para a área de transferência')
+                        }}
+                      >
+                        <Copy className="h-3 w-3 mr-1" /> Copiar
+                      </Button>
+                      {canCreate && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="h-7 text-xs"
+                          onClick={() => {
+                            setSelectedBriefing(null)
+                            handleGenerateAnalysis(selectedBriefing.id)
+                          }}
+                          disabled={isGeneratingAnalysis}
+                        >
+                          <RefreshCw className="h-3 w-3 mr-1" /> Regenerar
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+                  <div className="prose prose-sm max-w-none bg-muted/30 rounded-xl p-5 border border-border/30">
+                    <MarkdownRenderer content={selectedBriefing.ai_response} />
                   </div>
                 </div>
               )}
 
               {selectedBriefing.status === 'pending' && (
-                <div className="bg-muted rounded-lg p-4 text-center">
-                  <p className="text-sm text-muted-foreground">
-                    Esta análise ainda não foi gerada. Clique em "Gerar Análise" na tabela de resultados.
+                <div className="bg-muted/50 rounded-xl p-6 text-center border border-border/30">
+                  <p className="text-sm text-muted-foreground mb-3">
+                    Esta análise ainda não foi gerada.
                   </p>
+                  {canCreate && (
+                    <Button size="sm" onClick={() => { setSelectedBriefing(null); handleGenerateAnalysis(selectedBriefing.id); }}>
+                      Gerar Análise
+                    </Button>
+                  )}
+                </div>
+              )}
+
+              {selectedBriefing.status === 'failed' && (
+                <div className="bg-destructive/10 rounded-xl p-6 text-center border border-destructive/20">
+                  <p className="text-sm text-destructive mb-3">
+                    Houve um erro ao gerar esta análise.
+                  </p>
+                  {canCreate && (
+                    <Button variant="destructive" size="sm" onClick={() => { setSelectedBriefing(null); handleGenerateAnalysis(selectedBriefing.id); }}>
+                      Tentar Novamente
+                    </Button>
+                  )}
                 </div>
               )}
             </div>
-
-            <AlertDialogFooter>
-              <AlertDialogAction onClick={() => setSelectedBriefing(null)}>
-                Fechar
-              </AlertDialogAction>
-            </AlertDialogFooter>
-          </AlertDialogContent>
-        </AlertDialog>
+          </DialogContent>
+        </Dialog>
       )}
     </div>
   )
