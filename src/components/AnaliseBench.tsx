@@ -420,6 +420,9 @@ export function AnaliseBench() {
   const handleGenerateAnalysis = async (briefingId: string) => {
     setIsGeneratingAnalysis(true)
     setGeneratingBriefingId(briefingId)
+    setOverlayStatus('generating')
+    setOverlayError(undefined)
+    setPendingRetryId(briefingId)
     
     try {
       // Atualizar status para processing
@@ -434,10 +437,10 @@ export function AnaliseBench() {
 
       if (error) throw error
 
-      toast.success("Análise gerada com sucesso!")
+      setOverlayStatus('success')
       
-      // Aguardar um momento para garantir que o banco foi atualizado
-      await new Promise(resolve => setTimeout(resolve, 500))
+      // Aguardar overlay de sucesso
+      await new Promise(resolve => setTimeout(resolve, 1500))
       
       // Atualizar histórico
       await fetchBriefingHistory()
@@ -452,9 +455,13 @@ export function AnaliseBench() {
       if (updatedBriefing) {
         setSelectedBriefing(updatedBriefing)
       }
+      
+      setOverlayStatus(null)
+      setActiveTab("resultados")
     } catch (error: any) {
       console.error('Erro ao gerar análise:', error)
-      toast.error(`Erro ao gerar análise: ${error?.message || 'Erro desconhecido'}`)
+      setOverlayStatus('error')
+      setOverlayError(error?.message || 'Erro desconhecido')
       
       // Reverter status para pending em caso de erro
       await supabase
