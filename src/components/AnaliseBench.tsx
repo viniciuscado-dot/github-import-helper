@@ -12,7 +12,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import { Badge } from "@/components/ui/badge"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
-import { Loader2, Plus, Trash2, FileText, Settings, History, X, Save, Eye, Copy, RefreshCw, Search } from "lucide-react"
+import { Loader2, Plus, Trash2, FileText, Settings, History, X, Save, Eye, Copy, RefreshCw, Search, Send } from "lucide-react"
 import { useAuth } from "@/contexts/AuthContext"
 import { supabase } from "@/integrations/supabase/external-client"
 import { useModulePermissions } from "@/hooks/useModulePermissions"
@@ -27,7 +27,7 @@ import { MarkdownRenderer } from '@/components/ui/markdown-renderer'
 
 // Schema de validação do formulário
 const analiseFormSchema = z.object({
-  client_id: z.string().min(1, "Selecione um cliente"),
+  client_id: z.string().optional(),
   
   // Informações do Cliente
   nome_empresa: z.string().optional(),
@@ -1033,17 +1033,14 @@ export function AnaliseBench() {
                 <Button 
                   type="submit" 
                   disabled={isLoading || (!permissionsLoading && !canCreate)}
-                  size="lg"
-                  className="min-w-[240px]"
+                  className="flex-1"
                 >
                   {isLoading ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Gerando análise...
-                    </>
+                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                   ) : (
-                    'SALVAR E GERAR ANÁLISE'
+                    <Send className="h-4 w-4 mr-2" />
                   )}
+                  Salvar e gerar análise
                 </Button>
               </div>
             </form>
