@@ -210,6 +210,8 @@ export default function Noticias() {
   const [query, setQuery] = useState("");
   const debouncedQuery = useDebounce(query, 300);
 
+  const generatingRef = useRef(new Set<string>());
+
   const load = async () => {
     setLoading(true);
     const data = await fetchNews();
@@ -218,6 +220,19 @@ export default function Noticias() {
   };
 
   useEffect(() => { load(); }, []);
+
+  // Generate thumbnails for items without images (max 5 concurrent)
+  useEffect(() => {
+    if (loading || news.length === 0) return;
+    const missing = news.filter(n => !n.image && !generatingRef.current.has(n.id)).slice(0, 5);
+    missing.forEach(async (item) => {
+      generatingRef.current.add(item.id);
+      const image = await generateThumbnail(item.title, item.category, item.excerpt);
+      if (image) {
+        setNews(prev => prev.map(n => n.id === item.id ? { ...n, image } : n));
+      }
+    });
+  }, [loading, news.length]);
 
   const filtered = useMemo(() => {
     if (!debouncedQuery.trim()) return news;
