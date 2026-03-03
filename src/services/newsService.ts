@@ -114,3 +114,19 @@ export async function fetchNews(): Promise<NewsItem[]> {
     image: item.image || "",
   }));
 }
+
+export async function generateThumbnail(title: string, category: string, excerpt: string): Promise<string | null> {
+  try {
+    const response = await fetch("https://cesohdhspysooaowtvsu.supabase.co/functions/v1/generate-news-thumbnail", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ title, category, excerpt }),
+    });
+
+    if (!response.ok) return null;
+    const data = await response.json();
+    return data.image || null;
+  } catch {
+    return null;
+  }
+}

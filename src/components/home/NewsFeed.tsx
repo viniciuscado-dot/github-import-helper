@@ -1,10 +1,10 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { RefreshCw, Search, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
-import { fetchNews, type NewsItem } from "@/services/newsService";
+import { fetchNews, generateThumbnail, type NewsItem } from "@/services/newsService";
 import { NewsHeroCard } from "@/components/home/NewsHeroCard";
 import { NewsListItem } from "@/components/home/NewsListItem";
 
