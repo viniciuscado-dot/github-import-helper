@@ -5,6 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Progress } from "@/components/ui/progress";
+import { DotLogo } from "@/components/DotLogo";
 import { motion } from "framer-motion";
 import { fetchNews, generateThumbnail, type NewsItem } from "@/services/newsService";
 import { AppSidebar } from "@/components/app-sidebar";
