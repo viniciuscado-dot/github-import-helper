@@ -422,8 +422,8 @@ export default function AnaliseBenchResultado() {
         />
       )}
 
-      {/* ── Sticky header ─────────────────────────────────── */}
-      <div className="sticky top-0 z-20 bg-background/80 backdrop-blur-md border-b border-border/40 -mx-6 px-6 py-4">
+      {/* ── Page header ─────────────────────────────────── */}
+      <div className="border-b border-border/40 pb-4 mb-6">
         <div className="max-w-[1400px] mx-auto flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div className="flex items-center gap-3 min-w-0">
             <Button
