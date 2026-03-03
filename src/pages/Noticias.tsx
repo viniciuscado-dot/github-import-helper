@@ -61,14 +61,14 @@ function HeroCard({ item }: { item: NewsItem }) {
       className={`group relative flex flex-col ${glassCard} hover:-translate-y-0.5 hover:shadow-xl hover:shadow-primary/5 hover:border-primary/20`}
     >
       <div className="relative w-full min-h-[340px] md:min-h-[380px] overflow-hidden">
-        <div className={`absolute inset-0 bg-gradient-to-br ${gradient} transition-transform duration-500 group-hover:scale-[1.03]`} />
-        <div
-          className="absolute inset-0 opacity-[0.04]"
-          style={{
-            backgroundImage: "radial-gradient(circle at 25% 25%, hsl(var(--foreground)) 1px, transparent 1px)",
-            backgroundSize: "24px 24px",
-          }}
-        />
+        {item.image ? (
+          <img src={item.image} alt="" className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.03]" />
+        ) : (
+          <>
+            <div className={`absolute inset-0 bg-gradient-to-br ${gradient} transition-transform duration-500 group-hover:scale-[1.03]`} />
+            <div className="absolute inset-0 opacity-[0.04]" style={{ backgroundImage: "radial-gradient(circle at 25% 25%, hsl(var(--foreground)) 1px, transparent 1px)", backgroundSize: "24px 24px" }} />
+          </>
+        )}
         <div className="absolute inset-x-0 bottom-0 h-3/4 bg-gradient-to-t from-background/95 via-background/60 to-transparent" />
 
         <Badge variant="outline" className={`absolute top-4 left-4 text-[11px] font-semibold backdrop-blur-md ${badgeColor}`}>
