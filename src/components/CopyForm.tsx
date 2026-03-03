@@ -787,9 +787,13 @@ const [mainTab, setMainTab] = useState<'onboarding' | 'ongoing'>('onboarding')
       toast.success("Prompt atualizado com sucesso!")
       setEditingPrompt(null)
       fetchDefaultPrompts()
-    } catch (error) {
+    } catch (error: any) {
       console.error('Erro ao atualizar prompt:', error)
-      toast.error("Erro ao atualizar prompt")
+      if (error?.code === 'PGRST301' || error?.message?.includes('JWT') || error?.status === 401) {
+        toast.error("Sessão expirada. Faça login novamente.")
+      } else {
+        toast.error("Erro ao atualizar prompt")
+      }
     } finally {
       setIsLoadingPrompts(false)
     }
