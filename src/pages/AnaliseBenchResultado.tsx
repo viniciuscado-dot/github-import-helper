@@ -388,7 +388,19 @@ export default function AnaliseBenchResultado() {
   /* ── Render ──────────────────────────────────────────────── */
 
   return (
-    <div className="space-y-0">
+    <SidebarProvider defaultOpen={true}>
+      <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/30 flex w-full">
+        <AppSidebar activeView="analise-bench" onViewChange={(view) => navigate(`/dashboard?view=${view}`)} />
+        <div className="flex-1 flex h-svh min-h-0 flex-col min-w-0">
+          <MobileSidebarTrigger />
+          <SidebarInset className="flex-1 min-h-0" style={{ scrollbarGutter: "stable" }}>
+            {/* Top bar */}
+            <div className="border-b border-border/60 bg-background sticky top-0 z-10">
+              <div className="max-w-[1400px] mx-auto px-4 md:px-6 flex items-center justify-end h-14">
+                <NotificationCenter />
+              </div>
+            </div>
+    <div className="space-y-0 px-4 md:px-6">
       {overlayStatus && (
         <CopyGenerationOverlay
           status={overlayStatus}
