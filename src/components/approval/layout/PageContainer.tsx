@@ -18,7 +18,7 @@ export function PageContainer({ children, className }: PageContainerProps) {
         "py-6",
         className
       )}
-      style={{ scrollbarGutter: "stable" }}
+      
     >
       {children}
     </div>
