@@ -22,7 +22,6 @@ import { ptBR } from "date-fns/locale"
 import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog"
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { CopyGenerationOverlay } from '@/components/CopyGenerationOverlay'
 import { MarkdownRenderer } from '@/components/ui/markdown-renderer'
 import { AnaliseResultsRecent } from '@/components/analise/AnaliseResultsRecent'
