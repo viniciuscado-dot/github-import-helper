@@ -318,10 +318,18 @@ export default function Noticias() {
               ) : (
                 /* ── Default editorial layout ── */
                 <div className="space-y-6">
-                  {heroItem && <HeroCard item={heroItem} />}
-
-                  {gridItems.length > 0 && (
+                  {/* Top row: 2 large cards */}
+                  {topItems.length > 0 && (
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                      {topItems.map((item, i) => (
+                        <HeroCard key={item.id} item={item} />
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Remaining: 3 per row */}
+                  {gridItems.length > 0 && (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
                       {gridItems.map((item, i) => (
                         <GridCard key={item.id} item={item} index={i} />
                       ))}
