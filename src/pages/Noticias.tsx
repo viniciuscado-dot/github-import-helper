@@ -12,6 +12,7 @@ import { NewsThumbnail } from "@/components/home/NewsThumbnail";
 import { AppSidebar } from "@/components/app-sidebar";
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
 import { MobileSidebarTrigger } from "@/components/MobileSidebarTrigger";
+import { TopBar } from "@/components/TopBar";
 
 /* ── Category tokens ── */
 const categoryColors: Record<string, string> = {
