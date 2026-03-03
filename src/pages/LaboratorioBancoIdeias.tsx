@@ -21,8 +21,12 @@ export default function LaboratorioBancoIdeias() {
               </div>
             </div>
             <main className="max-w-[1280px] mx-auto px-4 md:px-6 py-6 space-y-6 flex-1">
+              <div>
+                <h1 className="text-2xl font-bold text-foreground">Banco de Ideias</h1>
+                <p className="text-muted-foreground">Acesse estruturas e criativos validados.</p>
+              </div>
               <PageComingSoon
-                title="Banco de Ideias"
+                title="Estamos preparando um acervo completo de referências criativas."
                 subtitle="Em breve você poderá acessar estruturas e criativos validados."
                 badgeLabel="Laboratório"
               />

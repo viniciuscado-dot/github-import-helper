@@ -21,9 +21,13 @@ export default function LaboratorioEditorVideo() {
               </div>
             </div>
             <main className="max-w-[1280px] mx-auto px-4 md:px-6 py-6 space-y-6 flex-1">
+              <div>
+                <h1 className="text-2xl font-bold text-foreground">Editor de Vídeo</h1>
+                <p className="text-muted-foreground">Ferramenta avançada de edição e testes criativos.</p>
+              </div>
               <PageComingSoon
-                title="Editor de Vídeo"
-                subtitle="Estamos preparando uma ferramenta avançada de edição e testes criativos."
+                title="Estamos preparando uma ferramenta avançada de edição."
+                subtitle="Funcionalidade em desenvolvimento."
                 badgeLabel="Laboratório"
               />
             </main>

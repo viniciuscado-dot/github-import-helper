@@ -21,8 +21,12 @@ export default function SocialMediaCentralPosts() {
               </div>
             </div>
             <main className="max-w-[1280px] mx-auto px-4 md:px-6 py-6 space-y-6 flex-1">
+              <div>
+                <h1 className="text-2xl font-bold text-foreground">Central de Posts</h1>
+                <p className="text-muted-foreground">Organização e gestão de posts sociais.</p>
+              </div>
               <PageComingSoon
-                title="Central de Posts"
+                title="Estamos preparando um módulo completo para gestão de posts."
                 subtitle="Organização e gestão de posts sociais em construção."
                 badgeLabel="Social Media"
               />
