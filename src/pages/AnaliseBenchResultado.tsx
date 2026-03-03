@@ -367,12 +367,19 @@ export default function AnaliseBenchResultado() {
 
   if (notFound || !data) {
     return (
-      <div className="flex flex-col items-center justify-center py-32 gap-4">
-        <h1 className="text-xl font-bold text-foreground">Análise não encontrada</h1>
-        <Button variant="outline" onClick={() => navigate("/dashboard?view=analise-bench")}>
-          <ArrowLeft className="h-4 w-4 mr-2" /> Voltar
-        </Button>
-      </div>
+      <SidebarProvider defaultOpen={true}>
+        <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/30 flex w-full">
+          <AppSidebar activeView="analise-bench" onViewChange={(view) => navigate(`/dashboard?view=${view}`)} />
+          <SidebarInset className="flex-1 min-h-0">
+            <div className="flex flex-col items-center justify-center py-32 gap-4">
+              <h1 className="text-xl font-bold text-foreground">Análise não encontrada</h1>
+              <Button variant="outline" onClick={() => navigate("/dashboard?view=analise-bench")}>
+                <ArrowLeft className="h-4 w-4 mr-2" /> Voltar
+              </Button>
+            </div>
+          </SidebarInset>
+        </div>
+      </SidebarProvider>
     );
   }
 
