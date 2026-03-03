@@ -21,9 +21,13 @@ export default function LaboratorioLPBuilder() {
               </div>
             </div>
             <main className="max-w-[1280px] mx-auto px-4 md:px-6 py-6 space-y-6 flex-1">
+              <div>
+                <h1 className="text-2xl font-bold text-foreground">LP Builder</h1>
+                <p className="text-muted-foreground">Construtor inteligente de landing pages.</p>
+              </div>
               <PageComingSoon
-                title="LP Builder"
-                subtitle="Construtor inteligente de landing pages em desenvolvimento."
+                title="Estamos preparando um construtor inteligente de landing pages."
+                subtitle="Funcionalidade em desenvolvimento."
                 badgeLabel="Laboratório"
               />
             </main>

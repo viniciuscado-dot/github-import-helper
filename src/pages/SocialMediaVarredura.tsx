@@ -21,8 +21,12 @@ export default function SocialMediaVarredura() {
               </div>
             </div>
             <main className="max-w-[1280px] mx-auto px-4 md:px-6 py-6 space-y-6 flex-1">
+              <div>
+                <h1 className="text-2xl font-bold text-foreground">Varredura</h1>
+                <p className="text-muted-foreground">Monitoramento e análise de presença digital.</p>
+              </div>
               <PageComingSoon
-                title="Varredura"
+                title="Estamos preparando um módulo completo de varredura."
                 subtitle="Funcionalidade em desenvolvimento."
                 badgeLabel="Social Media"
               />

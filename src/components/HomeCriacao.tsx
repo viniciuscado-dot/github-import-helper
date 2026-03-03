@@ -20,10 +20,10 @@ export function HomeCriacao({ onNavigate }: HomeCriacaoProps) {
 
       {/* Boas-vindas */}
       <div className="relative z-10 text-center pt-4">
-        <h1 className="text-2xl md:text-3xl font-bold tracking-tight text-foreground mb-1">
+        <h1 className="text-2xl font-bold text-foreground">
           Bem-vindo ao módulo de criação!
         </h1>
-        <p className="text-sm text-muted-foreground/70">
+        <p className="text-muted-foreground">
           Selecione uma área para começar
         </p>
       </div>

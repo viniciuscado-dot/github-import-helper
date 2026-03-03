@@ -436,10 +436,10 @@ export default function AnaliseBenchResultado() {
             </Button>
             <Separator orientation="vertical" className="h-6 hidden sm:block" />
             <div className="min-w-0">
-              <h1 className="text-lg font-bold text-foreground truncate">
+              <h1 className="text-2xl font-bold text-foreground truncate">
                 {data.nome_empresa || "Análise de Benchmarking"}
               </h1>
-              <p className="text-xs text-muted-foreground">
+              <p className="text-muted-foreground">
                 {data.nicho_empresa && `${data.nicho_empresa} · `}
                 {format(new Date(data.created_at), "dd MMM yyyy", { locale: ptBR })}
                 {data.profiles?.name && ` · ${data.profiles.name}`}
