@@ -15,8 +15,20 @@ function extractTag(xml: string, tag: string): string {
   return cdata ? cdata[1].trim() : '';
 }
 
+function decodeEntities(text: string): string {
+  return text
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/&#x27;/g, "'")
+    .replace(/&#(\d+);/g, (_, n) => String.fromCharCode(Number(n)));
+}
+
 function stripHtml(html: string): string {
-  return html.replace(/<[^>]*>/g, '').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&#39;/g, "'").trim();
+  const decoded = decodeEntities(html);
+  return decoded.replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim();
 }
 
 serve(async (req) => {
