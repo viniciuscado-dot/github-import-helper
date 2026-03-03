@@ -85,6 +85,13 @@ const App = () => (
                   <AnaliseArtefato />
                 </Suspense>
               } />
+              <Route path="/analise-bench/resultados/:id" element={
+                <ProtectedRoute>
+                  <Suspense fallback={<DashboardFallback />}>
+                    <AnaliseBenchResultado />
+                  </Suspense>
+                </ProtectedRoute>
+              } />
 
               {/* ── Anúncios ── */}
               <Route path="/performance/anuncios" element={
