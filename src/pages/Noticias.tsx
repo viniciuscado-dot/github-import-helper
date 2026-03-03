@@ -284,10 +284,13 @@ export default function Noticias() {
               {/* ── Loading skeleton ── */}
               {loading ? (
                 <div className="space-y-6">
-                  <Skeleton className="h-[380px] rounded-2xl" />
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                    {[1, 2, 3, 4].map((i) => (
-                      <Skeleton key={i} className="h-[260px] rounded-2xl" />
+                    <Skeleton className="h-[320px] rounded-2xl" />
+                    <Skeleton className="h-[320px] rounded-2xl" />
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                    {[1, 2, 3].map((i) => (
+                      <Skeleton key={i} className="h-[280px] rounded-2xl" />
                     ))}
                   </div>
                 </div>
