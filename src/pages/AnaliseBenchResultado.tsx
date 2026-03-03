@@ -22,7 +22,7 @@ import { cn } from "@/lib/utils";
 import { AppSidebar } from "@/components/app-sidebar";
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
 import { MobileSidebarTrigger } from "@/components/MobileSidebarTrigger";
-import { NotificationCenter } from "@/components/NotificationCenter";
+import { TopBar } from "@/components/TopBar";
 
 /* ── Section parser ─────────────────────────────────────────── */
 
