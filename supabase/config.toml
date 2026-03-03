@@ -41,3 +41,6 @@ verify_jwt = false
 
 [functions.insert-success-case]
 verify_jwt = false
+
+[functions.news]
+verify_jwt = false
