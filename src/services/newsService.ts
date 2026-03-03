@@ -95,7 +95,11 @@ function shuffle<T>(arr: T[]): T[] {
 }
 
 export async function fetchNews(): Promise<NewsItem[]> {
-  const response = await fetch("https://cesohdhsypsoooawtvsu.supabase.co/functions/v1/news");
+  const response = await fetch("https://cesohdhsypsoooawtvsu.supabase.co/functions/v1/news", {
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
 
   const data = await response.json();
 
