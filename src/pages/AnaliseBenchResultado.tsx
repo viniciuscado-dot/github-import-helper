@@ -403,7 +403,7 @@ export default function AnaliseBenchResultado() {
           <SidebarInset className="flex-1 min-h-0" style={{ scrollbarGutter: "stable" }}>
             {/* Top bar */}
             <div className="border-b border-border/60 bg-background sticky top-0 z-10">
-              <div className="max-w-[1400px] mx-auto px-4 md:px-6 flex items-center justify-end h-14">
+              <div className="max-w-[1280px] mx-auto px-4 md:px-6 flex items-center justify-end h-14">
                 <NotificationCenter />
               </div>
             </div>
