@@ -12,6 +12,7 @@ import { NewsThumbnail } from "@/components/home/NewsThumbnail";
 import { AppSidebar } from "@/components/app-sidebar";
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
 import { MobileSidebarTrigger } from "@/components/MobileSidebarTrigger";
+import { TopBar } from "@/components/TopBar";
 
 /* ── Category tokens ── */
 const categoryColors: Record<string, string> = {
@@ -215,6 +216,7 @@ export default function Noticias() {
         <div className="flex-1 flex h-svh min-h-0 flex-col min-w-0">
           <MobileSidebarTrigger />
           <SidebarInset className="flex-1 min-h-0 overflow-y-auto" style={{ scrollbarGutter: "stable" }}>
+            <TopBar />
             <main className="max-w-[1280px] mx-auto px-4 md:px-6 py-6 space-y-6">
 
               {/* ── Header ── */}
