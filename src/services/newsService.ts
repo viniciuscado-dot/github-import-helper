@@ -95,7 +95,18 @@ function shuffle<T>(arr: T[]): T[] {
 }
 
 export async function fetchNews(): Promise<NewsItem[]> {
-  // Simulate network delay
-  await new Promise((r) => setTimeout(r, 800));
-  return shuffle(MOCK_NEWS);
+  const response = await fetch("https://cesohdhsypsoooawtvsu.supabase.co/functions/v1/news");
+
+  const data = await response.json();
+
+  return data.items.map((item: any, index: number) => ({
+    id: String(index),
+    title: item.title,
+    excerpt: item.description,
+    source: item.source || "Fonte",
+    published_at: item.date?.split(" ")[0] || "",
+    category: "Marketing",
+    url: item.link,
+    image: item.image || "",
+  }));
 }
