@@ -468,19 +468,9 @@ export function AnaliseBench() {
       // Atualizar histórico
       await fetchBriefingHistory()
       
-      // Buscar o briefing atualizado para mostrar o resultado
-      const { data: updatedBriefing } = await supabase
-        .from('analise_bench_forms')
-        .select('*')
-        .eq('id', briefingId)
-        .single()
-      
-      if (updatedBriefing) {
-        setSelectedBriefing(updatedBriefing)
-      }
-      
+      // Redirecionar para página de resultado
       setOverlayStatus(null)
-      setActiveTab("resultados")
+      navigate(`/analise-bench/resultados/${briefingId}`)
     } catch (error: any) {
       console.error('Erro ao gerar análise:', error)
       setOverlayStatus('error')
