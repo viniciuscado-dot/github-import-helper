@@ -531,6 +531,27 @@ export type Database = {
           },
         ]
       }
+      news_thumbnails: {
+        Row: {
+          created_at: string
+          id: string
+          image_url: string
+          news_key: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          image_url: string
+          news_key: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          image_url?: string
+          news_key?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           avatar_url: string | null
