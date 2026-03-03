@@ -424,7 +424,7 @@ export default function AnaliseBenchResultado() {
 
       {/* ── Page header ─────────────────────────────────── */}
       <div className="border-b border-border/40 pb-4 mb-6">
-        <div className="max-w-[1400px] mx-auto flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+        <div className="max-w-[1280px] mx-auto flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div className="flex items-center gap-3 min-w-0">
             <Button
               variant="ghost"
