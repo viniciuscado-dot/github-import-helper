@@ -60,7 +60,7 @@ function HeroCard({ item }: { item: NewsItem }) {
       transition={{ duration: 0.45, ease: "easeOut" }}
       className={`group relative flex flex-col ${glassCard} hover:-translate-y-0.5 hover:shadow-xl hover:shadow-primary/5 hover:border-primary/20`}
     >
-      <div className="relative w-full min-h-[340px] md:min-h-[380px] overflow-hidden">
+      <div className="relative w-full min-h-[280px] md:min-h-[320px] overflow-hidden">
         {item.image ? (
           <img src={item.image} alt="" className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.03]" />
         ) : (
@@ -217,8 +217,8 @@ export default function Noticias() {
   }, [news, debouncedQuery]);
 
   const isSearchActive = debouncedQuery.trim().length > 0;
-  const heroItem = !isSearchActive && filtered.length > 0 ? filtered[0] : null;
-  const gridItems = !isSearchActive ? filtered.slice(1) : [];
+  const topItems = !isSearchActive ? filtered.slice(0, 2) : [];
+  const gridItems = !isSearchActive ? filtered.slice(2) : [];
   const searchItems = isSearchActive ? filtered : [];
 
   return (
@@ -284,10 +284,13 @@ export default function Noticias() {
               {/* ── Loading skeleton ── */}
               {loading ? (
                 <div className="space-y-6">
-                  <Skeleton className="h-[380px] rounded-2xl" />
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                    {[1, 2, 3, 4].map((i) => (
-                      <Skeleton key={i} className="h-[260px] rounded-2xl" />
+                    <Skeleton className="h-[320px] rounded-2xl" />
+                    <Skeleton className="h-[320px] rounded-2xl" />
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                    {[1, 2, 3].map((i) => (
+                      <Skeleton key={i} className="h-[280px] rounded-2xl" />
                     ))}
                   </div>
                 </div>
@@ -315,10 +318,18 @@ export default function Noticias() {
               ) : (
                 /* ── Default editorial layout ── */
                 <div className="space-y-6">
-                  {heroItem && <HeroCard item={heroItem} />}
-
-                  {gridItems.length > 0 && (
+                  {/* Top row: 2 large cards */}
+                  {topItems.length > 0 && (
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                      {topItems.map((item, i) => (
+                        <HeroCard key={item.id} item={item} />
+                      ))}
+                    </div>
+                  )}
+
+                  {/* Remaining: 3 per row */}
+                  {gridItems.length > 0 && (
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
                       {gridItems.map((item, i) => (
                         <GridCard key={item.id} item={item} index={i} />
                       ))}
