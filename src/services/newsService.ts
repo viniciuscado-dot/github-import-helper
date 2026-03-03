@@ -4,7 +4,7 @@ export interface NewsItem {
   excerpt: string;
   source: string;
   published_at: string;
-  category: "Marketing" | "Ads" | "Negócios";
+  category: "Marketing" | "Ads" | "Negócios" | "IA" | "SEO" | "Social" | "Vendas" | "Design";
   url: string;
   image?: string;
 }
