@@ -112,14 +112,14 @@ function GridCard({ item, index }: { item: NewsItem; index: number }) {
       className={`group relative flex flex-col ${glassCard} hover:-translate-y-0.5 hover:shadow-lg hover:shadow-primary/5 hover:border-primary/20`}
     >
       <div className="relative w-full h-40 overflow-hidden">
-        <div className={`absolute inset-0 bg-gradient-to-br ${gradient} transition-transform duration-500 group-hover:scale-105`} />
-        <div
-          className="absolute inset-0 opacity-[0.04]"
-          style={{
-            backgroundImage: "radial-gradient(circle at 25% 25%, hsl(var(--foreground)) 1px, transparent 1px)",
-            backgroundSize: "20px 20px",
-          }}
-        />
+        {item.image ? (
+          <img src={item.image} alt="" className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
+        ) : (
+          <>
+            <div className={`absolute inset-0 bg-gradient-to-br ${gradient} transition-transform duration-500 group-hover:scale-105`} />
+            <div className="absolute inset-0 opacity-[0.04]" style={{ backgroundImage: "radial-gradient(circle at 25% 25%, hsl(var(--foreground)) 1px, transparent 1px)", backgroundSize: "20px 20px" }} />
+          </>
+        )}
         <div className="absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-background/90 via-background/40 to-transparent" />
 
         <Badge variant="outline" className={`absolute top-3 left-3 text-[10px] font-semibold backdrop-blur-md ${badgeColor}`}>
