@@ -60,7 +60,7 @@ function HeroCard({ item }: { item: NewsItem }) {
       transition={{ duration: 0.45, ease: "easeOut" }}
       className={`group relative flex flex-col ${glassCard} hover:-translate-y-0.5 hover:shadow-xl hover:shadow-primary/5 hover:border-primary/20`}
     >
-      <div className="relative w-full min-h-[340px] md:min-h-[380px] overflow-hidden">
+      <div className="relative w-full min-h-[280px] md:min-h-[320px] overflow-hidden">
         {item.image ? (
           <img src={item.image} alt="" className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.03]" />
         ) : (
