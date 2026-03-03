@@ -109,7 +109,7 @@ export async function fetchNews(): Promise<NewsItem[]> {
     excerpt: item.description,
     source: item.source || "Fonte",
     published_at: item.date?.split(" ")[0] || "",
-    category: "Marketing",
+    category: item.category || "Marketing",
     url: item.link,
     image: item.image || "",
   }));

@@ -111,14 +111,17 @@ async function fetchFeed(url: string, source: string, lang: string): Promise<Raw
     const blocks = xml.split(/<item>/i).slice(1);
     return blocks.map(block => {
       const itemXml = block.split(/<\/item>/i)[0];
+      const title = stripHtml(extractTag(itemXml, 'title'));
+      const description = stripHtml(extractTag(itemXml, 'description')).substring(0, 300);
       return {
-        title: stripHtml(extractTag(itemXml, 'title')),
-        description: stripHtml(extractTag(itemXml, 'description')).substring(0, 300),
+        title,
+        description,
         link: extractTag(itemXml, 'link'),
         date: extractTag(itemXml, 'pubDate') || extractTag(itemXml, 'dc:date'),
         source,
         image: extractImage(itemXml),
         lang,
+        category: categorize(title, description),
       };
     }).filter(i => i.title && i.link);
   } catch {
