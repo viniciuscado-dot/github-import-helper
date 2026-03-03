@@ -227,7 +227,7 @@ export default function Noticias() {
     const missing = news.filter(n => !n.image && !generatingRef.current.has(n.id)).slice(0, 5);
     missing.forEach(async (item) => {
       generatingRef.current.add(item.id);
-      const image = await generateThumbnail(item.title, item.category, item.excerpt);
+      const image = await generateThumbnail(item.title, item.category, item.excerpt, item.url);
       if (image) {
         setNews(prev => prev.map(n => n.id === item.id ? { ...n, image } : n));
       }
