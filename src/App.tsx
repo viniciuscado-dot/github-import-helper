@@ -27,6 +27,7 @@ const Noticias = lazy(() => import("./pages/Noticias"));
 import AprovacaoCliente from "./pages/AprovacaoCliente";
 const Anuncios = lazy(() => import("./pages/Anuncios"));
 const AnaliseArtefato = lazy(() => import("./pages/AnaliseArtefato"));
+const AnaliseBenchResultado = lazy(() => import("./pages/AnaliseBenchResultado"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
