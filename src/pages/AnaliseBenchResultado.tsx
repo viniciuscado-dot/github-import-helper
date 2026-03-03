@@ -352,9 +352,16 @@ export default function AnaliseBenchResultado() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center py-32">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-      </div>
+      <SidebarProvider defaultOpen={true}>
+        <div className="min-h-screen bg-gradient-to-br from-background via-background to-muted/30 flex w-full">
+          <AppSidebar activeView="analise-bench" onViewChange={(view) => navigate(`/dashboard?view=${view}`)} />
+          <SidebarInset className="flex-1 min-h-0">
+            <div className="flex items-center justify-center py-32">
+              <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            </div>
+          </SidebarInset>
+        </div>
+      </SidebarProvider>
     );
   }
 
