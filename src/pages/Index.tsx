@@ -8,7 +8,7 @@ import { useModulePermissions } from "@/hooks/useModulePermissions";
 
 import { toast } from "sonner";
 import { UserManagement } from "@/components/UserManagement";
-import { NotificationCenter } from "@/components/NotificationCenter";
+import { TopBar } from "@/components/TopBar";
 import { UserProfile } from "@/components/UserProfile";
 import { AppSidebar } from "@/components/app-sidebar";
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
