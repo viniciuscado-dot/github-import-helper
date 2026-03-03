@@ -486,7 +486,7 @@ export default function AnaliseBenchResultado() {
       </div>
 
       {/* ── Content ───────────────────────────────────────── */}
-      <div className="max-w-[1400px] mx-auto py-8 px-2" ref={contentRef}>
+      <div className="max-w-[1280px] mx-auto py-8 px-2" ref={contentRef}>
         {/* Hero */}
         <div className="text-center mb-10">
           {data.client_logo_url && (

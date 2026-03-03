@@ -266,7 +266,7 @@ export default function Noticias() {
         <div className="flex-1 flex h-svh min-h-0 flex-col min-w-0">
           <MobileSidebarTrigger />
           <SidebarInset className="flex-1 min-h-0 overflow-y-auto" style={{ scrollbarGutter: "stable" }}>
-            <main className="max-w-[1280px] mx-auto px-4 md:px-8 py-8 space-y-8">
+            <main className="max-w-[1280px] mx-auto px-4 md:px-6 py-6 space-y-6">
 
               {/* ── Header ── */}
               <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">

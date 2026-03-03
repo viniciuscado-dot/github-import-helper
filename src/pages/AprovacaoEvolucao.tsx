@@ -274,7 +274,7 @@ export default function AprovacaoEvolucao() {
               </div>
             </div>
 
-            <main className="px-4 md:px-6 py-5 space-y-4">
+            <main className="max-w-[1280px] mx-auto px-4 md:px-6 py-6 space-y-6">
               {/* Header */}
               <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                 <div>
