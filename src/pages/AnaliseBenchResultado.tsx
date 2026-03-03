@@ -401,12 +401,7 @@ export default function AnaliseBenchResultado() {
         <div className="flex-1 flex h-svh min-h-0 flex-col min-w-0">
           <MobileSidebarTrigger />
           <SidebarInset className="flex-1 min-h-0" style={{ scrollbarGutter: "stable" }}>
-            {/* Top bar */}
-            <div className="border-b border-border/60 bg-background sticky top-0 z-10">
-              <div className="max-w-[1280px] mx-auto px-4 md:px-6 flex items-center justify-end h-14">
-                <NotificationCenter />
-              </div>
-            </div>
+            <TopBar />
     <div className="space-y-0 px-4 md:px-6">
       {overlayStatus && (
         <CopyGenerationOverlay
