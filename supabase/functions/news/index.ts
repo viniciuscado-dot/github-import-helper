@@ -5,14 +5,44 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-const RSS_URL = 'https://blog.hubspot.com/marketing/rss.xml';
+const FEEDS = [
+  { url: 'https://www.thinkwithgoogle.com/intl/pt-br/feed/', source: 'Think with Google', lang: 'pt' },
+  { url: 'https://resultadosdigitais.com.br/blog/feed/', source: 'RD Station', lang: 'pt' },
+  { url: 'https://rockcontent.com/br/blog/feed/', source: 'Rock Content', lang: 'pt' },
+  { url: 'https://neilpatel.com/br/blog/feed/', source: 'Neil Patel BR', lang: 'pt' },
+  { url: 'https://blog.hubspot.com/marketing/rss.xml', source: 'HubSpot', lang: 'en' },
+];
+
+const PT_KEYWORDS = [
+  'marketing', 'negócio', 'negocios', 'publicidade', 'anúncio', 'anuncios',
+  'ads', 'inteligência artificial', 'inteligencia artificial', ' ia ',
+  'design', 'performance', 'vendas', 'estratégia', 'estrategia', 'digital',
+  'conteúdo', 'conteudo', 'seo', 'mídia', 'midia', 'marca', 'branding',
+  'growth', 'conversão', 'conversao', 'leads', 'funil', 'tráfego', 'trafego',
+];
 
 function extractTag(xml: string, tag: string): string {
-  const match = xml.match(new RegExp(`<${tag}[^>]*>([\\s\\S]*?)<\\/${tag}>`));
-  if (match) return match[1].trim();
-  // Handle CDATA
+  // Try CDATA first
   const cdata = xml.match(new RegExp(`<${tag}[^>]*><!\\[CDATA\\[([\\s\\S]*?)\\]\\]><\\/${tag}>`));
-  return cdata ? cdata[1].trim() : '';
+  if (cdata) return cdata[1].trim();
+  const match = xml.match(new RegExp(`<${tag}[^>]*>([\\s\\S]*?)<\\/${tag}>`));
+  return match ? match[1].trim() : '';
+}
+
+function extractImage(xml: string): string {
+  // media:content url
+  const mc = xml.match(/<media:content[^>]+url=["']([^"']+)["']/);
+  if (mc) return mc[1];
+  // media:thumbnail url
+  const mt = xml.match(/<media:thumbnail[^>]+url=["']([^"']+)["']/);
+  if (mt) return mt[1];
+  // enclosure
+  const enc = xml.match(/<enclosure[^>]+url=["']([^"']+)["'][^>]+type=["']image/);
+  if (enc) return enc[1];
+  // og or img inside description/content
+  const img = xml.match(/<img[^>]+src=["']([^"']+)["']/);
+  if (img) return img[1];
+  return '';
 }
 
 function decodeEntities(text: string): string {
@@ -27,8 +57,45 @@ function decodeEntities(text: string): string {
 }
 
 function stripHtml(html: string): string {
-  const decoded = decodeEntities(html);
-  return decoded.replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim();
+  return decodeEntities(html).replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim();
+}
+
+function matchesTheme(title: string, description: string): boolean {
+  const text = `${title} ${description}`.toLowerCase();
+  return PT_KEYWORDS.some(k => text.includes(k));
+}
+
+interface RawItem {
+  title: string;
+  description: string;
+  link: string;
+  date: string;
+  source: string;
+  image: string;
+  lang: string;
+}
+
+async function fetchFeed(url: string, source: string, lang: string): Promise<RawItem[]> {
+  try {
+    const res = await fetch(url, { headers: { 'User-Agent': 'DOT-News-Bot/1.0' } });
+    if (!res.ok) return [];
+    const xml = await res.text();
+    const blocks = xml.split(/<item>/i).slice(1);
+    return blocks.map(block => {
+      const itemXml = block.split(/<\/item>/i)[0];
+      return {
+        title: stripHtml(extractTag(itemXml, 'title')),
+        description: stripHtml(extractTag(itemXml, 'description')).substring(0, 300),
+        link: extractTag(itemXml, 'link'),
+        date: extractTag(itemXml, 'pubDate') || extractTag(itemXml, 'dc:date'),
+        source,
+        image: extractImage(itemXml),
+        lang,
+      };
+    }).filter(i => i.title && i.link);
+  } catch {
+    return [];
+  }
 }
 
 serve(async (req) => {
@@ -37,35 +104,41 @@ serve(async (req) => {
   }
 
   try {
-    const rssResponse = await fetch(RSS_URL);
-    if (!rssResponse.ok) {
-      throw new Error(`RSS fetch failed: ${rssResponse.status}`);
-    }
+    const results = await Promise.all(FEEDS.map(f => fetchFeed(f.url, f.source, f.lang)));
+    const all = results.flat();
 
-    const xml = await rssResponse.text();
-
-    // Split by <item> tags
-    const itemBlocks = xml.split(/<item>/i).slice(1);
-
-    const items = itemBlocks.slice(0, 10).map((block) => {
-      const itemXml = block.split(/<\/item>/i)[0];
-      return {
-        title: stripHtml(extractTag(itemXml, 'title')),
-        description: stripHtml(extractTag(itemXml, 'description')).substring(0, 300),
-        link: extractTag(itemXml, 'link'),
-        date: extractTag(itemXml, 'pubDate'),
-      };
+    // Deduplicate by link
+    const seen = new Set<string>();
+    const unique = all.filter(item => {
+      if (seen.has(item.link)) return false;
+      seen.add(item.link);
+      return true;
     });
 
-    return new Response(
-      JSON.stringify({ items }),
-      { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    );
+    // Separate PT vs EN, filter EN by theme
+    const pt = unique.filter(i => i.lang === 'pt');
+    const en = unique.filter(i => i.lang === 'en' && matchesTheme(i.title, i.description));
+
+    // Prioritize PT, fill with EN
+    let combined = [...pt, ...en];
+
+    // Sort by date descending
+    combined.sort((a, b) => {
+      const da = a.date ? new Date(a.date).getTime() : 0;
+      const db = b.date ? new Date(b.date).getTime() : 0;
+      return db - da;
+    });
+
+    const items = combined.slice(0, 30).map(({ lang, ...rest }) => rest);
+
+    return new Response(JSON.stringify({ items }), {
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
   } catch (error) {
     console.error('News RSS error:', error);
-    return new Response(
-      JSON.stringify({ error: error.message }),
-      { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
-    );
+    return new Response(JSON.stringify({ error: error.message }), {
+      status: 500,
+      headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+    });
   }
 });
