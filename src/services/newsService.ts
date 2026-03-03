@@ -115,12 +115,12 @@ export async function fetchNews(): Promise<NewsItem[]> {
   }));
 }
 
-export async function generateThumbnail(title: string, category: string, excerpt: string): Promise<string | null> {
+export async function generateThumbnail(title: string, category: string, excerpt: string, url: string): Promise<string | null> {
   try {
     const response = await fetch("https://cesohdhspysooaowtvsu.supabase.co/functions/v1/generate-news-thumbnail", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ title, category, excerpt }),
+      body: JSON.stringify({ title, category, excerpt, url }),
     });
 
     if (!response.ok) return null;
