@@ -1160,7 +1160,7 @@ export function AnaliseBench() {
           ) : (
             <AnaliseResultsRecent
               briefings={briefingHistory}
-              onView={(briefing) => setSelectedBriefing(briefing)}
+              onView={(briefing) => navigate(`/analise-bench/resultados/${briefing.id}`)}
               onViewHistory={() => setShowFullHistory(true)}
               onGenerate={(id) => handleGenerateAnalysis(id)}
               canCreate={canCreate}
