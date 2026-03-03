@@ -1,7 +1,7 @@
 import { AppSidebar } from "@/components/app-sidebar";
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
 import { MobileSidebarTrigger } from "@/components/MobileSidebarTrigger";
-import { NotificationCenter } from "@/components/NotificationCenter";
+import { TopBar } from "@/components/TopBar";
 import { PageComingSoon } from "@/components/PageComingSoon";
 import { useNavigate } from "react-router-dom";
 
