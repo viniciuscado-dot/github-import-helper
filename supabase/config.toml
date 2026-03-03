@@ -44,3 +44,6 @@ verify_jwt = false
 
 [functions.news]
 verify_jwt = false
+
+[functions.generate-news-thumbnail]
+verify_jwt = false
