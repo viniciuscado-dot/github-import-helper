@@ -33,8 +33,15 @@ export function NewsListItem({ item, index = 0 }: NewsListItemProps) {
       className="group flex items-start gap-3 p-3 rounded-xl border border-border/10 bg-card/[0.06] backdrop-blur-lg transition-all duration-200 hover:border-primary/30 hover:shadow-md hover:shadow-primary/5 hover:-translate-y-px flex-1"
     >
       {/* Thumbnail placeholder */}
-      <div className={`shrink-0 w-28 h-20 rounded-lg bg-gradient-to-br ${gradient} overflow-hidden`}>
-        <div className="w-full h-full opacity-[0.06]" style={{ backgroundImage: "radial-gradient(circle, hsl(var(--foreground)) 1px, transparent 1px)", backgroundSize: "12px 12px" }} />
+      <div className={`shrink-0 w-28 h-20 rounded-lg overflow-hidden relative ${!item.image ? `bg-gradient-to-br ${gradient}` : ''}`}>
+        {item.image ? (
+          <>
+            <img src={item.image} alt="" className="absolute inset-0 w-full h-full object-cover" />
+            <div className="absolute inset-0 bg-black/60" />
+          </>
+        ) : (
+          <div className="w-full h-full opacity-[0.06]" style={{ backgroundImage: "radial-gradient(circle, hsl(var(--foreground)) 1px, transparent 1px)", backgroundSize: "12px 12px" }} />
+        )}
       </div>
 
       {/* Info */}
