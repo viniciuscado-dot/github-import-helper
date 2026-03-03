@@ -16,18 +16,33 @@ const categoryGradients: Record<string, string> = {
   Marketing: "from-primary/30 via-primary/10 to-primary/5",
   Ads: "from-blue-500/30 via-blue-500/10 to-blue-500/5",
   Negócios: "from-emerald-500/30 via-emerald-500/10 to-emerald-500/5",
+  IA: "from-violet-500/30 via-violet-500/10 to-violet-500/5",
+  SEO: "from-amber-500/30 via-amber-500/10 to-amber-500/5",
+  Social: "from-pink-500/30 via-pink-500/10 to-pink-500/5",
+  Vendas: "from-orange-500/30 via-orange-500/10 to-orange-500/5",
+  Design: "from-cyan-500/30 via-cyan-500/10 to-cyan-500/5",
 };
 
 const categoryColors: Record<string, string> = {
-  Marketing: "bg-primary/20 text-primary border-primary/30",
-  Ads: "bg-blue-500/20 text-blue-500 border-blue-500/30",
-  Negócios: "bg-emerald-500/20 text-emerald-500 border-emerald-500/30",
+  Marketing: "bg-primary text-primary-foreground border-transparent",
+  Ads: "bg-blue-600 text-white border-transparent",
+  Negócios: "bg-emerald-600 text-white border-transparent",
+  IA: "bg-violet-600 text-white border-transparent",
+  SEO: "bg-amber-600 text-white border-transparent",
+  Social: "bg-pink-600 text-white border-transparent",
+  Vendas: "bg-orange-600 text-white border-transparent",
+  Design: "bg-cyan-600 text-white border-transparent",
 };
 
 const categoryDots: Record<string, string> = {
   Marketing: "bg-primary",
   Ads: "bg-blue-500",
   Negócios: "bg-emerald-500",
+  IA: "bg-violet-500",
+  SEO: "bg-amber-500",
+  Social: "bg-pink-500",
+  Vendas: "bg-orange-500",
+  Design: "bg-cyan-500",
 };
 
 const glassCard =
