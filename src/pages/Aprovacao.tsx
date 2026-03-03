@@ -1,6 +1,6 @@
 import { useState, useCallback, useMemo, useEffect } from "react";
 import { Plus, LogOut, LayoutDashboard, Columns3, List } from "lucide-react";
-import { NotificationCenter } from "@/components/NotificationCenter";
+import { TopBar } from "@/components/TopBar";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ApprovalDashboard } from "@/components/approval/ApprovalDashboard";
