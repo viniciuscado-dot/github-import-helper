@@ -61,14 +61,14 @@ function HeroCard({ item }: { item: NewsItem }) {
       className={`group relative flex flex-col ${glassCard} hover:-translate-y-0.5 hover:shadow-xl hover:shadow-primary/5 hover:border-primary/20`}
     >
       <div className="relative w-full min-h-[340px] md:min-h-[380px] overflow-hidden">
-        <div className={`absolute inset-0 bg-gradient-to-br ${gradient} transition-transform duration-500 group-hover:scale-[1.03]`} />
-        <div
-          className="absolute inset-0 opacity-[0.04]"
-          style={{
-            backgroundImage: "radial-gradient(circle at 25% 25%, hsl(var(--foreground)) 1px, transparent 1px)",
-            backgroundSize: "24px 24px",
-          }}
-        />
+        {item.image ? (
+          <img src={item.image} alt="" className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.03]" />
+        ) : (
+          <>
+            <div className={`absolute inset-0 bg-gradient-to-br ${gradient} transition-transform duration-500 group-hover:scale-[1.03]`} />
+            <div className="absolute inset-0 opacity-[0.04]" style={{ backgroundImage: "radial-gradient(circle at 25% 25%, hsl(var(--foreground)) 1px, transparent 1px)", backgroundSize: "24px 24px" }} />
+          </>
+        )}
         <div className="absolute inset-x-0 bottom-0 h-3/4 bg-gradient-to-t from-background/95 via-background/60 to-transparent" />
 
         <Badge variant="outline" className={`absolute top-4 left-4 text-[11px] font-semibold backdrop-blur-md ${badgeColor}`}>
@@ -112,14 +112,14 @@ function GridCard({ item, index }: { item: NewsItem; index: number }) {
       className={`group relative flex flex-col ${glassCard} hover:-translate-y-0.5 hover:shadow-lg hover:shadow-primary/5 hover:border-primary/20`}
     >
       <div className="relative w-full h-40 overflow-hidden">
-        <div className={`absolute inset-0 bg-gradient-to-br ${gradient} transition-transform duration-500 group-hover:scale-105`} />
-        <div
-          className="absolute inset-0 opacity-[0.04]"
-          style={{
-            backgroundImage: "radial-gradient(circle at 25% 25%, hsl(var(--foreground)) 1px, transparent 1px)",
-            backgroundSize: "20px 20px",
-          }}
-        />
+        {item.image ? (
+          <img src={item.image} alt="" className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
+        ) : (
+          <>
+            <div className={`absolute inset-0 bg-gradient-to-br ${gradient} transition-transform duration-500 group-hover:scale-105`} />
+            <div className="absolute inset-0 opacity-[0.04]" style={{ backgroundImage: "radial-gradient(circle at 25% 25%, hsl(var(--foreground)) 1px, transparent 1px)", backgroundSize: "20px 20px" }} />
+          </>
+        )}
         <div className="absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-background/90 via-background/40 to-transparent" />
 
         <Badge variant="outline" className={`absolute top-3 left-3 text-[10px] font-semibold backdrop-blur-md ${badgeColor}`}>
@@ -159,14 +159,15 @@ function ListRow({ item, index }: { item: NewsItem; index: number }) {
       transition={{ duration: 0.3, delay: index * 0.04 }}
       className={`group flex items-start gap-4 p-4 ${glassCard} hover:border-primary/30 hover:shadow-md hover:shadow-primary/5 hover:-translate-y-px`}
     >
-      <div className={`shrink-0 w-32 h-22 rounded-lg bg-gradient-to-br ${gradient} overflow-hidden`}>
-        <div
-          className="w-full h-full opacity-[0.06]"
-          style={{
-            backgroundImage: "radial-gradient(circle, hsl(var(--foreground)) 1px, transparent 1px)",
-            backgroundSize: "12px 12px",
-          }}
-        />
+      <div className={`shrink-0 w-32 h-22 rounded-lg overflow-hidden relative ${!item.image ? `bg-gradient-to-br ${gradient}` : ''}`}>
+        {item.image ? (
+          <>
+            <img src={item.image} alt="" className="absolute inset-0 w-full h-full object-cover" />
+            <div className="absolute inset-0 bg-black/60" />
+          </>
+        ) : (
+          <div className="w-full h-full opacity-[0.06]" style={{ backgroundImage: "radial-gradient(circle, hsl(var(--foreground)) 1px, transparent 1px)", backgroundSize: "12px 12px" }} />
+        )}
       </div>
       <div className="flex flex-col justify-center gap-1.5 min-w-0 flex-1">
         <h4 className="text-sm md:text-base font-semibold text-foreground leading-snug line-clamp-2 group-hover:text-primary transition-colors">
