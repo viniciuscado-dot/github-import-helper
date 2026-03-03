@@ -632,6 +632,10 @@ export default function AnaliseBenchResultado() {
           </div>
         )}
       </div>
-    </div>
+      </div>
+          </SidebarInset>
+        </div>
+      </div>
+    </SidebarProvider>
   );
 }
