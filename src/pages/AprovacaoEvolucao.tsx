@@ -269,7 +269,7 @@ export default function AprovacaoEvolucao() {
           <SidebarInset className="flex-1 min-h-0 overflow-y-auto" style={{ scrollbarGutter: "stable" }}>
             {/* Top bar */}
             <div className="border-b border-border/60 bg-background/80 backdrop-blur-sm sticky top-0 z-20">
-              <div className="px-4 md:px-6 flex items-center justify-end h-14">
+              <div className="max-w-[1280px] mx-auto px-4 md:px-6 flex items-center justify-end h-14">
                 <NotificationCenter />
               </div>
             </div>
