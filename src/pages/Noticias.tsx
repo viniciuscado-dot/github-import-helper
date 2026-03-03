@@ -5,6 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Progress } from "@/components/ui/progress";
+import { DotLogo } from "@/components/DotLogo";
 import { motion } from "framer-motion";
 import { fetchNews, generateThumbnail, type NewsItem } from "@/services/newsService";
 import { AppSidebar } from "@/components/app-sidebar";
@@ -311,18 +313,14 @@ export default function Noticias() {
                 </p>
               )}
 
-              {/* ── Loading skeleton ── */}
+              {/* ── Loading state ── */}
               {loading ? (
-                <div className="space-y-6">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                    <Skeleton className="h-[320px] rounded-2xl" />
-                    <Skeleton className="h-[320px] rounded-2xl" />
+                <div className="flex flex-col items-center justify-center py-24 gap-6">
+                  <DotLogo size={48} animate />
+                  <div className="w-48">
+                    <Progress value={undefined} className="h-1.5 bg-muted/30" />
                   </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-                    {[1, 2, 3].map((i) => (
-                      <Skeleton key={i} className="h-[280px] rounded-2xl" />
-                    ))}
-                  </div>
+                  <p className="text-xs text-muted-foreground animate-pulse">Carregando notícias…</p>
                 </div>
               ) : filtered.length === 0 ? (
                 /* ── Empty state ── */
