@@ -64,6 +64,7 @@ interface Competitor {
 }
 
 export function AnaliseBench() {
+  const navigate = useNavigate()
   const { profile } = useAuth()
   const { checkModulePermission, loading: permissionsLoading } = useModulePermissions()
   const [isLoading, setIsLoading] = useState(false)
