@@ -403,7 +403,7 @@ export default function AnaliseBenchResultado() {
           <SidebarInset className="flex-1 min-h-0" style={{ scrollbarGutter: "stable" }}>
             {/* Top bar */}
             <div className="border-b border-border/60 bg-background sticky top-0 z-10">
-              <div className="max-w-[1400px] mx-auto px-4 md:px-6 flex items-center justify-end h-14">
+              <div className="max-w-[1280px] mx-auto px-4 md:px-6 flex items-center justify-end h-14">
                 <NotificationCenter />
               </div>
             </div>
@@ -424,7 +424,7 @@ export default function AnaliseBenchResultado() {
 
       {/* ── Page header ─────────────────────────────────── */}
       <div className="border-b border-border/40 pb-4 mb-6">
-        <div className="max-w-[1400px] mx-auto flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+        <div className="max-w-[1280px] mx-auto flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div className="flex items-center gap-3 min-w-0">
             <Button
               variant="ghost"
@@ -486,7 +486,7 @@ export default function AnaliseBenchResultado() {
       </div>
 
       {/* ── Content ───────────────────────────────────────── */}
-      <div className="max-w-[1400px] mx-auto py-8 px-2" ref={contentRef}>
+      <div className="max-w-[1280px] mx-auto py-8 px-2" ref={contentRef}>
         {/* Hero */}
         <div className="text-center mb-10">
           {data.client_logo_url && (

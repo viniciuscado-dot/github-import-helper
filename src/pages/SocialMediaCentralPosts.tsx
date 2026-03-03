@@ -1,6 +1,7 @@
 import { AppSidebar } from "@/components/app-sidebar";
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
 import { MobileSidebarTrigger } from "@/components/MobileSidebarTrigger";
+import { NotificationCenter } from "@/components/NotificationCenter";
 import { PageComingSoon } from "@/components/PageComingSoon";
 import { useNavigate } from "react-router-dom";
 
@@ -14,11 +15,18 @@ export default function SocialMediaCentralPosts() {
         <div className="flex-1 flex h-svh min-h-0 flex-col min-w-0">
           <MobileSidebarTrigger />
           <SidebarInset className="flex-1 min-h-0 flex flex-col">
-            <PageComingSoon
-              title="Central de Posts"
-              subtitle="Organização e gestão de posts sociais em construção."
-              badgeLabel="Social Media"
-            />
+            <div className="border-b border-border/60 bg-background/80 backdrop-blur-sm sticky top-0 z-20">
+              <div className="max-w-[1280px] mx-auto px-4 md:px-6 flex items-center justify-end h-14">
+                <NotificationCenter />
+              </div>
+            </div>
+            <main className="max-w-[1280px] mx-auto px-4 md:px-6 py-6 space-y-6 flex-1">
+              <PageComingSoon
+                title="Central de Posts"
+                subtitle="Organização e gestão de posts sociais em construção."
+                badgeLabel="Social Media"
+              />
+            </main>
           </SidebarInset>
         </div>
       </div>
