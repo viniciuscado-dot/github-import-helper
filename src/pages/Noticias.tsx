@@ -217,8 +217,8 @@ export default function Noticias() {
   }, [news, debouncedQuery]);
 
   const isSearchActive = debouncedQuery.trim().length > 0;
-  const heroItem = !isSearchActive && filtered.length > 0 ? filtered[0] : null;
-  const gridItems = !isSearchActive ? filtered.slice(1) : [];
+  const topItems = !isSearchActive ? filtered.slice(0, 2) : [];
+  const gridItems = !isSearchActive ? filtered.slice(2) : [];
   const searchItems = isSearchActive ? filtered : [];
 
   return (
