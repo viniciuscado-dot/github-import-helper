@@ -1,5 +1,4 @@
 import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
-import { DOMParser } from "https://deno.land/x/deno_dom@v0.1.38/deno-dom-wasm.ts";
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -7,6 +6,18 @@ const corsHeaders = {
 };
 
 const RSS_URL = 'https://blog.hubspot.com/marketing/rss.xml';
+
+function extractTag(xml: string, tag: string): string {
+  const match = xml.match(new RegExp(`<${tag}[^>]*>([\\s\\S]*?)<\\/${tag}>`));
+  if (match) return match[1].trim();
+  // Handle CDATA
+  const cdata = xml.match(new RegExp(`<${tag}[^>]*><!\\[CDATA\\[([\\s\\S]*?)\\]\\]><\\/${tag}>`));
+  return cdata ? cdata[1].trim() : '';
+}
+
+function stripHtml(html: string): string {
+  return html.replace(/<[^>]*>/g, '').replace(/&amp;/g, '&').replace(/&lt;/g, '<').replace(/&gt;/g, '>').replace(/&quot;/g, '"').replace(/&#39;/g, "'").trim();
+}
 
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
@@ -20,20 +31,19 @@ serve(async (req) => {
     }
 
     const xml = await rssResponse.text();
-    const doc = new DOMParser().parseFromString(xml, 'text/xml');
 
-    if (!doc) {
-      throw new Error('Failed to parse XML');
-    }
+    // Split by <item> tags
+    const itemBlocks = xml.split(/<item>/i).slice(1);
 
-    const items = Array.from(doc.querySelectorAll('item'))
-      .slice(0, 10)
-      .map((item) => ({
-        title: item.querySelector('title')?.textContent?.trim() ?? '',
-        description: item.querySelector('description')?.textContent?.trim() ?? '',
-        link: item.querySelector('link')?.textContent?.trim() ?? '',
-        date: item.querySelector('pubDate')?.textContent?.trim() ?? '',
-      }));
+    const items = itemBlocks.slice(0, 10).map((block) => {
+      const itemXml = block.split(/<\/item>/i)[0];
+      return {
+        title: stripHtml(extractTag(itemXml, 'title')),
+        description: stripHtml(extractTag(itemXml, 'description')).substring(0, 300),
+        link: extractTag(itemXml, 'link'),
+        date: extractTag(itemXml, 'pubDate'),
+      };
+    });
 
     return new Response(
       JSON.stringify({ items }),
