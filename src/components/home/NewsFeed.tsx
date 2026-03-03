@@ -1,10 +1,10 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { RefreshCw, Search, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
-import { fetchNews, type NewsItem } from "@/services/newsService";
+import { fetchNews, generateThumbnail, type NewsItem } from "@/services/newsService";
 import { NewsHeroCard } from "@/components/home/NewsHeroCard";
 import { NewsListItem } from "@/components/home/NewsListItem";
 
@@ -27,6 +27,8 @@ export function NewsFeed() {
   const [query, setQuery] = useState("");
   const debouncedQuery = useDebounce(query, 250);
 
+  const generatingRef = useRef(new Set<string>());
+
   const load = async () => {
     setLoading(true);
     const data = await fetchNews();
@@ -37,6 +39,19 @@ export function NewsFeed() {
   useEffect(() => {
     load();
   }, []);
+
+  // Generate thumbnails for items without images (max 4 concurrent)
+  useEffect(() => {
+    if (loading || news.length === 0) return;
+    const missing = news.filter(n => !n.image && !generatingRef.current.has(n.id)).slice(0, 4);
+    missing.forEach(async (item) => {
+      generatingRef.current.add(item.id);
+      const image = await generateThumbnail(item.title, item.category, item.excerpt);
+      if (image) {
+        setNews(prev => prev.map(n => n.id === item.id ? { ...n, image } : n));
+      }
+    });
+  }, [loading, news.length]);
 
   const filtered = useMemo(() => {
     if (!debouncedQuery.trim()) return news;

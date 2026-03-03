@@ -1,70 +1,120 @@
 
 
-## Plan: Thumbnails AI para News sem Imagem + Tags na Home
+## Analysis
 
-### Problema atual
-1. News sem imagem do RSS exibem apenas um gradiente vazio genérico
-2. Os `NewsListItem` na Home (lista lateral) nao exibem a tag de categoria (apenas o HeroCard tem)
+This is a very large-scale migration request. The codebase currently runs entirely on mock data (localStorage + in-memory arrays). There are **76+ files** importing from `external-client.ts` (which points to a mock Supabase client), and the entire approval module (12+ files) uses `approvalDataService.ts` (1300 lines of localStorage-based logic).
 
-### Solucao
+The database has **zero tables** currently. We need to create them first, then rewrite the data layer.
 
-#### 1. Geração de thumbnails via IA (Edge Function)
+### Key Constraint
+The user has declined the database migration tool twice. This means I need to provide the SQL for the user to run manually via the Supabase SQL Editor, while I handle all the code changes.
 
-Criar uma edge function `generate-news-thumbnail` que:
-- Recebe `title`, `category` e `excerpt`
-- Usa Lovable AI (`google/gemini-2.5-flash-image`) para gerar uma imagem ilustrativa baseada no conteudo
-- Retorna a imagem base64
+---
 
-Na edge function `news/index.ts`, para itens sem imagem, chamar essa funcao e retornar a URL gerada. Porem, gerar 10+ imagens por request seria lento.
+## Plan
 
-**Abordagem otimizada**: Gerar as imagens no frontend sob demanda — o componente detecta `!item.image`, chama a edge function para aquele item especifico, e armazena o resultado em state. Limitar a 3-4 gerações simultâneas para nao sobrecarregar.
+### Phase 1: Database Schema (User runs SQL manually)
 
-Alternativa mais pragmática: gerar as imagens diretamente na edge function `news` apenas para os primeiros itens sem imagem (max 5), usando prompts curtos como:
-> "Abstract minimalist illustration for a news article about [title]. Dark background, modern, editorial style. No text."
+The user will need to run the following SQL in the Supabase SQL Editor to create all required tables. I will provide the complete SQL script as a file (`supabase/schema.sql`) for reference, covering:
 
-#### 2. Tags nas NewsListItem da Home
+**Tables to create:**
+- `projects` (id, name, description, type, external_reference_id, created_at)
+- `materials` (id, project_id FK, version_number, status, is_active_version, created_at)
+- `material_files` (id, material_id FK, file_url, file_type, created_at)
+- `evaluations` (id, material_id FK, version_number, copy_score, design_score, feedback_copy, feedback_design, is_official, created_at)
+- `kanban_status` (id, material_id FK, column_status, updated_at)
+- `kpis` (id, project_id FK, metric_name, metric_value, period, created_at)
 
-Adicionar um `Badge` compacto no canto superior-direito da thumbnail de cada `NewsListItem`, reutilizando os mesmos `categoryColors` do `NewsHeroCard`. Estilo: pequeno, sólido, `text-[9px]`, posicionado `absolute top-1.5 right-1.5`.
+**Storage:**
+- `material-files` bucket (public)
 
-Expandir o mapa `categoryGradients` e `categoryDots` no `NewsListItem` para incluir todas as 8 categorias (IA, SEO, Social, Vendas, Design).
+**RLS:**
+- All tables: RLS enabled but with permissive policies (since there is no auth, all authenticated operations use anon key with open access)
 
-### Arquivos a criar/editar
+**No auth, no users, no clients** -- as specified.
 
-| Arquivo | Ação |
-|---|---|
-| `supabase/functions/generate-news-thumbnail/index.ts` | Criar — edge function que gera imagem via Lovable AI |
-| `supabase/config.toml` | Adicionar entrada para `generate-news-thumbnail` |
-| `src/services/newsService.ts` | Adicionar funcao `generateThumbnail()` que chama a edge function |
-| `src/components/home/NewsListItem.tsx` | Adicionar Badge de categoria + logica para gerar thumbnail quando `!item.image` |
-| `src/components/home/NewsHeroCard.tsx` | Adicionar logica de thumbnail AI para fallback |
-| `src/components/home/NewsFeed.tsx` | Gerenciar state de thumbnails geradas, passando para os cards |
+### Phase 2: Update Supabase Client Configuration
 
-### Fluxo técnico
+**File: `src/integrations/supabase/external-client.ts`**
+- Remove mock client import entirely
+- Import and re-export the real Supabase client from `@/integrations/supabase/client`
+
+**File: `src/config/featureFlags.ts`**
+- Set `SUPABASE_ENABLED: true`
+
+### Phase 3: Rewrite `approvalDataService.ts`
+
+This is the core of the migration. The entire 1300-line file currently uses localStorage. It will be rewritten to use Supabase queries against the new tables:
+
+- `getJobs()` → `supabase.from('projects').select()`
+- `createJob()` → `supabase.from('projects').insert()` + `supabase.from('materials').insert()` + `supabase.from('kanban_status').insert()`
+- `updateJob()` → `supabase.from('projects').update()` + `supabase.from('materials').update()`
+- `deleteJob()` → `supabase.from('projects').delete()`
+- `submitClientFeedback()` → `supabase.from('evaluations').insert()`
+- `getClientFeedback()` → `supabase.from('evaluations').select()`
+- `computeKPIs()` → query from `projects` + `evaluations` + `kanban_status`
+- `computeSquadRanking()` / `computeUnifiedRanking()` → query-based
+- All localStorage keys (`STORAGE_KEY`, `FEEDBACK_STORAGE_KEY`, `VERSIONS_STORAGE_KEY`, etc.) removed
+- File uploads in `JobDialog` → `supabase.storage.from('material-files').upload()`
+
+All exported interfaces (`ApprovalJobData`, `ApprovalVersion`, `ApprovalClientFeedback`, etc.) will be preserved to maintain compatibility with the 12+ consumer files.
+
+### Phase 4: Update AuthContext (Remove Mock Dependency)
+
+**File: `src/contexts/AuthContext.tsx`**
+- Remove import of `MOCK_AUTH_USER` from mockData
+- Keep the existing login/profile system as-is (hardcoded profiles without Supabase Auth, per user's instruction to NOT implement auth)
+- Remove dependency on mock IDs for data operations
+
+### Phase 5: Remove Mock Files
+
+- Delete `src/mocks/mockData.ts`
+- Delete `src/mocks/mockSupabaseClient.ts`
+- Update all 76+ files that import from `external-client.ts` -- these already use `supabase.from()` syntax via the mock client, so they should work with the real client with minimal changes (the mock client was designed to mirror the real API)
+
+### Phase 6: Verify Consumer Components
+
+The following components import from `approvalDataService` and will need interface compatibility verified:
+- `ApprovalKanban.tsx`, `ApprovalKanbanView.tsx`
+- `ApprovalDashboard.tsx`
+- `ApprovalListView.tsx`
+- `ApprovalColumn.tsx`, `ApprovalJobCard.tsx`
+- `JobDialog.tsx`
+- `MaterialPreviewDialog.tsx`
+- `HistoryTimeline.tsx`
+- `AprovacaoCliente.tsx`
+- `Aprovacao.tsx`
+- `SquadRankingTable.tsx`
+
+All functions will become `async` (returning Promises), so all call sites will need `await` added.
+
+---
+
+### Technical Details
+
+**Data model mapping (current mock → Supabase):**
 
 ```text
-NewsFeed carrega news
-  ↓
-Para cada item sem image:
-  → chama generateThumbnail(title, category)
-  → edge function → Lovable AI (gemini-2.5-flash-image)
-  → retorna base64 data URL
-  → atualiza state do item com a imagem gerada
-  ↓
-Cards renderizam com imagem real ou gerada
+Current "job" (localStorage)     →  projects + materials + kanban_status
+Current "version" (localStorage) →  materials (version_number)
+Current "asset" (localStorage)   →  material_files
+Current "feedback" (localStorage)→  evaluations
+Current "creative states"        →  Derived from evaluations + materials
+Current "sent versions"          →  materials where status != 'draft'
 ```
 
-### Detalhes da Edge Function
+**Risk: Breaking change magnitude**
+- ~76 files use `supabase` from external-client (will work after swap since API is identical)
+- ~12 files use `approvalDataService` (need async conversion)
+- AuthContext keeps mock profiles (no auth change)
+- All other components (CRM/CSM/Kanban/Cancellation) already use `supabase.from()` via external-client -- they'll automatically work with the real client
 
-```text
-POST /generate-news-thumbnail
-Body: { title, category, excerpt }
-→ Prompt: "Create a minimalist abstract editorial illustration 
-   for: [title]. Category: [category]. 
-   Style: dark moody gradient, modern, no text, 16:9"
-→ Response: { image: "data:image/png;base64,..." }
-```
-
-### Tags no NewsListItem
-
-Badge posicionado `absolute top-1.5 right-1.5` dentro da div da thumbnail, com cores solidas por categoria identicas as do HeroCard.
+**Execution order:**
+1. User creates tables via SQL Editor
+2. Create storage bucket via SQL
+3. Swap external-client to real client
+4. Rewrite approvalDataService to async Supabase queries
+5. Update all consumer components to use async calls
+6. Remove mock files
+7. Update feature flags
 

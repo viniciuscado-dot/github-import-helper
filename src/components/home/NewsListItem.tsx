@@ -1,16 +1,27 @@
 import { motion } from "framer-motion";
+import { Badge } from "@/components/ui/badge";
 import type { NewsItem } from "@/services/newsService";
 
 const categoryGradients: Record<string, string> = {
   Marketing: "from-primary/25 to-primary/5",
   Ads: "from-blue-500/25 to-blue-500/5",
   Negócios: "from-emerald-500/25 to-emerald-500/5",
+  IA: "from-violet-500/25 to-violet-500/5",
+  SEO: "from-amber-500/25 to-amber-500/5",
+  Social: "from-pink-500/25 to-pink-500/5",
+  Vendas: "from-orange-500/25 to-orange-500/5",
+  Design: "from-cyan-500/25 to-cyan-500/5",
 };
 
-const categoryDots: Record<string, string> = {
-  Marketing: "bg-primary",
-  Ads: "bg-blue-500",
-  Negócios: "bg-emerald-500",
+const categoryColors: Record<string, string> = {
+  Marketing: "bg-primary text-primary-foreground border-transparent",
+  Ads: "bg-blue-600 text-white border-transparent",
+  Negócios: "bg-emerald-600 text-white border-transparent",
+  IA: "bg-violet-600 text-white border-transparent",
+  SEO: "bg-amber-600 text-white border-transparent",
+  Social: "bg-pink-600 text-white border-transparent",
+  Vendas: "bg-orange-600 text-white border-transparent",
+  Design: "bg-cyan-600 text-white border-transparent",
 };
 
 interface NewsListItemProps {
@@ -20,7 +31,7 @@ interface NewsListItemProps {
 
 export function NewsListItem({ item, index = 0 }: NewsListItemProps) {
   const gradient = categoryGradients[item.category] || categoryGradients.Marketing;
-  const dot = categoryDots[item.category] || "bg-primary";
+  const badgeColor = categoryColors[item.category] || categoryColors.Marketing;
 
   return (
     <motion.a
@@ -32,16 +43,24 @@ export function NewsListItem({ item, index = 0 }: NewsListItemProps) {
       transition={{ duration: 0.3, ease: "easeOut", delay: index * 0.06 }}
       className="group flex items-start gap-3 p-3 rounded-xl border border-border/10 bg-card/[0.06] backdrop-blur-lg transition-all duration-200 hover:border-primary/30 hover:shadow-md hover:shadow-primary/5 hover:-translate-y-px flex-1"
     >
-      {/* Thumbnail placeholder */}
-      <div className={`shrink-0 w-28 h-20 rounded-lg overflow-hidden relative ${!item.image ? `bg-gradient-to-br ${gradient}` : ''}`}>
+      {/* Thumbnail with category badge */}
+      <div className="relative shrink-0 w-28 h-20 rounded-lg overflow-hidden">
         {item.image ? (
           <>
             <img src={item.image} alt="" className="absolute inset-0 w-full h-full object-cover" />
-            <div className="absolute inset-0 bg-black/60" />
+            <div className="absolute inset-0 bg-black/40" />
           </>
         ) : (
-          <div className="w-full h-full opacity-[0.06]" style={{ backgroundImage: "radial-gradient(circle, hsl(var(--foreground)) 1px, transparent 1px)", backgroundSize: "12px 12px" }} />
+          <div className={`w-full h-full bg-gradient-to-br ${gradient}`}>
+            <div className="w-full h-full opacity-[0.06]" style={{ backgroundImage: "radial-gradient(circle, hsl(var(--foreground)) 1px, transparent 1px)", backgroundSize: "12px 12px" }} />
+          </div>
         )}
+        <Badge
+          variant="outline"
+          className={`absolute top-1.5 right-1.5 text-[9px] font-semibold px-1.5 py-0 h-4 leading-none backdrop-blur-md ${badgeColor}`}
+        >
+          {item.category}
+        </Badge>
       </div>
 
       {/* Info */}
@@ -53,7 +72,6 @@ export function NewsListItem({ item, index = 0 }: NewsListItemProps) {
           {item.excerpt}
         </p>
         <div className="flex items-center gap-1.5 text-[10px] text-muted-foreground/60">
-          <span className={`inline-block w-1.5 h-1.5 rounded-full ${dot}`} />
           <span>{item.source}</span>
           <span>·</span>
           <span>
