@@ -65,6 +65,33 @@ function matchesTheme(title: string, description: string): boolean {
   return PT_KEYWORDS.some(k => text.includes(k));
 }
 
+function categorize(title: string, description: string): string {
+  const text = `${title} ${description}`.toLowerCase();
+  
+  // IA / Tecnologia
+  if (/\b(inteligência artificial|inteligencia artificial|\bia\b|machine learning|deep learning|chatgpt|gpt|gemini|llm|automação|automacao|chatbot|algoritmo)\b/.test(text)) return 'IA';
+  
+  // Ads / Mídia Paga
+  if (/\b(ads|anúncio|anuncio|google ads|meta ads|facebook ads|tráfego pago|trafego pago|cpc|cpm|roas|performance max|campanha paga|mídia paga|midia paga|remarketing|retargeting)\b/.test(text)) return 'Ads';
+  
+  // SEO
+  if (/\b(seo|search engine|busca orgânica|busca organica|ranqueamento|palavras?.chave|backlink|serp|indexação|indexacao)\b/.test(text)) return 'SEO';
+  
+  // Social Media
+  if (/\b(instagram|tiktok|linkedin|youtube|reels|stories|social media|redes sociais|engajamento|influenciador|creator|conteúdo|conteudo|ugc|cgc)\b/.test(text)) return 'Social';
+  
+  // Vendas / Conversão
+  if (/\b(vendas|conversão|conversao|funil|leads?|crm|comercial|receita|faturamento|roi|landing page|lp)\b/.test(text)) return 'Vendas';
+  
+  // Design / Branding
+  if (/\b(design|branding|marca|identidade visual|ui|ux|criativo|layout)\b/.test(text)) return 'Design';
+  
+  // Negócios / Estratégia
+  if (/\b(negócio|negocios|estratégia|estrategia|growth|startup|empreendedor|mercado|tendência|tendencia)\b/.test(text)) return 'Negócios';
+  
+  return 'Marketing';
+}
+
 interface RawItem {
   title: string;
   description: string;
@@ -73,6 +100,7 @@ interface RawItem {
   source: string;
   image: string;
   lang: string;
+  category: string;
 }
 
 async function fetchFeed(url: string, source: string, lang: string): Promise<RawItem[]> {
@@ -83,14 +111,17 @@ async function fetchFeed(url: string, source: string, lang: string): Promise<Raw
     const blocks = xml.split(/<item>/i).slice(1);
     return blocks.map(block => {
       const itemXml = block.split(/<\/item>/i)[0];
+      const title = stripHtml(extractTag(itemXml, 'title'));
+      const description = stripHtml(extractTag(itemXml, 'description')).substring(0, 300);
       return {
-        title: stripHtml(extractTag(itemXml, 'title')),
-        description: stripHtml(extractTag(itemXml, 'description')).substring(0, 300),
+        title,
+        description,
         link: extractTag(itemXml, 'link'),
         date: extractTag(itemXml, 'pubDate') || extractTag(itemXml, 'dc:date'),
         source,
         image: extractImage(itemXml),
         lang,
+        category: categorize(title, description),
       };
     }).filter(i => i.title && i.link);
   } catch {
