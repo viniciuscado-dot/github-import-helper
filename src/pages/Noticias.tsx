@@ -159,14 +159,15 @@ function ListRow({ item, index }: { item: NewsItem; index: number }) {
       transition={{ duration: 0.3, delay: index * 0.04 }}
       className={`group flex items-start gap-4 p-4 ${glassCard} hover:border-primary/30 hover:shadow-md hover:shadow-primary/5 hover:-translate-y-px`}
     >
-      <div className={`shrink-0 w-32 h-22 rounded-lg bg-gradient-to-br ${gradient} overflow-hidden`}>
-        <div
-          className="w-full h-full opacity-[0.06]"
-          style={{
-            backgroundImage: "radial-gradient(circle, hsl(var(--foreground)) 1px, transparent 1px)",
-            backgroundSize: "12px 12px",
-          }}
-        />
+      <div className={`shrink-0 w-32 h-22 rounded-lg overflow-hidden relative ${!item.image ? `bg-gradient-to-br ${gradient}` : ''}`}>
+        {item.image ? (
+          <>
+            <img src={item.image} alt="" className="absolute inset-0 w-full h-full object-cover" />
+            <div className="absolute inset-0 bg-black/60" />
+          </>
+        ) : (
+          <div className="w-full h-full opacity-[0.06]" style={{ backgroundImage: "radial-gradient(circle, hsl(var(--foreground)) 1px, transparent 1px)", backgroundSize: "12px 12px" }} />
+        )}
       </div>
       <div className="flex flex-col justify-center gap-1.5 min-w-0 flex-1">
         <h4 className="text-sm md:text-base font-semibold text-foreground leading-snug line-clamp-2 group-hover:text-primary transition-colors">
