@@ -1,17 +1,7 @@
 import { motion } from "framer-motion";
 import { Badge } from "@/components/ui/badge";
+import { NewsThumbnail } from "@/components/home/NewsThumbnail";
 import type { NewsItem } from "@/services/newsService";
-
-const categoryGradients: Record<string, string> = {
-  Marketing: "from-primary/25 to-primary/5",
-  Ads: "from-blue-500/25 to-blue-500/5",
-  Negócios: "from-emerald-500/25 to-emerald-500/5",
-  IA: "from-violet-500/25 to-violet-500/5",
-  SEO: "from-amber-500/25 to-amber-500/5",
-  Social: "from-pink-500/25 to-pink-500/5",
-  Vendas: "from-orange-500/25 to-orange-500/5",
-  Design: "from-cyan-500/25 to-cyan-500/5",
-};
 
 const categoryColors: Record<string, string> = {
   Marketing: "bg-primary text-primary-foreground border-transparent",
@@ -27,10 +17,10 @@ const categoryColors: Record<string, string> = {
 interface NewsListItemProps {
   item: NewsItem;
   index?: number;
+  onImageGenerated?: (id: string, url: string) => void;
 }
 
-export function NewsListItem({ item, index = 0 }: NewsListItemProps) {
-  const gradient = categoryGradients[item.category] || categoryGradients.Marketing;
+export function NewsListItem({ item, index = 0, onImageGenerated }: NewsListItemProps) {
   const badgeColor = categoryColors[item.category] || categoryColors.Marketing;
 
   return (
@@ -44,24 +34,15 @@ export function NewsListItem({ item, index = 0 }: NewsListItemProps) {
       className="group flex items-start gap-3 p-3 rounded-xl border border-border/10 bg-card/[0.06] backdrop-blur-lg transition-all duration-200 hover:border-primary/30 hover:shadow-md hover:shadow-primary/5 hover:-translate-y-px flex-1"
     >
       {/* Thumbnail with category badge */}
-      <div className="relative shrink-0 w-28 h-20 rounded-lg overflow-hidden">
-        {item.image ? (
-          <>
-            <img src={item.image} alt="" className="absolute inset-0 w-full h-full object-cover" />
-            <div className="absolute inset-0 bg-black/40" />
-          </>
-        ) : (
-          <div className={`w-full h-full bg-gradient-to-br ${gradient}`}>
-            <div className="w-full h-full opacity-[0.06]" style={{ backgroundImage: "radial-gradient(circle, hsl(var(--foreground)) 1px, transparent 1px)", backgroundSize: "12px 12px" }} />
-          </div>
-        )}
+      <NewsThumbnail item={item} className="shrink-0 w-28 h-20 rounded-lg" onImageGenerated={onImageGenerated}>
+        {item.image && <div className="absolute inset-0 bg-black/40" />}
         <Badge
           variant="outline"
           className={`absolute top-1.5 right-1.5 text-[9px] font-semibold px-1.5 py-0 h-4 leading-none backdrop-blur-md ${badgeColor}`}
         >
           {item.category}
         </Badge>
-      </div>
+      </NewsThumbnail>
 
       {/* Info */}
       <div className="flex flex-col justify-center gap-1 min-w-0 flex-1">

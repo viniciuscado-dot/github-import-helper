@@ -1,18 +1,8 @@
 import { ExternalLink } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { motion } from "framer-motion";
+import { NewsThumbnail } from "@/components/home/NewsThumbnail";
 import type { NewsItem } from "@/services/newsService";
-
-const categoryGradients: Record<string, string> = {
-  Marketing: "from-primary/30 via-primary/10 to-primary/5",
-  Ads: "from-blue-500/30 via-blue-500/10 to-blue-500/5",
-  Negócios: "from-emerald-500/30 via-emerald-500/10 to-emerald-500/5",
-  IA: "from-violet-500/30 via-violet-500/10 to-violet-500/5",
-  SEO: "from-amber-500/30 via-amber-500/10 to-amber-500/5",
-  Social: "from-pink-500/30 via-pink-500/10 to-pink-500/5",
-  Vendas: "from-orange-500/30 via-orange-500/10 to-orange-500/5",
-  Design: "from-cyan-500/30 via-cyan-500/10 to-cyan-500/5",
-};
 
 const categoryColors: Record<string, string> = {
   Marketing: "bg-primary text-primary-foreground border-transparent",
@@ -27,10 +17,10 @@ const categoryColors: Record<string, string> = {
 
 interface NewsHeroCardProps {
   item: NewsItem;
+  onImageGenerated?: (id: string, url: string) => void;
 }
 
-export function NewsHeroCard({ item }: NewsHeroCardProps) {
-  const gradient = categoryGradients[item.category] || categoryGradients.Marketing;
+export function NewsHeroCard({ item, onImageGenerated }: NewsHeroCardProps) {
   const badgeColor = categoryColors[item.category] || "";
 
   return (
@@ -44,15 +34,7 @@ export function NewsHeroCard({ item }: NewsHeroCardProps) {
       className="group relative flex flex-col rounded-2xl border border-border/10 bg-card/[0.06] backdrop-blur-xl shadow-sm overflow-hidden transition-all duration-300 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-primary/5 hover:border-primary/20"
     >
       {/* Image / gradient placeholder */}
-      <div className="relative w-full aspect-[16/9] overflow-hidden">
-        {item.image ? (
-          <img src={item.image} alt="" className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
-        ) : (
-          <>
-            <div className={`absolute inset-0 bg-gradient-to-br ${gradient} transition-transform duration-500 group-hover:scale-105`} />
-            <div className="absolute inset-0 opacity-[0.04]" style={{ backgroundImage: "radial-gradient(circle at 25% 25%, hsl(var(--foreground)) 1px, transparent 1px)", backgroundSize: "24px 24px" }} />
-          </>
-        )}
+      <NewsThumbnail item={item} className="w-full aspect-[16/9]" onImageGenerated={onImageGenerated}>
         {/* Bottom overlay for text legibility */}
         <div className="absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-background/90 via-background/40 to-transparent" />
 
@@ -70,7 +52,7 @@ export function NewsHeroCard({ item }: NewsHeroCardProps) {
             {item.title}
           </h3>
         </div>
-      </div>
+      </NewsThumbnail>
 
       {/* Content below image */}
       <div className="flex flex-col gap-1.5 p-4 pt-2">

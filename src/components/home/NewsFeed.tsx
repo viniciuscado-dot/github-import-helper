@@ -1,10 +1,10 @@
-import { useState, useEffect, useMemo, useRef } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { RefreshCw, Search, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
-import { fetchNews, generateThumbnail, type NewsItem } from "@/services/newsService";
+import { fetchNews, type NewsItem } from "@/services/newsService";
 import { NewsHeroCard } from "@/components/home/NewsHeroCard";
 import { NewsListItem } from "@/components/home/NewsListItem";
 
@@ -27,8 +27,6 @@ export function NewsFeed() {
   const [query, setQuery] = useState("");
   const debouncedQuery = useDebounce(query, 250);
 
-  const generatingRef = useRef(new Set<string>());
-
   const load = async () => {
     setLoading(true);
     const data = await fetchNews();
@@ -40,18 +38,9 @@ export function NewsFeed() {
     load();
   }, []);
 
-  // Generate thumbnails for items without images (max 4 concurrent)
-  useEffect(() => {
-    if (loading || news.length === 0) return;
-    const missing = news.filter(n => !n.image && !generatingRef.current.has(n.id)).slice(0, 4);
-    missing.forEach(async (item) => {
-      generatingRef.current.add(item.id);
-      const image = await generateThumbnail(item.title, item.category, item.excerpt, item.url);
-      if (image) {
-        setNews(prev => prev.map(n => n.id === item.id ? { ...n, image } : n));
-      }
-    });
-  }, [loading, news.length]);
+  const handleImageGenerated = useCallback((id: string, url: string) => {
+    setNews(prev => prev.map(n => n.id === id ? { ...n, image: url } : n));
+  }, []);
 
   const filtered = useMemo(() => {
     if (!debouncedQuery.trim()) return news;
@@ -112,7 +101,6 @@ export function NewsFeed() {
       )}
 
       {loading ? (
-        /* Loading skeletons — editorial layout */
         <div className="grid grid-cols-1 lg:grid-cols-[1.4fr_1fr] gap-4">
           <Skeleton className="h-64 rounded-2xl" />
           <div className="flex flex-col gap-3">
@@ -135,20 +123,18 @@ export function NewsFeed() {
           )}
         </div>
       ) : isSearchActive ? (
-        /* Search active — flat list */
         <div className="flex flex-col gap-3">
           {listItems.map((item, i) => (
-            <NewsListItem key={item.id} item={item} index={i} />
+            <NewsListItem key={item.id} item={item} index={i} onImageGenerated={handleImageGenerated} />
           ))}
         </div>
       ) : (
-        /* Default — editorial hero + side list */
         <>
           <div className="grid grid-cols-1 lg:grid-cols-[1.4fr_1fr] gap-4 items-stretch">
-            {heroItem && <NewsHeroCard item={heroItem} />}
+            {heroItem && <NewsHeroCard item={heroItem} onImageGenerated={handleImageGenerated} />}
             <div className="flex flex-col gap-3">
               {listItems.map((item, i) => (
-                <NewsListItem key={item.id} item={item} index={i} />
+                <NewsListItem key={item.id} item={item} index={i} onImageGenerated={handleImageGenerated} />
               ))}
               {hasMore && (
                 <Button

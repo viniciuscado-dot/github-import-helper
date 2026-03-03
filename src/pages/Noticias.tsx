@@ -1,30 +1,19 @@
-import { useState, useEffect, useMemo, useRef } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { RefreshCw, Search, X, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
-import { Skeleton } from "@/components/ui/skeleton";
 import { Progress } from "@/components/ui/progress";
 import { DotLogo } from "@/components/DotLogo";
 import { motion } from "framer-motion";
-import { fetchNews, generateThumbnail, type NewsItem } from "@/services/newsService";
+import { fetchNews, type NewsItem } from "@/services/newsService";
+import { NewsThumbnail } from "@/components/home/NewsThumbnail";
 import { AppSidebar } from "@/components/app-sidebar";
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
 import { MobileSidebarTrigger } from "@/components/MobileSidebarTrigger";
 
 /* ── Category tokens ── */
-const categoryGradients: Record<string, string> = {
-  Marketing: "from-primary/30 via-primary/10 to-primary/5",
-  Ads: "from-blue-500/30 via-blue-500/10 to-blue-500/5",
-  Negócios: "from-emerald-500/30 via-emerald-500/10 to-emerald-500/5",
-  IA: "from-violet-500/30 via-violet-500/10 to-violet-500/5",
-  SEO: "from-amber-500/30 via-amber-500/10 to-amber-500/5",
-  Social: "from-pink-500/30 via-pink-500/10 to-pink-500/5",
-  Vendas: "from-orange-500/30 via-orange-500/10 to-orange-500/5",
-  Design: "from-cyan-500/30 via-cyan-500/10 to-cyan-500/5",
-};
-
 const categoryColors: Record<string, string> = {
   Marketing: "bg-primary text-primary-foreground border-transparent",
   Ads: "bg-blue-600 text-white border-transparent",
@@ -61,10 +50,9 @@ function useDebounce(value: string, ms: number) {
 }
 
 /* ═══════════════════════════════════════════
-   HERO CARD — full-width featured article
+   HERO CARD
    ═══════════════════════════════════════════ */
-function HeroCard({ item }: { item: NewsItem }) {
-  const gradient = categoryGradients[item.category] || categoryGradients.Marketing;
+function HeroCard({ item, onImageGenerated }: { item: NewsItem; onImageGenerated: (id: string, url: string) => void }) {
   const badgeColor = categoryColors[item.category] || "";
 
   return (
@@ -77,22 +65,12 @@ function HeroCard({ item }: { item: NewsItem }) {
       transition={{ duration: 0.45, ease: "easeOut" }}
       className={`group relative flex flex-col ${glassCard} hover:-translate-y-0.5 hover:shadow-xl hover:shadow-primary/5 hover:border-primary/20`}
     >
-      <div className="relative w-full min-h-[280px] md:min-h-[320px] overflow-hidden">
-        {item.image ? (
-          <img src={item.image} alt="" className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-[1.03]" />
-        ) : (
-          <>
-            <div className={`absolute inset-0 bg-gradient-to-br ${gradient} transition-transform duration-500 group-hover:scale-[1.03]`} />
-            <div className="absolute inset-0 opacity-[0.04]" style={{ backgroundImage: "radial-gradient(circle at 25% 25%, hsl(var(--foreground)) 1px, transparent 1px)", backgroundSize: "24px 24px" }} />
-          </>
-        )}
+      <NewsThumbnail item={item} className="w-full min-h-[280px] md:min-h-[320px]" onImageGenerated={onImageGenerated}>
         <div className="absolute inset-x-0 bottom-0 h-3/4 bg-gradient-to-t from-background/95 via-background/60 to-transparent" />
-
         <Badge variant="outline" className={`absolute top-4 left-4 text-[11px] font-semibold backdrop-blur-md ${badgeColor}`}>
           {item.category}
         </Badge>
         <ExternalLink className="absolute top-4 right-4 h-4 w-4 text-foreground/30 group-hover:text-primary transition-colors" />
-
         <div className="absolute inset-x-0 bottom-0 p-6 space-y-2">
           <h2 className="text-2xl md:text-3xl font-bold text-foreground leading-snug line-clamp-3 group-hover:text-primary transition-colors">
             {item.title}
@@ -106,16 +84,15 @@ function HeroCard({ item }: { item: NewsItem }) {
             <span>{new Date(item.published_at).toLocaleDateString("pt-BR", { day: "2-digit", month: "short" })}</span>
           </div>
         </div>
-      </div>
+      </NewsThumbnail>
     </motion.a>
   );
 }
 
 /* ═══════════════════════════════════════════
-   GRID CARD — medium card for the 2-col grid
+   GRID CARD
    ═══════════════════════════════════════════ */
-function GridCard({ item, index }: { item: NewsItem; index: number }) {
-  const gradient = categoryGradients[item.category] || categoryGradients.Marketing;
+function GridCard({ item, index, onImageGenerated }: { item: NewsItem; index: number; onImageGenerated: (id: string, url: string) => void }) {
   const badgeColor = categoryColors[item.category] || "";
 
   return (
@@ -128,22 +105,13 @@ function GridCard({ item, index }: { item: NewsItem; index: number }) {
       transition={{ duration: 0.35, delay: index * 0.06, ease: "easeOut" }}
       className={`group relative flex flex-col ${glassCard} hover:-translate-y-0.5 hover:shadow-lg hover:shadow-primary/5 hover:border-primary/20`}
     >
-      <div className="relative w-full h-40 overflow-hidden">
-        {item.image ? (
-          <img src={item.image} alt="" className="absolute inset-0 w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
-        ) : (
-          <>
-            <div className={`absolute inset-0 bg-gradient-to-br ${gradient} transition-transform duration-500 group-hover:scale-105`} />
-            <div className="absolute inset-0 opacity-[0.04]" style={{ backgroundImage: "radial-gradient(circle at 25% 25%, hsl(var(--foreground)) 1px, transparent 1px)", backgroundSize: "20px 20px" }} />
-          </>
-        )}
+      <NewsThumbnail item={item} className="w-full h-40" onImageGenerated={onImageGenerated}>
         <div className="absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-background/90 via-background/40 to-transparent" />
-
         <Badge variant="outline" className={`absolute top-3 left-3 text-[10px] font-semibold backdrop-blur-md ${badgeColor}`}>
           {item.category}
         </Badge>
         <ExternalLink className="absolute top-3 right-3 h-3.5 w-3.5 text-foreground/20 group-hover:text-primary transition-colors" />
-      </div>
+      </NewsThumbnail>
 
       <div className="flex flex-col gap-1.5 p-4 pt-3">
         <h3 className="text-sm md:text-base font-bold text-foreground leading-snug line-clamp-2 group-hover:text-primary transition-colors">
@@ -160,10 +128,9 @@ function GridCard({ item, index }: { item: NewsItem; index: number }) {
 }
 
 /* ═══════════════════════════════════════════
-   LIST ROW — compact row for search results
+   LIST ROW
    ═══════════════════════════════════════════ */
-function ListRow({ item, index }: { item: NewsItem; index: number }) {
-  const gradient = categoryGradients[item.category] || categoryGradients.Marketing;
+function ListRow({ item, index, onImageGenerated }: { item: NewsItem; index: number; onImageGenerated: (id: string, url: string) => void }) {
   const dot = categoryDots[item.category] || "bg-primary";
 
   return (
@@ -176,16 +143,9 @@ function ListRow({ item, index }: { item: NewsItem; index: number }) {
       transition={{ duration: 0.3, delay: index * 0.04 }}
       className={`group flex items-start gap-4 p-4 ${glassCard} hover:border-primary/30 hover:shadow-md hover:shadow-primary/5 hover:-translate-y-px`}
     >
-      <div className={`shrink-0 w-32 h-22 rounded-lg overflow-hidden relative ${!item.image ? `bg-gradient-to-br ${gradient}` : ''}`}>
-        {item.image ? (
-          <>
-            <img src={item.image} alt="" className="absolute inset-0 w-full h-full object-cover" />
-            <div className="absolute inset-0 bg-black/60" />
-          </>
-        ) : (
-          <div className="w-full h-full opacity-[0.06]" style={{ backgroundImage: "radial-gradient(circle, hsl(var(--foreground)) 1px, transparent 1px)", backgroundSize: "12px 12px" }} />
-        )}
-      </div>
+      <NewsThumbnail item={item} className="shrink-0 w-32 h-22 rounded-lg" onImageGenerated={onImageGenerated}>
+        {item.image && <div className="absolute inset-0 bg-black/60" />}
+      </NewsThumbnail>
       <div className="flex flex-col justify-center gap-1.5 min-w-0 flex-1">
         <h4 className="text-sm md:text-base font-semibold text-foreground leading-snug line-clamp-2 group-hover:text-primary transition-colors">
           {item.title}
@@ -212,8 +172,6 @@ export default function Noticias() {
   const [query, setQuery] = useState("");
   const debouncedQuery = useDebounce(query, 300);
 
-  const generatingRef = useRef(new Set<string>());
-
   const load = async () => {
     setLoading(true);
     const data = await fetchNews();
@@ -223,18 +181,9 @@ export default function Noticias() {
 
   useEffect(() => { load(); }, []);
 
-  // Generate thumbnails for items without images (max 5 concurrent)
-  useEffect(() => {
-    if (loading || news.length === 0) return;
-    const missing = news.filter(n => !n.image && !generatingRef.current.has(n.id)).slice(0, 5);
-    missing.forEach(async (item) => {
-      generatingRef.current.add(item.id);
-      const image = await generateThumbnail(item.title, item.category, item.excerpt, item.url);
-      if (image) {
-        setNews(prev => prev.map(n => n.id === item.id ? { ...n, image } : n));
-      }
-    });
-  }, [loading, news.length]);
+  const handleImageGenerated = useCallback((id: string, url: string) => {
+    setNews(prev => prev.map(n => n.id === id ? { ...n, image: url } : n));
+  }, []);
 
   const filtered = useMemo(() => {
     if (!debouncedQuery.trim()) return news;
@@ -323,7 +272,6 @@ export default function Noticias() {
                   <p className="text-xs text-muted-foreground animate-pulse">Carregando notícias…</p>
                 </div>
               ) : filtered.length === 0 ? (
-                /* ── Empty state ── */
                 <div className="flex flex-col items-center justify-center rounded-2xl border border-border/10 bg-card/[0.03] backdrop-blur-lg p-16 text-muted-foreground">
                   {isSearchActive ? (
                     <>
@@ -337,29 +285,24 @@ export default function Noticias() {
                   )}
                 </div>
               ) : isSearchActive ? (
-                /* ── Search results: flat list ── */
                 <div className="flex flex-col gap-3">
                   {searchItems.map((item, i) => (
-                    <ListRow key={item.id} item={item} index={i} />
+                    <ListRow key={item.id} item={item} index={i} onImageGenerated={handleImageGenerated} />
                   ))}
                 </div>
               ) : (
-                /* ── Default editorial layout ── */
                 <div className="space-y-6">
-                  {/* Top row: 2 large cards */}
                   {topItems.length > 0 && (
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                      {topItems.map((item, i) => (
-                        <HeroCard key={item.id} item={item} />
+                      {topItems.map((item) => (
+                        <HeroCard key={item.id} item={item} onImageGenerated={handleImageGenerated} />
                       ))}
                     </div>
                   )}
-
-                  {/* Remaining: 3 per row */}
                   {gridItems.length > 0 && (
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
                       {gridItems.map((item, i) => (
-                        <GridCard key={item.id} item={item} index={i} />
+                        <GridCard key={item.id} item={item} index={i} onImageGenerated={handleImageGenerated} />
                       ))}
                     </div>
                   )}
