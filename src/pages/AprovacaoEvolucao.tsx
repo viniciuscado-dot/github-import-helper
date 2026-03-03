@@ -7,7 +7,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { AppSidebar } from "@/components/app-sidebar";
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
 import { MobileSidebarTrigger } from "@/components/MobileSidebarTrigger";
-import { NotificationCenter } from "@/components/NotificationCenter";
+import { TopBar } from "@/components/TopBar";
 import { ChartExpandModal } from "@/components/approval/evolution/ChartExpandModal";
 import {
   OverallChart,
