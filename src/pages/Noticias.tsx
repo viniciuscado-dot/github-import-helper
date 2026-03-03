@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { RefreshCw, Search, X, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { motion } from "framer-motion";
-import { fetchNews, type NewsItem } from "@/services/newsService";
+import { fetchNews, generateThumbnail, type NewsItem } from "@/services/newsService";
 import { AppSidebar } from "@/components/app-sidebar";
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
 import { MobileSidebarTrigger } from "@/components/MobileSidebarTrigger";
@@ -210,6 +210,8 @@ export default function Noticias() {
   const [query, setQuery] = useState("");
   const debouncedQuery = useDebounce(query, 300);
 
+  const generatingRef = useRef(new Set<string>());
+
   const load = async () => {
     setLoading(true);
     const data = await fetchNews();
@@ -218,6 +220,19 @@ export default function Noticias() {
   };
 
   useEffect(() => { load(); }, []);
+
+  // Generate thumbnails for items without images (max 5 concurrent)
+  useEffect(() => {
+    if (loading || news.length === 0) return;
+    const missing = news.filter(n => !n.image && !generatingRef.current.has(n.id)).slice(0, 5);
+    missing.forEach(async (item) => {
+      generatingRef.current.add(item.id);
+      const image = await generateThumbnail(item.title, item.category, item.excerpt);
+      if (image) {
+        setNews(prev => prev.map(n => n.id === item.id ? { ...n, image } : n));
+      }
+    });
+  }, [loading, news.length]);
 
   const filtered = useMemo(() => {
     if (!debouncedQuery.trim()) return news;
