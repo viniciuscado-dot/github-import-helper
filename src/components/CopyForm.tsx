@@ -551,6 +551,7 @@ const [isLoading, setIsLoading] = useState(false)
               value={editingValue}
               onChange={(e) => setEditingValue(e.target.value)}
               className={className}
+              dir="ltr"
               autoFocus
             />
           ) : (
@@ -558,10 +559,12 @@ const [isLoading, setIsLoading] = useState(false)
               value={editingValue}
               onChange={(e) => setEditingValue(e.target.value)}
               className={`${className} min-h-[60px]`}
+              dir="ltr"
               autoFocus
             />
           )}
           <Button
+            type="button"
             size="sm"
             onClick={() => handleSaveLabel(fieldKey, field)}
             className="shrink-0"
@@ -569,6 +572,7 @@ const [isLoading, setIsLoading] = useState(false)
             <Save className="h-4 w-4" />
           </Button>
           <Button
+            type="button"
             size="sm"
             variant="ghost"
             onClick={() => setEditingLabel(null)}
