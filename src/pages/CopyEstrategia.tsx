@@ -124,10 +124,23 @@ export default function CopyEstrategia() {
                   <ArrowLeft className="h-4 w-4" />
                   Voltar
                 </Button>
-                <h1 className="text-2xl font-bold text-foreground">Copy e Estratégia</h1>
-                <p className="text-muted-foreground text-sm">
-                  Selecione o cliente/projeto para iniciar a geração estratégica de copy.
-                </p>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <h1 className="text-2xl font-bold text-foreground">Copy e Estratégia</h1>
+                    <p className="text-muted-foreground text-sm">
+                      Selecione o cliente/projeto para iniciar a geração estratégica de copy.
+                    </p>
+                  </div>
+                  {(search || squadFilter !== "all" || startDate || endDate) && (
+                    <button
+                      onClick={() => { setSearch(""); setSquadFilter("all"); setStartDate(undefined); setEndDate(undefined); }}
+                      className="text-xs text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1"
+                    >
+                      <X className="h-3 w-3" />
+                      Limpar filtros
+                    </button>
+                  )}
+                </div>
               </div>
 
               {/* Filters */}
@@ -203,21 +216,7 @@ export default function CopyEstrategia() {
                     />
                   </PopoverContent>
                 </Popover>
-
-                {/* Reset filters */}
-                {(search || squadFilter !== "all" || startDate || endDate) && (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => { setSearch(""); setSquadFilter("all"); setStartDate(undefined); setEndDate(undefined); }}
-                    className="gap-1.5 text-muted-foreground hover:text-destructive h-10 whitespace-nowrap"
-                  >
-                    <X className="h-3.5 w-3.5" />
-                    Limpar filtros
-                  </Button>
-                )}
               </div>
-
               {/* Client cards grid */}
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
                 {filteredClients.map((client) => (
