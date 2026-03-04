@@ -9,7 +9,7 @@ export function TopBar() {
 
   return (
     <>
-      <div className="border-b border-border/60 bg-background/80 backdrop-blur-sm sticky top-0 z-20 w-full">
+      <div className="border-b border-border/60 bg-background sticky top-0 z-20 w-full">
         <div className="flex items-center justify-end h-10 gap-1 pr-4 md:pr-6">
           <Button
             variant="ghost"
