@@ -2650,6 +2650,7 @@ EX: Mais de 1.000 projetos de placas solares instalados em todo o Rio Grande do 
           )}
         </DialogContent>
       </Dialog>
-    </div>
+      </div>
+    </EditableTextContext.Provider>
   )
 }
