@@ -16,19 +16,47 @@ export const STRATEGY_STAGES: TimelineStage[] = [
 ];
 
 interface StrategyTimelineProps {
-  /** 0-based index of the current active stage */
   currentStage?: number;
   onStageClick?: (index: number) => void;
 }
 
 export function StrategyTimeline({ currentStage = 0, onStageClick }: StrategyTimelineProps) {
+  const total = STRATEGY_STAGES.length;
+
   return (
     <div className="w-full overflow-x-auto scrollbar-hide">
-      <div className="flex items-stretch min-w-[640px]">
+      <div className="flex min-w-[700px] h-[72px]">
         {STRATEGY_STAGES.map((stage, i) => {
           const isPast = i < currentStage;
           const isCurrent = i === currentStage;
-          const isFuture = i > currentStage;
+          const isFirst = i === 0;
+          const isLast = i === total - 1;
+
+          // Colors based on state
+          const bgColor = isCurrent
+            ? "hsl(var(--primary))"
+            : isPast
+              ? "hsl(var(--primary) / 0.6)"
+              : "hsl(var(--muted))";
+
+          const borderColor = isCurrent
+            ? "hsl(var(--primary) / 0.8)"
+            : isPast
+              ? "hsl(var(--primary) / 0.4)"
+              : "hsl(var(--border))";
+
+          // Arrow notch depth
+          const notch = 14;
+
+          // Build chevron/arrow path
+          // Each segment: flat left (or notched), top edge, arrow tip, bottom edge, back to start
+          const w = 200;
+          const h = 72;
+          const path = isFirst
+            ? `M 0,0 L ${w - notch},0 L ${w},${h / 2} L ${w - notch},${h} L 0,${h} Z`
+            : isLast
+              ? `M 0,0 L ${w},0 L ${w},${h} L 0,${h} L ${notch},${h / 2} Z`
+              : `M 0,0 L ${w - notch},0 L ${w},${h / 2} L ${w - notch},${h} L 0,${h} L ${notch},${h / 2} Z`;
 
           return (
             <button
@@ -36,39 +64,48 @@ export function StrategyTimeline({ currentStage = 0, onStageClick }: StrategyTim
               type="button"
               onClick={() => onStageClick?.(i)}
               className={cn(
-                "flex-1 flex flex-col items-center relative transition-opacity",
-                "hover:opacity-90 focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded-md",
-                onStageClick && "cursor-pointer"
+                "relative flex-1 focus:outline-none focus-visible:z-10",
+                "transition-all duration-200",
+                onStageClick && "cursor-pointer group"
               )}
+              style={{ marginLeft: i > 0 ? `-${notch}px` : undefined, zIndex: total - i }}
             >
-              {/* Arrow / chevron shape */}
-              <div className="relative w-full flex justify-center">
-                <svg
-                  viewBox="0 0 120 40"
-                  className="w-full h-10"
-                  preserveAspectRatio="none"
-                >
-                  {/* Main trapezoid body */}
-                  <polygon
-                    points={i === 0 ? "0,0 110,0 120,20 110,40 0,40" : "0,0 110,0 120,20 110,40 0,40 10,20"}
-                    className={cn(
-                      "transition-colors duration-300",
-                      isCurrent && "fill-primary",
-                      isPast && "fill-primary/70",
-                      isFuture && "fill-muted"
-                    )}
+              <svg
+                viewBox={`0 0 ${w} ${h}`}
+                className="absolute inset-0 w-full h-full"
+                preserveAspectRatio="none"
+              >
+                {/* Shadow/glow for active */}
+                {isCurrent && (
+                  <path
+                    d={path}
+                    fill="none"
+                    stroke="hsl(var(--primary) / 0.3)"
+                    strokeWidth="3"
+                    className="blur-[2px]"
                   />
-                </svg>
-              </div>
+                )}
+                {/* Main shape */}
+                <path
+                  d={path}
+                  fill={bgColor}
+                  stroke={borderColor}
+                  strokeWidth="1"
+                  className="transition-all duration-300 group-hover:brightness-110"
+                />
+              </svg>
 
-              {/* Content below shape */}
-              <div className="flex flex-col items-center gap-1.5 mt-3 px-1">
+              {/* Content inside the arrow */}
+              <div
+                className="relative z-10 h-full flex flex-col items-center justify-center gap-0.5"
+                style={{ paddingLeft: !isFirst ? `${notch / 2}px` : undefined, paddingRight: !isLast ? `${notch / 2}px` : undefined }}
+              >
                 <span
                   className={cn(
-                    "text-xs font-bold tracking-wide text-center leading-tight",
-                    isCurrent && "text-primary",
-                    isPast && "text-foreground",
-                    isFuture && "text-muted-foreground"
+                    "text-[11px] font-bold tracking-wide leading-none",
+                    isCurrent && "text-primary-foreground",
+                    isPast && "text-primary-foreground/90",
+                    !isCurrent && !isPast && "text-muted-foreground"
                   )}
                 >
                   {stage.title}
@@ -76,10 +113,10 @@ export function StrategyTimeline({ currentStage = 0, onStageClick }: StrategyTim
 
                 <span
                   className={cn(
-                    "text-[10px] font-medium px-2.5 py-0.5 rounded-full border text-center whitespace-nowrap",
-                    isCurrent && "border-primary/60 bg-primary/10 text-primary",
-                    isPast && "border-primary/40 bg-primary/5 text-primary/80",
-                    isFuture && "border-border bg-muted/50 text-muted-foreground"
+                    "text-[9px] font-medium px-2 py-px rounded-full border leading-none mt-1",
+                    isCurrent && "border-primary-foreground/40 bg-primary-foreground/15 text-primary-foreground",
+                    isPast && "border-primary-foreground/30 bg-primary-foreground/10 text-primary-foreground/80",
+                    !isCurrent && !isPast && "border-border bg-background/50 text-muted-foreground"
                   )}
                 >
                   {stage.time}
@@ -87,10 +124,10 @@ export function StrategyTimeline({ currentStage = 0, onStageClick }: StrategyTim
 
                 <span
                   className={cn(
-                    "text-[10px] font-medium tracking-wider text-center italic leading-tight",
-                    isCurrent && "text-foreground/80",
-                    isPast && "text-foreground/60",
-                    isFuture && "text-muted-foreground/60"
+                    "text-[8px] font-medium tracking-widest leading-none mt-0.5 italic",
+                    isCurrent && "text-primary-foreground/80",
+                    isPast && "text-primary-foreground/60",
+                    !isCurrent && !isPast && "text-muted-foreground/60"
                   )}
                 >
                   {stage.description}
