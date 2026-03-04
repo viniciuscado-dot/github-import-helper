@@ -34,7 +34,7 @@ import { CopyResultsRecent } from '@/components/copy/CopyResultsRecent';
 import { CopyDetailDialog } from '@/components/copy/CopyDetailDialog';
 import { CopyHistoryFull } from '@/components/copy/CopyHistoryFull';
 import { MarkdownRenderer } from '@/components/ui/markdown-renderer';
-import { StrategyTimeline } from '@/components/copy/StrategyTimeline';
+import { StrategyTimeline, STRATEGY_STAGES } from '@/components/copy/StrategyTimeline';
 
 const copyFormSchema = z.object({
   // Transcrições das reuniões
@@ -138,12 +138,11 @@ const [isLoading, setIsLoading] = useState(false)
   const [viewingBriefing, setViewingBriefing] = useState<any>(null)
   const [expandedMeetings, setExpandedMeetings] = useState<Set<string>>(new Set())
   
-  // Estado para controlar aba principal (Onboarding/Ongoing)
-const [mainTab, setMainTab] = useState<'onboarding' | 'ongoing'>('onboarding')
+  // Estado para controlar a fase ativa do projeto (índice 0-4)
+  const [currentPhase, setCurrentPhase] = useState(0)
+  const mainTab = STRATEGY_STAGES[currentPhase]?.id ?? 'onboarding'
   const [activeTab, setActiveTab] = useState<string>('form')
   const [materialType, setMaterialType] = useState<'criativos' | 'roteiros' | 'landing'>('criativos')
-  const [selectedClient, setSelectedClient] = useState<string>('')
-  const [crmClients, setCrmClients] = useState<any[]>([])
   const fetchSeqRef = useRef(0) // evita condição de corrida entre abas
 
   // Verificações de permissão
@@ -423,34 +422,9 @@ const [mainTab, setMainTab] = useState<'onboarding' | 'ongoing'>('onboarding')
     }
   }
 
-  // Buscar clientes ativos do CRM
-  const fetchCRMClients = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('crm_cards')
-        .select('id, company_name, title')
-        .order('company_name', { ascending: true })
-      
-      if (error) throw error
-      
-      // Filtrar apenas empresas com nome válido e remover duplicatas
-      const uniqueCompanies = Array.from(
-        new Map(
-          (data || [])
-            .filter(card => card.company_name && card.company_name.trim() !== '')
-            .map(card => [card.company_name, card])
-        ).values()
-      )
-      
-      setCrmClients(uniqueCompanies)
-    } catch (error) {
-      console.error('Erro ao buscar clientes do CRM:', error)
-    }
-  }
-
   // Carregar histórico quando componente monta ou mainTab muda
   useEffect(() => {
-    // Limpar estados ao trocar de aba para evitar mostrar dados da aba anterior
+    // Limpar estados ao trocar de fase para evitar mostrar dados da fase anterior
     setBriefingHistory([])
     setDefaultDocuments([])
     setDefaultPrompts([])
@@ -465,9 +439,7 @@ const [mainTab, setMainTab] = useState<'onboarding' | 'ongoing'>('onboarding')
     }
     // Carregar labels customizados
     fetchFormLabels()
-    // Carregar clientes do CRM
-    fetchCRMClients()
-  }, [canViewHistory, isAdmin, mainTab]) // Adiciona mainTab às dependências
+  }, [canViewHistory, isAdmin, mainTab]) // mainTab deriva de currentPhase
 
   const fetchFormLabels = async () => {
     try {
@@ -1003,136 +975,47 @@ const [mainTab, setMainTab] = useState<'onboarding' | 'ongoing'>('onboarding')
 
   return (
     <div className="space-y-6">
-      <div className="flex items-center justify-between gap-4">
-        <div className="flex items-center gap-4">
-          <Button variant="outline" size="sm" onClick={() => window.location.href = '/copy-estrategia'}>
-            <ArrowLeft className="h-4 w-4 mr-2" />
-            Voltar para Copy e Estratégia
-          </Button>
-          <div>
-            <h1 className="text-2xl font-bold text-foreground">Gerador de Copy</h1>
-            <p className="text-muted-foreground">
-              Preencha as informações do briefing para gerar copies personalizadas
-            </p>
-          </div>
-        </div>
-        
-        {/* Menu principal - Onboarding/Ongoing */}
-        <div className="flex gap-2">
-          <Button 
-            variant="outline"
-            onClick={() => setMainTab('onboarding')}
-            className={cn(
-              mainTab === 'onboarding' && 'bg-destructive text-destructive-foreground hover:bg-destructive/90'
-            )}
-          >
-            Onboarding
-          </Button>
-          <Button 
-            variant="outline"
-            onClick={() => setMainTab('ongoing')}
-            className={cn(
-              mainTab === 'ongoing' && 'bg-destructive text-destructive-foreground hover:bg-destructive/90'
-            )}
-          >
-            Ongoing
-          </Button>
-        </div>
+      {/* 1) Botão Voltar */}
+      <Button variant="ghost" size="sm" onClick={() => window.location.href = '/copy-estrategia'} className="gap-1.5 text-muted-foreground hover:text-foreground -ml-2">
+        <ArrowLeft className="h-4 w-4" />
+        Voltar
+      </Button>
+
+      {/* 2) Título */}
+      <div>
+        <h1 className="text-2xl font-bold text-foreground">Gerador de Copy</h1>
+        {clientName && (
+          <p className="text-muted-foreground text-sm mt-0.5">
+            Cliente: <span className="font-medium text-foreground">{clientName}</span>
+          </p>
+        )}
       </div>
 
-      {/* Timeline estratégica */}
-      <StrategyTimeline currentStage={mainTab === 'onboarding' ? 0 : 1} />
+      {/* 3) Menu de fases (timeline clicável) */}
+      <StrategyTimeline currentStage={currentPhase} onStageClick={setCurrentPhase} />
 
-      {/* Conteúdo - as mesmas tabs servem tanto para Onboarding quanto Ongoing */}
-      {/* Os dados são filtrados automaticamente baseado no mainTab selecionado */}
+      {/* 4) Abas da fase (Formulário / Resultados / Prompts) */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-        <div className="flex items-center justify-between gap-4">
-          {/* Lado esquerdo - Tabs */}
-          <TabsList>
-            <TabsTrigger value="form" className="flex items-center gap-2">
-              <FileText className="h-4 w-4" />
-              Formulário
+        <TabsList>
+          <TabsTrigger value="form" className="flex items-center gap-2">
+            <FileText className="h-4 w-4" />
+            Formulário
+          </TabsTrigger>
+          
+          {canViewHistory && (
+            <TabsTrigger value="history" className="flex items-center gap-2">
+              <Sparkles className="h-4 w-4" />
+              Resultados
             </TabsTrigger>
-            
-            {canViewHistory && (
-              <TabsTrigger value="history" className="flex items-center gap-2">
-                <Sparkles className="h-4 w-4" />
-                Resultados
-              </TabsTrigger>
-            )}
-            
-            {canAccessPrompts && (
-              <TabsTrigger value="prompts" className="flex items-center gap-2">
-                <Settings className="h-4 w-4" />
-                Prompts
-              </TabsTrigger>
-            )}
-          </TabsList>
-
-          {/* Lado direito - Seletor de Cliente e Materiais */}
-          <div className="flex items-center gap-6">
-            {/* Seletor de Cliente - sempre visível */}
-            <div className="flex items-center gap-3">
-              <span className="text-sm font-medium">Cliente:</span>
-              <Select value={selectedClient} onValueChange={setSelectedClient}>
-                <SelectTrigger className="w-[200px]">
-                  <SelectValue placeholder="Selecione um cliente" />
-                </SelectTrigger>
-                <SelectContent className="z-50 bg-popover">
-                  {crmClients.map((client) => (
-                    <SelectItem key={client.id} value={client.company_name}>
-                      {client.company_name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            {/* Container para Materiais - largura fixa para evitar movimento */}
-            <div className="flex items-center gap-3" style={{ width: '500px' }}>
-              {mainTab === 'ongoing' && (
-                <>
-                  <span className="text-sm font-medium whitespace-nowrap">Materiais:</span>
-                  <div className="flex gap-2">
-                    <Button 
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setMaterialType('criativos')}
-                      className={cn(
-                        'whitespace-nowrap',
-                        materialType === 'criativos' && 'bg-destructive text-destructive-foreground hover:bg-destructive/90'
-                      )}
-                    >
-                      Criativos Estáticos
-                    </Button>
-                    <Button 
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setMaterialType('roteiros')}
-                      className={cn(
-                        'whitespace-nowrap',
-                        materialType === 'roteiros' && 'bg-destructive text-destructive-foreground hover:bg-destructive/90'
-                      )}
-                    >
-                      Roteiros de Video
-                    </Button>
-                    <Button 
-                      variant="outline"
-                      size="sm"
-                      onClick={() => setMaterialType('landing')}
-                      className={cn(
-                        'whitespace-nowrap',
-                        materialType === 'landing' && 'bg-destructive text-destructive-foreground hover:bg-destructive/90'
-                      )}
-                    >
-                      Landing Page
-                    </Button>
-                  </div>
-                </>
-              )}
-            </div>
-          </div>
-        </div>
+          )}
+          
+          {canAccessPrompts && (
+            <TabsTrigger value="prompts" className="flex items-center gap-2">
+              <Settings className="h-4 w-4" />
+              Prompts
+            </TabsTrigger>
+          )}
+        </TabsList>
 
         <TabsContent value="form" className="space-y-6">
           <Form {...form}>
