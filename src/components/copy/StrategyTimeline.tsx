@@ -38,8 +38,8 @@ export function StrategyTimeline({ currentStage = 0, onStageClick }: StrategyTim
               whileHover={{ scale: 1.02, y: -1 }}
               whileTap={{ scale: 0.98 }}
               className={cn(
-                "relative flex-1 rounded-xl px-4 py-3 transition-all duration-300",
-                "flex flex-col items-center justify-center gap-1",
+                "relative flex-1 rounded-xl px-5 py-4 transition-all duration-300",
+                "flex flex-col items-center justify-center gap-1.5",
                 "border backdrop-blur-sm",
                 onStageClick && "cursor-pointer",
                 isCurrent && [
@@ -67,28 +67,28 @@ export function StrategyTimeline({ currentStage = 0, onStageClick }: StrategyTim
                 />
               )}
 
-              {/* Step number pill */}
-              <span
-                className={cn(
-                  "text-[10px] font-semibold rounded-full px-2 py-px leading-tight",
-                  isCurrent && "bg-primary-foreground/15 text-primary-foreground",
-                  isPast && "bg-primary/10 text-primary",
-                  isFuture && "bg-muted text-muted-foreground",
-                )}
-              >
-                {stage.time}
-              </span>
-
               {/* Title */}
               <span
                 className={cn(
-                  "text-[11px] font-bold tracking-wide leading-none",
+                  "text-[12px] font-bold tracking-wide leading-none",
                   isCurrent && "text-primary-foreground",
                   isPast && "text-primary",
                   isFuture && "text-muted-foreground",
                 )}
               >
                 {stage.title}
+              </span>
+
+              {/* Time below */}
+              <span
+                className={cn(
+                  "text-[10px] font-medium leading-none mt-0.5",
+                  isCurrent && "text-primary-foreground/70",
+                  isPast && "text-primary/60",
+                  isFuture && "text-muted-foreground/60",
+                )}
+              >
+                {stage.time}
               </span>
             </motion.button>
           );
