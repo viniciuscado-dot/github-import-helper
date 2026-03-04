@@ -142,9 +142,9 @@ async function fetchFeed(url: string, source: string, lang: string): Promise<Raw
       };
     }).filter(i => i.title && i.link);
 
-    // For items missing images, try fetching og:image (limit to 3 to avoid slowdown)
+    // For items missing images, try fetching og:image (limit to 5 to avoid slowdown)
     const noImage = items.filter(i => !i.image);
-    const toFetch = noImage.slice(0, 3);
+    const toFetch = noImage.slice(0, 5);
     await Promise.all(toFetch.map(async (item) => {
       const ogImg = await fetchOgImage(item.link);
       if (ogImg) item.image = ogImg;
