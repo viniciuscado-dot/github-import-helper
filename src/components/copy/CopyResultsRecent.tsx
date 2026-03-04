@@ -12,6 +12,9 @@ interface CopyFormRecord {
   created_by: string;
   status: string;
   nome_empresa?: string;
+  nomes_empresas?: string;
+  status: string;
+  nome_empresa?: string;
   document_files?: string[];
   ai_response?: string;
   ai_provider?: string;
