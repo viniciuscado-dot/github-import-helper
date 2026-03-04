@@ -138,12 +138,11 @@ const [isLoading, setIsLoading] = useState(false)
   const [viewingBriefing, setViewingBriefing] = useState<any>(null)
   const [expandedMeetings, setExpandedMeetings] = useState<Set<string>>(new Set())
   
-  // Estado para controlar aba principal (Onboarding/Ongoing)
-const [mainTab, setMainTab] = useState<'onboarding' | 'ongoing'>('onboarding')
+  // Estado para controlar a fase ativa do projeto (índice 0-4)
+  const [currentPhase, setCurrentPhase] = useState(0)
+  const mainTab = STRATEGY_STAGES[currentPhase]?.id ?? 'onboarding'
   const [activeTab, setActiveTab] = useState<string>('form')
   const [materialType, setMaterialType] = useState<'criativos' | 'roteiros' | 'landing'>('criativos')
-  const [selectedClient, setSelectedClient] = useState<string>('')
-  const [crmClients, setCrmClients] = useState<any[]>([])
   const fetchSeqRef = useRef(0) // evita condição de corrida entre abas
 
   // Verificações de permissão
