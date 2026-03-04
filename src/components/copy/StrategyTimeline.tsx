@@ -38,8 +38,8 @@ export function StrategyTimeline({ currentStage = 0, onStageClick }: StrategyTim
               whileHover={{ scale: 1.02, y: -1 }}
               whileTap={{ scale: 0.98 }}
               className={cn(
-                "relative flex-1 rounded-xl px-4 py-3 transition-all duration-300",
-                "flex flex-col items-center justify-center gap-1",
+                "relative flex-1 rounded-xl px-5 py-4 transition-all duration-300",
+                "flex flex-col items-center justify-center gap-1.5",
                 "border backdrop-blur-sm",
                 onStageClick && "cursor-pointer",
                 isCurrent && [
