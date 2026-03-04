@@ -46,7 +46,8 @@ function exportMarkdownToWord(content: string, fileName: string) {
 }
 
 export function CopyDetailDialog({ copy, open, onOpenChange, onRegenerate }: CopyDetailDialogProps) {
-  const [expandedSections, setExpandedSections] = useState<Set<number>>(new Set([0]));
+  const totalCopies = copies.length;
+  const [expandedSections, setExpandedSections] = useState<Set<number>>(new Set([Math.max(0, totalCopies - 1)]));
   const [showRegenerateInput, setShowRegenerateInput] = useState(false);
   const [regenerateInstruction, setRegenerateInstruction] = useState('');
   const [isRegenerating, setIsRegenerating] = useState(false);
