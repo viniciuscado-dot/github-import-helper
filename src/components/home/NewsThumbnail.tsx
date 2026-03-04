@@ -34,20 +34,11 @@ export function NewsThumbnail({ item, className = "", onImageGenerated, children
 
   const hasValidImage = item.image && item.image.trim().length > 0 && !broken;
 
+  // AI thumbnail generation disabled — gateway credits exhausted.
+  // Gracefully falls back to the category gradient placeholder.
   const triggerGeneration = useCallback(async () => {
-    if (attemptedRef.current || generatingSet.has(item.id)) return;
-    attemptedRef.current = true;
-    generatingSet.add(item.id);
-    setGenerating(true);
-
-    const url = await generateThumbnail(item.title, item.category, item.excerpt, item.url);
-    setGenerating(false);
-    generatingSet.delete(item.id);
-
-    if (url) {
-      onImageGenerated?.(item.id, url);
-    }
-  }, [item.id, item.title, item.category, item.excerpt, item.url, onImageGenerated]);
+    // no-op: generation disabled
+  }, []);
 
   const handleError = useCallback(() => {
     setBroken(true);
