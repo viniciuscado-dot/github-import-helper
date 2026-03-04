@@ -187,7 +187,16 @@ serve(async (req) => {
       return db - da;
     });
 
-    const items = combined.slice(0, 30).map(({ lang, ...rest }) => rest);
+    let items = combined.slice(0, 30).map(({ lang, ...rest }) => rest);
+
+    // Second pass: fetch og:image for top items still missing images (up to 5)
+    const missingImg = items.filter(i => !i.image).slice(0, 5);
+    if (missingImg.length > 0) {
+      await Promise.all(missingImg.map(async (item) => {
+        const ogImg = await fetchOgImage(item.link);
+        if (ogImg) item.image = ogImg;
+      }));
+    }
 
     return new Response(JSON.stringify({ items }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
