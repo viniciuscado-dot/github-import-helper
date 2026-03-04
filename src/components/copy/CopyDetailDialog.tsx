@@ -46,16 +46,14 @@ function exportMarkdownToWord(content: string, fileName: string) {
 }
 
 export function CopyDetailDialog({ copy, open, onOpenChange, onRegenerate }: CopyDetailDialogProps) {
-  const totalCopies = copies.length;
-  const [expandedSections, setExpandedSections] = useState<Set<number>>(new Set([Math.max(0, totalCopies - 1)]));
+  const copies = copy?.ai_response ? copy.ai_response.split('\n\n=== NOVA COPY ===\n\n') : [];
+  const reversedCopies = [...copies].reverse();
+  const [expandedSections, setExpandedSections] = useState<Set<number>>(new Set([Math.max(0, copies.length - 1)]));
   const [showRegenerateInput, setShowRegenerateInput] = useState(false);
   const [regenerateInstruction, setRegenerateInstruction] = useState('');
   const [isRegenerating, setIsRegenerating] = useState(false);
 
   if (!copy) return null;
-
-  const copies = copy.ai_response ? copy.ai_response.split('\n\n=== NOVA COPY ===\n\n') : [];
-  const reversedCopies = [...copies].reverse();
 
   const toggleSection = (index: number) => {
     const next = new Set(expandedSections);
