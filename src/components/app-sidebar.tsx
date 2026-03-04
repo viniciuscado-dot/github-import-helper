@@ -196,7 +196,9 @@ export function AppSidebar({ activeView, onViewChange }: AppSidebarProps) {
           <SidebarGroupContent>
             <SidebarMenu>
               {criacaoSubmenu.map((subItem) => {
-                const isSubActive = subItem.route ? location.pathname === subItem.route : activeView === subItem.view;
+                const isSubActive = subItem.route 
+                  ? (location.pathname === subItem.route || (subItem.id === 'copy' && activeView === 'copy'))
+                  : activeView === subItem.view;
                 return (
                   <SidebarMenuItem key={subItem.id}>
                     {renderMenuItem(
