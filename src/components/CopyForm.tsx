@@ -1004,12 +1004,10 @@ const [mainTab, setMainTab] = useState<'onboarding' | 'ongoing'>('onboarding')
     <div className="space-y-6">
       <div className="flex items-center justify-between gap-4">
         <div className="flex items-center gap-4">
-          {onBack && (
-            <Button variant="outline" size="sm" onClick={onBack}>
-              <ArrowLeft className="h-4 w-4 mr-2" />
-              Voltar
-            </Button>
-          )}
+          <Button variant="outline" size="sm" onClick={() => window.location.href = '/copy-estrategia'}>
+            <ArrowLeft className="h-4 w-4 mr-2" />
+            Voltar para Copy e Estratégia
+          </Button>
           <div>
             <h1 className="text-2xl font-bold text-foreground">Gerador de Copy</h1>
             <p className="text-muted-foreground">

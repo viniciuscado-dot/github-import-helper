@@ -160,7 +160,8 @@ const Index = () => {
       case 'home-criacao':
         return <HomeCriacao onNavigate={handleViewChange} />
       case 'copy':
-        return <CopyForm />
+        const clientParam = searchParams.get('client') || undefined;
+        return <CopyForm clientName={clientParam} />
       case 'analise-bench':
         return <AnaliseBench />
       case 'users':
