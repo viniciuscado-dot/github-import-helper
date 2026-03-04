@@ -6,11 +6,18 @@ const corsHeaders = {
 };
 
 const FEEDS = [
-  { url: 'https://www.thinkwithgoogle.com/intl/pt-br/feed/', source: 'Think with Google', lang: 'pt' },
-  { url: 'https://resultadosdigitais.com.br/blog/feed/', source: 'RD Station', lang: 'pt' },
+  // PT-BR feeds
   { url: 'https://rockcontent.com/br/blog/feed/', source: 'Rock Content', lang: 'pt' },
+  { url: 'https://resultadosdigitais.com.br/blog/feed/', source: 'RD Station', lang: 'pt' },
   { url: 'https://neilpatel.com/br/blog/feed/', source: 'Neil Patel BR', lang: 'pt' },
+  { url: 'https://www.meioemensagem.com.br/feed', source: 'Meio & Mensagem', lang: 'pt' },
+  { url: 'https://Forbes.com.br/feed/', source: 'Forbes Brasil', lang: 'pt' },
+  { url: 'https://g1.globo.com/rss/g1/economia/', source: 'G1 Negócios', lang: 'pt' },
+  { url: 'https://www.b9.com.br/feed/', source: 'B9', lang: 'pt' },
+  { url: 'https://www.propmark.com.br/feed/', source: 'Propmark', lang: 'pt' },
+  // EN feeds (filtered by theme)
   { url: 'https://blog.hubspot.com/marketing/rss.xml', source: 'HubSpot', lang: 'en' },
+  { url: 'https://www.thinkwithgoogle.com/intl/pt-br/feed/', source: 'Think with Google', lang: 'pt' },
 ];
 
 const PT_KEYWORDS = [
@@ -122,8 +129,11 @@ async function fetchOgImage(url: string): Promise<string> {
 
 async function fetchFeed(url: string, source: string, lang: string): Promise<RawItem[]> {
   try {
-    const res = await fetch(url, { headers: { 'User-Agent': 'DOT-News-Bot/1.0' } });
-    if (!res.ok) return [];
+    const res = await fetch(url, { headers: { 'User-Agent': 'Mozilla/5.0 (compatible; DOT-News-Bot/1.0)' } });
+    if (!res.ok) {
+      console.warn(`Feed ${source} returned ${res.status}`);
+      return [];
+    }
     const xml = await res.text();
     const blocks = xml.split(/<item>/i).slice(1);
     const items = blocks.map(block => {
@@ -151,7 +161,8 @@ async function fetchFeed(url: string, source: string, lang: string): Promise<Raw
     }));
 
     return items;
-  } catch {
+  } catch (err) {
+    console.error(`Feed ${source} error:`, err);
     return [];
   }
 }
@@ -163,6 +174,8 @@ serve(async (req) => {
 
   try {
     const results = await Promise.all(FEEDS.map(f => fetchFeed(f.url, f.source, f.lang)));
+    // Log feed results for debugging
+    FEEDS.forEach((f, i) => console.log(`Feed "${f.source}": ${results[i].length} items`));
     const all = results.flat();
 
     // Deduplicate by link
