@@ -1477,6 +1477,30 @@ const [isLoading, setIsLoading] = useState(false)
 
                     <FormField
                       control={form.control}
+                      name="nomes_empresas"
+                      render={({ field }) => {
+                        return (
+                          <FormItem>
+                            <FormLabel className="font-semibold">Campanha</FormLabel>
+                            <p className="text-sm text-muted-foreground/70 mb-2">Nome da campanha (aparecerá nos resultados).</p>
+                            <FormControl>
+                              <Input 
+                                placeholder="Ex: Black Friday 2026"
+                                {...field}
+                                onChange={(e) => {
+                                  field.onChange(e)
+                                  setModifiedFields(prev => new Set(prev).add('nomes_empresas'))
+                                }}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )
+                      }}
+                    />
+
+                    <FormField
+                      control={form.control}
                       name="nicho_empresa"
                       render={({ field }) => {
                         const isDefault = isDefaultValue('nicho_empresa', field.value || '')
