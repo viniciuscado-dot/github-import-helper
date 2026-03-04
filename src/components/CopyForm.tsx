@@ -82,9 +82,10 @@ interface CopyFormRecord {
 
 interface CopyFormProps {
   onBack?: () => void
+  clientName?: string
 }
 
-export function CopyForm({ onBack }: CopyFormProps = {}) {
+export function CopyForm({ onBack, clientName }: CopyFormProps = {}) {
   const { profile } = useAuth()
   const { checkModulePermission } = useModulePermissions()
 const [isLoading, setIsLoading] = useState(false)

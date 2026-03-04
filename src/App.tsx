@@ -94,6 +94,15 @@ const App = () => (
                 </ProtectedRoute>
               } />
 
+              {/* ── Copy e Estratégia ── */}
+              <Route path="/copy-estrategia" element={
+                <ProtectedRoute>
+                  <Suspense fallback={<DashboardFallback />}>
+                    <CopyEstrategia />
+                  </Suspense>
+                </ProtectedRoute>
+              } />
+
               {/* ── Anúncios ── */}
               <Route path="/performance/anuncios" element={
                 <ProtectedRoute>
