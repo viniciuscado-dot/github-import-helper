@@ -91,7 +91,7 @@ export function CopyResultsRecent({ briefings, onView, onViewHistory, isEmpty }:
                 {/* Subtle top accent */}
                 <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-primary/40 via-primary/60 to-primary/40 opacity-0 group-hover:opacity-100 transition-opacity" />
 
-                <CardContent className="p-5">
+                <CardContent className="p-6">
                   <div className="flex items-start justify-between gap-3">
                     <div className="flex-1 min-w-0 space-y-3">
                       {/* Client & badges */}
