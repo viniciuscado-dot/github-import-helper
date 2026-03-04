@@ -1,10 +1,15 @@
 import { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Search } from "lucide-react";
+import { ArrowLeft, Search, CalendarIcon } from "lucide-react";
+import { format, parse } from "date-fns";
+import { ptBR } from "date-fns/locale";
+import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { AppSidebar } from "@/components/app-sidebar";
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
@@ -15,7 +20,7 @@ type Squad = "Apollo" | "Athena" | "Ares" | "Artemis";
 
 interface MockClient {
   name: string;
-  entryDate: string;
+  entryDate: string; // DD/MM/YYYY
   squad: Squad;
 }
 
@@ -37,14 +42,19 @@ const SQUAD_COLORS: Record<Squad, string> = {
   Artemis: "bg-green-500/15 text-green-400 border-green-500/20",
 };
 
+function parseDate(dateStr: string): Date {
+  return parse(dateStr, "dd/MM/yyyy", new Date());
+}
+
 export default function CopyEstrategia() {
   const navigate = useNavigate();
   const [search, setSearch] = useState("");
   const [squadFilter, setSquadFilter] = useState("all");
-  const [periodFilter, setPeriodFilter] = useState("all");
+  const [startDate, setStartDate] = useState<Date | undefined>();
+  const [endDate, setEndDate] = useState<Date | undefined>();
 
   const filteredClients = useMemo(() => {
-    let clients = MOCK_CLIENTS;
+    let clients = [...MOCK_CLIENTS];
 
     if (search) {
       const q = search.toLowerCase();
@@ -55,9 +65,19 @@ export default function CopyEstrategia() {
       clients = clients.filter((c) => c.squad === squadFilter);
     }
 
-    // Period filter is visual-only with mock data
+    if (startDate) {
+      clients = clients.filter((c) => parseDate(c.entryDate) >= startDate);
+    }
+
+    if (endDate) {
+      clients = clients.filter((c) => parseDate(c.entryDate) <= endDate);
+    }
+
+    // Sort by entry date descending (most recent first)
+    clients.sort((a, b) => parseDate(b.entryDate).getTime() - parseDate(a.entryDate).getTime());
+
     return clients;
-  }, [search, squadFilter, periodFilter]);
+  }, [search, squadFilter, startDate, endDate]);
 
   const handleBack = () => {
     if (window.history.length > 2) {
@@ -111,7 +131,7 @@ export default function CopyEstrategia() {
               </div>
 
               {/* Filters */}
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
                 <div className="relative">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                   <Input
@@ -133,17 +153,56 @@ export default function CopyEstrategia() {
                     <SelectItem value="Artemis">Squad Artemis</SelectItem>
                   </SelectContent>
                 </Select>
-                <Select value={periodFilter} onValueChange={setPeriodFilter}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Período de criação" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="all">Todos os períodos</SelectItem>
-                    <SelectItem value="7">Últimos 7 dias</SelectItem>
-                    <SelectItem value="30">Últimos 30 dias</SelectItem>
-                    <SelectItem value="90">Últimos 90 dias</SelectItem>
-                  </SelectContent>
-                </Select>
+
+                {/* Data início */}
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className={cn(
+                        "w-full justify-start text-left font-normal h-10",
+                        !startDate && "text-muted-foreground"
+                      )}
+                    >
+                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      {startDate ? format(startDate, "dd/MM/yyyy", { locale: ptBR }) : "Data início"}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar
+                      mode="single"
+                      selected={startDate}
+                      onSelect={setStartDate}
+                      initialFocus
+                      className={cn("p-3 pointer-events-auto")}
+                    />
+                  </PopoverContent>
+                </Popover>
+
+                {/* Data fim */}
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      className={cn(
+                        "w-full justify-start text-left font-normal h-10",
+                        !endDate && "text-muted-foreground"
+                      )}
+                    >
+                      <CalendarIcon className="mr-2 h-4 w-4" />
+                      {endDate ? format(endDate, "dd/MM/yyyy", { locale: ptBR }) : "Data fim"}
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar
+                      mode="single"
+                      selected={endDate}
+                      onSelect={setEndDate}
+                      initialFocus
+                      className={cn("p-3 pointer-events-auto")}
+                    />
+                  </PopoverContent>
+                </Popover>
               </div>
 
               {/* Client cards grid */}
