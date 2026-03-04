@@ -1480,13 +1480,29 @@ const [isLoading, setIsLoading] = useState(false)
                       control={form.control}
                       name="nomes_empresas"
                       render={({ field }) => {
+                        const isDefault = isDefaultValue('nomes_empresas', field.value || '')
                         return (
-                          <FormItem className="space-y-1">
-                            <FormLabel className="font-semibold">Campanha</FormLabel>
-                            <p className="text-sm text-muted-foreground/70">Nome da campanha — aparecerá nos resultados.</p>
+                          <FormItem>
+                            <FormLabel className="font-semibold flex items-center gap-2">
+                              <EditableText 
+                                fieldKey="nomes_empresas" 
+                                field="label_text" 
+                                defaultValue="Campanha"
+                                isTitle
+                              />
+                            </FormLabel>
+                            <EditableText 
+                              fieldKey="nomes_empresas" 
+                              field="description_text" 
+                              defaultValue="Nome da campanha — aparecerá nos resultados."
+                              className="text-sm text-muted-foreground/70 mb-2"
+                            />
                             <FormControl>
                               <Input 
-                                placeholder="Ex: Black Friday 2026"
+                                className={cn(
+                                  isDefault && "opacity-50",
+                                  isDefault && !isFieldModified('nomes_empresas') && "border-destructive focus-visible:ring-destructive"
+                                )}
                                 {...field}
                                 onChange={(e) => {
                                   field.onChange(e)
