@@ -78,7 +78,7 @@ export function CopyResultsRecent({ briefings, onView, onViewHistory, isEmpty }:
             <Clock className="h-4 w-4 text-muted-foreground" />
             <span className="text-sm font-medium text-muted-foreground">Resultados recentes</span>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
             {recentBriefings.map((briefing) => (
               <Card
                 key={briefing.id}
