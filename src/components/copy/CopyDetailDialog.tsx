@@ -175,20 +175,21 @@ export function CopyDetailDialog({ copy, open, onOpenChange, onRegenerate }: Cop
           </div>
         ) : (
           <div className="space-y-3 pt-2">
-            {copies.map((content, index) => {
-              const isExpanded = expandedSections.has(index);
-              const copyDate = index === 0
+            {reversedCopies.map((content, revIndex) => {
+              const originalIndex = copies.length - 1 - revIndex;
+              const isExpanded = expandedSections.has(originalIndex);
+              const copyDate = originalIndex === 0
                 ? new Date(copy.created_at)
                 : new Date(copy.response_generated_at || copy.created_at);
 
               return (
                 <div
-                  key={index}
+                  key={originalIndex}
                   className="rounded-lg border border-border/60 overflow-hidden bg-card/50"
                 >
                   {/* Section header */}
                   <button
-                    onClick={() => toggleSection(index)}
+                    onClick={() => toggleSection(originalIndex)}
                     className="w-full text-left px-5 py-3.5 flex items-center justify-between hover:bg-muted/30 transition-colors"
                   >
                     <div className="flex items-center gap-3">
@@ -198,7 +199,7 @@ export function CopyDetailDialog({ copy, open, onOpenChange, onRegenerate }: Cop
                         <ChevronRight className="h-4 w-4 text-muted-foreground" />
                       )}
                       <span className="font-medium text-sm text-foreground">
-                        Versão {index + 1}
+                        Versão {originalIndex + 1}
                       </span>
                       <span className="text-xs text-muted-foreground">
                         {format(copyDate, "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}
@@ -211,7 +212,7 @@ export function CopyDetailDialog({ copy, open, onOpenChange, onRegenerate }: Cop
                         className="h-7 px-2"
                         onClick={() => {
                           navigator.clipboard.writeText(content.trim());
-                          toast.success(`Versão ${index + 1} copiada!`);
+                          toast.success(`Versão ${originalIndex + 1} copiada!`);
                         }}
                       >
                         <Copy className="h-3.5 w-3.5" />
@@ -221,13 +222,13 @@ export function CopyDetailDialog({ copy, open, onOpenChange, onRegenerate }: Cop
                         variant="ghost"
                         className="h-7 px-2"
                         onClick={() => {
-                          exportMarkdownTableToExcel(
+                          exportMarkdownToWord(
                             content,
-                            `copy-${copy.nome_empresa?.replace(/[^a-zA-Z0-9]/g, '-') || 'sem-nome'}-v${index + 1}`
+                            `copy-${copy.nome_empresa?.replace(/[^a-zA-Z0-9]/g, '-') || 'sem-nome'}-v${originalIndex + 1}`
                           );
                         }}
                       >
-                        <FileSpreadsheet className="h-3.5 w-3.5" />
+                        <FileText className="h-3.5 w-3.5" />
                       </Button>
                     </div>
                   </button>
