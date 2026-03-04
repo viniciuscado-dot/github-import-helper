@@ -4,11 +4,10 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
-import { Copy, FileSpreadsheet, ChevronDown, ChevronRight, Building2, Calendar, Sparkles, RefreshCw, Loader2, Send } from 'lucide-react';
+import { Copy, FileText, ChevronDown, ChevronRight, Building2, Calendar, Sparkles, RefreshCw, Loader2, Send } from 'lucide-react';
 import { MarkdownRenderer } from '@/components/ui/markdown-renderer';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import * as XLSX from 'xlsx';
 
 interface CopyFormRecord {
   id: string;
