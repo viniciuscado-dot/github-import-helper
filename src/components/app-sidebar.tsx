@@ -144,7 +144,7 @@ export function AppSidebar({ activeView, onViewChange }: AppSidebarProps) {
             <img 
               src="/lovable-uploads/7c396b9b-c7c8-460d-9683-1d9c1a265bd8.png"
               alt="DOT Logo"
-              className="h-8 w-auto transition-all duration-500 ease-in-out"
+              className="h-6 w-auto transition-all duration-500 ease-in-out"
               key="logo-expanded"
             />
             <SidebarTrigger className="touch-target" />
