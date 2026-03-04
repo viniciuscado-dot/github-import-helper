@@ -253,6 +253,9 @@ const [isLoading, setIsLoading] = useState(false)
   const [isGeneratingNewCopy, setIsGeneratingNewCopy] = useState(false)
   const [expandedCopies, setExpandedCopies] = useState<Set<number>>(new Set([0]))
   
+  // Estado para tipos de material selecionados
+  const [selectedMaterialTypes, setSelectedMaterialTypes] = useState<string[]>([])
+  
   // Estado para rastrear campos modificados e visualizar briefing
   const [modifiedFields, setModifiedFields] = useState<Set<string>>(new Set())
   const [viewingBriefing, setViewingBriefing] = useState<any>(null)
