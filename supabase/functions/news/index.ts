@@ -173,6 +173,8 @@ serve(async (req) => {
 
   try {
     const results = await Promise.all(FEEDS.map(f => fetchFeed(f.url, f.source, f.lang)));
+    // Log feed results for debugging
+    FEEDS.forEach((f, i) => console.log(`Feed "${f.source}": ${results[i].length} items`));
     const all = results.flat();
 
     // Deduplicate by link
