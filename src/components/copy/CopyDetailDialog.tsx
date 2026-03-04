@@ -4,11 +4,10 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
-import { Copy, FileSpreadsheet, ChevronDown, ChevronRight, Building2, Calendar, Sparkles, RefreshCw, Loader2, Send } from 'lucide-react';
+import { Copy, FileText, ChevronDown, ChevronRight, Building2, Calendar, Sparkles, RefreshCw, Loader2, Send } from 'lucide-react';
 import { MarkdownRenderer } from '@/components/ui/markdown-renderer';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import * as XLSX from 'xlsx';
 
 interface CopyFormRecord {
   id: string;
@@ -31,36 +30,30 @@ interface CopyDetailDialogProps {
   onRegenerate?: (copyId: string, instruction: string) => Promise<void>;
 }
 
-function exportMarkdownTableToExcel(content: string, fileName: string) {
-  const lines = content.split('\n');
-  const data: string[][] = [];
-  
-  lines.forEach(line => {
-    if (line.startsWith('|') && !line.match(/^\|[\s-|]+\|$/)) {
-      const cells = line.split('|').filter((_, i, arr) => i > 0 && i < arr.length - 1).map(c => c.trim());
-      data.push(cells);
-    }
-  });
-
-  if (data.length === 0) {
-    data.push([content]);
-  }
-  
-  const ws = XLSX.utils.aoa_to_sheet(data);
-  const wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, ws, 'Copy');
-  XLSX.writeFile(wb, `${fileName}.xlsx`);
+function exportMarkdownToWord(content: string, fileName: string) {
+  const html = `
+    <html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40">
+    <head><meta charset="utf-8"><title>${fileName}</title></head>
+    <body style="font-family: Calibri, sans-serif; font-size: 11pt;">${content.replace(/\n/g, '<br>')}</body>
+    </html>`;
+  const blob = new Blob([html], { type: 'application/msword' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `${fileName}.doc`;
+  a.click();
+  URL.revokeObjectURL(url);
 }
 
 export function CopyDetailDialog({ copy, open, onOpenChange, onRegenerate }: CopyDetailDialogProps) {
-  const [expandedSections, setExpandedSections] = useState<Set<number>>(new Set([0]));
+  const copies = copy?.ai_response ? copy.ai_response.split('\n\n=== NOVA COPY ===\n\n') : [];
+  const reversedCopies = [...copies].reverse();
+  const [expandedSections, setExpandedSections] = useState<Set<number>>(new Set([Math.max(0, copies.length - 1)]));
   const [showRegenerateInput, setShowRegenerateInput] = useState(false);
   const [regenerateInstruction, setRegenerateInstruction] = useState('');
   const [isRegenerating, setIsRegenerating] = useState(false);
 
   if (!copy) return null;
-
-  const copies = copy.ai_response ? copy.ai_response.split('\n\n=== NOVA COPY ===\n\n') : [];
 
   const toggleSection = (index: number) => {
     const next = new Set(expandedSections);
@@ -181,20 +174,21 @@ export function CopyDetailDialog({ copy, open, onOpenChange, onRegenerate }: Cop
           </div>
         ) : (
           <div className="space-y-3 pt-2">
-            {copies.map((content, index) => {
-              const isExpanded = expandedSections.has(index);
-              const copyDate = index === 0
+            {reversedCopies.map((content, revIndex) => {
+              const originalIndex = copies.length - 1 - revIndex;
+              const isExpanded = expandedSections.has(originalIndex);
+              const copyDate = originalIndex === 0
                 ? new Date(copy.created_at)
                 : new Date(copy.response_generated_at || copy.created_at);
 
               return (
                 <div
-                  key={index}
+                  key={originalIndex}
                   className="rounded-lg border border-border/60 overflow-hidden bg-card/50"
                 >
                   {/* Section header */}
                   <button
-                    onClick={() => toggleSection(index)}
+                    onClick={() => toggleSection(originalIndex)}
                     className="w-full text-left px-5 py-3.5 flex items-center justify-between hover:bg-muted/30 transition-colors"
                   >
                     <div className="flex items-center gap-3">
@@ -204,7 +198,7 @@ export function CopyDetailDialog({ copy, open, onOpenChange, onRegenerate }: Cop
                         <ChevronRight className="h-4 w-4 text-muted-foreground" />
                       )}
                       <span className="font-medium text-sm text-foreground">
-                        Versão {index + 1}
+                        Versão {originalIndex + 1}
                       </span>
                       <span className="text-xs text-muted-foreground">
                         {format(copyDate, "dd/MM/yyyy 'às' HH:mm", { locale: ptBR })}
@@ -217,7 +211,7 @@ export function CopyDetailDialog({ copy, open, onOpenChange, onRegenerate }: Cop
                         className="h-7 px-2"
                         onClick={() => {
                           navigator.clipboard.writeText(content.trim());
-                          toast.success(`Versão ${index + 1} copiada!`);
+                          toast.success(`Versão ${originalIndex + 1} copiada!`);
                         }}
                       >
                         <Copy className="h-3.5 w-3.5" />
@@ -227,13 +221,13 @@ export function CopyDetailDialog({ copy, open, onOpenChange, onRegenerate }: Cop
                         variant="ghost"
                         className="h-7 px-2"
                         onClick={() => {
-                          exportMarkdownTableToExcel(
+                          exportMarkdownToWord(
                             content,
-                            `copy-${copy.nome_empresa?.replace(/[^a-zA-Z0-9]/g, '-') || 'sem-nome'}-v${index + 1}`
+                            `copy-${copy.nome_empresa?.replace(/[^a-zA-Z0-9]/g, '-') || 'sem-nome'}-v${originalIndex + 1}`
                           );
                         }}
                       >
-                        <FileSpreadsheet className="h-3.5 w-3.5" />
+                        <FileText className="h-3.5 w-3.5" />
                       </Button>
                     </div>
                   </button>
