@@ -330,7 +330,7 @@ const [isLoading, setIsLoading] = useState(false)
         // Fetch the freshly saved record to auto-open it
         const { data: freshRecord } = await supabase
           .from('copy_forms')
-          .select('id, created_at, created_by, status, nome_empresa, document_files, ai_response, ai_provider, response_generated_at, copy_type')
+          .select('id, created_at, created_by, status, nome_empresa, nomes_empresas, document_files, ai_response, ai_provider, response_generated_at, copy_type')
           .eq('id', savedForm.id)
           .single()
         if (freshRecord) {
