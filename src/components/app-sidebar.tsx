@@ -42,7 +42,7 @@ export function AppSidebar({ activeView, onViewChange }: AppSidebarProps) {
   const criacaoSubmenu = useMemo(() => [
     { id: 'copy', title: 'Copy e Estratégia', icon: Copy, route: '/copy-estrategia' },
     { id: 'aprovacao', title: 'Aprovação', view: 'aprovacao' as const, icon: CheckCircle, route: '/aprovacao' },
-    { id: 'analise-bench', title: 'Análise e Bench', view: 'analise-bench' as const, icon: BarChart2 },
+    { id: 'analise-bench', title: 'Análise e Bench', icon: BarChart2, route: '/analise-bench' },
     { id: 'anuncios', title: 'Anúncios', view: 'anuncios' as const, icon: Megaphone, route: '/performance/anuncios' },
   ], []);
 
