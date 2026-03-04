@@ -84,6 +84,7 @@ interface CopyFormRecord {
   created_by: string
   status: string
   nome_empresa?: string
+  nomes_empresas?: string
   document_files?: string[]
   ai_response?: string
   ai_provider?: string
@@ -329,7 +330,7 @@ const [isLoading, setIsLoading] = useState(false)
         // Fetch the freshly saved record to auto-open it
         const { data: freshRecord } = await supabase
           .from('copy_forms')
-          .select('id, created_at, created_by, status, nome_empresa, document_files, ai_response, ai_provider, response_generated_at, copy_type')
+          .select('id, created_at, created_by, status, nome_empresa, nomes_empresas, document_files, ai_response, ai_provider, response_generated_at, copy_type')
           .eq('id', savedForm.id)
           .single()
         if (freshRecord) {
@@ -393,6 +394,7 @@ const [isLoading, setIsLoading] = useState(false)
           created_by,
           status,
           nome_empresa,
+          nomes_empresas,
           document_files,
           ai_response,
           ai_provider,
@@ -1465,6 +1467,30 @@ const [isLoading, setIsLoading] = useState(false)
                                 onChange={(e) => {
                                   field.onChange(e)
                                   setModifiedFields(prev => new Set(prev).add('nome_empresa'))
+                                }}
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )
+                      }}
+                    />
+
+                    <FormField
+                      control={form.control}
+                      name="nomes_empresas"
+                      render={({ field }) => {
+                        return (
+                          <FormItem>
+                            <FormLabel className="font-semibold">Campanha</FormLabel>
+                            <p className="text-sm text-muted-foreground/70 mb-2">Nome da campanha (aparecerá nos resultados).</p>
+                            <FormControl>
+                              <Input 
+                                placeholder="Ex: Black Friday 2026"
+                                {...field}
+                                onChange={(e) => {
+                                  field.onChange(e)
+                                  setModifiedFields(prev => new Set(prev).add('nomes_empresas'))
                                 }}
                               />
                             </FormControl>

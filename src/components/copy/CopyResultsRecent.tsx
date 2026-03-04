@@ -12,6 +12,7 @@ interface CopyFormRecord {
   created_by: string;
   status: string;
   nome_empresa?: string;
+  nomes_empresas?: string;
   document_files?: string[];
   ai_response?: string;
   ai_provider?: string;
@@ -97,7 +98,7 @@ export function CopyResultsRecent({ briefings, onView, onViewHistory, isEmpty }:
                           <div className="flex items-center gap-2 min-w-0">
                             <Building2 className="h-4 w-4 text-muted-foreground shrink-0" />
                             <span className="font-semibold text-foreground truncate">
-                              {briefing.nome_empresa || 'Sem nome'}
+                              {briefing.nomes_empresas || briefing.nome_empresa || 'Sem nome'}
                             </span>
                           </div>
                           {isRecent(briefing.created_at) && (
