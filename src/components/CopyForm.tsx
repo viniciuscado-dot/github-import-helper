@@ -1017,7 +1017,8 @@ const [isLoading, setIsLoading] = useState(false)
   }
 
   return (
-    <div>
+    <EditableTextContext.Provider value={editableTextContextValue}>
+      <div>
       {/* Static header — never moves */}
       <div className="space-y-4 mb-6">
         {/* 1) Botão Voltar */}
