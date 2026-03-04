@@ -191,6 +191,9 @@ const [mainTab, setMainTab] = useState<'onboarding' | 'ongoing'>('onboarding')
   
   // Valores padrão vazios
   const defaultExamples: Record<string, string> = {}
+  if (clientName) {
+    defaultExamples.nome_empresa = clientName
+  }
 
   const form = useForm<CopyFormData>({
     resolver: zodResolver(copyFormSchema),
