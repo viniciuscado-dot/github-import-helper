@@ -127,7 +127,7 @@ export function AppSidebar({ activeView, onViewChange }: AppSidebarProps) {
   ];
 
   const newsItems = [
-    { id: 'trends-noticias', title: 'Trends e Notícias', icon: TrendingUp, route: '/noticias' },
+    { id: 'trends-noticias', title: 'Notícias e Conteúdos', icon: Newspaper, route: '/noticias' },
   ];
 
   // Group label style

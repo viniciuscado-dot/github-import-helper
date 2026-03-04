@@ -222,7 +222,7 @@ export default function Noticias() {
               {/* ── Header ── */}
               <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
                 <div>
-                  <h1 className="text-2xl font-bold text-foreground">Tendências e Notícias</h1>
+                  <h1 className="text-2xl font-bold text-foreground">Notícias e Conteúdos</h1>
                   <p className="text-muted-foreground">Marketing, publicidade e negócios.</p>
                 </div>
 
