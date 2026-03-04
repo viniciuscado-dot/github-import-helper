@@ -34,6 +34,7 @@ import { CopyResultsRecent } from '@/components/copy/CopyResultsRecent';
 import { CopyDetailDialog } from '@/components/copy/CopyDetailDialog';
 import { CopyHistoryFull } from '@/components/copy/CopyHistoryFull';
 import { MarkdownRenderer } from '@/components/ui/markdown-renderer';
+import { StrategyTimeline } from '@/components/copy/StrategyTimeline';
 
 const copyFormSchema = z.object({
   // Transcrições das reuniões
@@ -1038,6 +1039,9 @@ const [mainTab, setMainTab] = useState<'onboarding' | 'ongoing'>('onboarding')
           </Button>
         </div>
       </div>
+
+      {/* Timeline estratégica */}
+      <StrategyTimeline currentStage={mainTab === 'onboarding' ? 0 : 1} />
 
       {/* Conteúdo - as mesmas tabs servem tanto para Onboarding quanto Ongoing */}
       {/* Os dados são filtrados automaticamente baseado no mainTab selecionado */}
