@@ -129,8 +129,11 @@ async function fetchOgImage(url: string): Promise<string> {
 
 async function fetchFeed(url: string, source: string, lang: string): Promise<RawItem[]> {
   try {
-    const res = await fetch(url, { headers: { 'User-Agent': 'DOT-News-Bot/1.0' } });
-    if (!res.ok) return [];
+    const res = await fetch(url, { headers: { 'User-Agent': 'Mozilla/5.0 (compatible; DOT-News-Bot/1.0)' } });
+    if (!res.ok) {
+      console.warn(`Feed ${source} returned ${res.status}`);
+      return [];
+    }
     const xml = await res.text();
     const blocks = xml.split(/<item>/i).slice(1);
     const items = blocks.map(block => {
