@@ -67,28 +67,28 @@ export function StrategyTimeline({ currentStage = 0, onStageClick }: StrategyTim
                 />
               )}
 
-              {/* Step number pill */}
-              <span
-                className={cn(
-                  "text-[10px] font-semibold rounded-full px-2 py-px leading-tight",
-                  isCurrent && "bg-primary-foreground/15 text-primary-foreground",
-                  isPast && "bg-primary/10 text-primary",
-                  isFuture && "bg-muted text-muted-foreground",
-                )}
-              >
-                {stage.time}
-              </span>
-
               {/* Title */}
               <span
                 className={cn(
-                  "text-[11px] font-bold tracking-wide leading-none",
+                  "text-[12px] font-bold tracking-wide leading-none",
                   isCurrent && "text-primary-foreground",
                   isPast && "text-primary",
                   isFuture && "text-muted-foreground",
                 )}
               >
                 {stage.title}
+              </span>
+
+              {/* Time below */}
+              <span
+                className={cn(
+                  "text-[10px] font-medium leading-none mt-0.5",
+                  isCurrent && "text-primary-foreground/70",
+                  isPast && "text-primary/60",
+                  isFuture && "text-muted-foreground/60",
+                )}
+              >
+                {stage.time}
               </span>
             </motion.button>
           );
