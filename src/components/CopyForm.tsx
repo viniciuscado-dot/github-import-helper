@@ -97,6 +97,115 @@ interface CopyFormProps {
   clientName?: string
 }
 
+type EditableField = 'label_text' | 'description_text' | 'section_title' | 'section_description'
+
+interface EditableTextContextValue {
+  isAdmin: boolean
+  editingLabel: string | null
+  editingValue: string
+  setEditingLabel: (value: string | null) => void
+  setEditingValue: (value: string) => void
+  handleSaveLabel: (fieldKey: string, field: EditableField) => Promise<void>
+  resolveText: (fieldKey: string, field: EditableField, defaultValue: string) => string
+}
+
+const EditableTextContext = React.createContext<EditableTextContextValue | null>(null)
+
+const EditableText = React.memo(({
+  fieldKey,
+  field,
+  defaultValue,
+  className = "",
+  isTitle = false,
+}: {
+  fieldKey: string
+  field: EditableField
+  defaultValue: string
+  className?: string
+  isTitle?: boolean
+}) => {
+  const ctx = React.useContext(EditableTextContext)
+
+  if (!ctx) {
+    return isTitle ? <span className={className}>{defaultValue}</span> : <p className={className}>{defaultValue}</p>
+  }
+
+  const currentValue = ctx.resolveText(fieldKey, field, defaultValue)
+  const isEditing = ctx.editingLabel === `${fieldKey}-${field}`
+  const editKey = `${fieldKey}-${field}`
+
+  if (!ctx.isAdmin) {
+    return isTitle ? <span className={className}>{currentValue}</span> : <p className={className}>{currentValue}</p>
+  }
+
+  if (isEditing) {
+    return (
+      <div className="flex items-center gap-2 flex-1">
+        {isTitle ? (
+          <Input
+            value={ctx.editingValue}
+            onChange={(e) => ctx.setEditingValue(e.target.value)}
+            className={cn(className, "text-left")}
+            dir="ltr"
+            autoFocus
+          />
+        ) : (
+          <Textarea
+            value={ctx.editingValue}
+            onChange={(e) => ctx.setEditingValue(e.target.value)}
+            className={cn(className, "min-h-[60px] text-left")}
+            dir="ltr"
+            autoFocus
+          />
+        )}
+        <Button
+          type="button"
+          size="sm"
+          onClick={() => void ctx.handleSaveLabel(fieldKey, field)}
+          className="shrink-0"
+        >
+          <Save className="h-4 w-4" />
+        </Button>
+        <Button
+          type="button"
+          size="sm"
+          variant="ghost"
+          onClick={() => ctx.setEditingLabel(null)}
+          className="shrink-0"
+        >
+          <X className="h-4 w-4" />
+        </Button>
+      </div>
+    )
+  }
+
+  return (
+    <div className="group flex items-start gap-2 flex-1 relative">
+      <div className="flex-1">
+        {isTitle ? (
+          <span className={className}>{currentValue}</span>
+        ) : (
+          <p className={className}>{currentValue}</p>
+        )}
+      </div>
+      <Button
+        type="button"
+        size="sm"
+        variant="ghost"
+        className="absolute -right-8 top-0 h-6 w-6 p-0 invisible group-hover:visible transition-all"
+        onClick={(e) => {
+          e.preventDefault()
+          e.stopPropagation()
+          ctx.setEditingLabel(editKey)
+          ctx.setEditingValue(currentValue)
+        }}
+      >
+        <Settings className="h-3 w-3" />
+      </Button>
+    </div>
+  )
+})
+
 export function CopyForm({ onBack, clientName }: CopyFormProps = {}) {
   const { profile } = useAuth()
   const { checkModulePermission } = useModulePermissions()
@@ -502,114 +611,28 @@ const [isLoading, setIsLoading] = useState(false)
     }
   }
 
-  const getLabel = (fieldKey: string, defaultValue: string) => {
-    return formLabels[fieldKey]?.label_text || defaultValue
-  }
-
-  const getDescription = (fieldKey: string, defaultValue: string) => {
-    return formLabels[fieldKey]?.description_text || defaultValue
-  }
-
-  const getSectionTitle = (fieldKey: string, defaultValue: string) => {
-    return formLabels[fieldKey]?.section_title || defaultValue
-  }
-
-  const getSectionDescription = (fieldKey: string, defaultValue: string) => {
+  const resolveText = (fieldKey: string, field: EditableField, defaultValue: string) => {
+    if (field === 'label_text') {
+      return formLabels[fieldKey]?.label_text || defaultValue
+    }
+    if (field === 'description_text') {
+      return formLabels[fieldKey]?.description_text || defaultValue
+    }
+    if (field === 'section_title') {
+      return formLabels[fieldKey]?.section_title || defaultValue
+    }
     return formLabels[fieldKey]?.section_description || defaultValue
   }
 
-  const EditableText = React.memo(({ 
-    fieldKey, 
-    field, 
-    defaultValue, 
-    className = "", 
-    isTitle = false 
-  }: { 
-    fieldKey: string
-    field: 'label_text' | 'description_text' | 'section_title' | 'section_description'
-    defaultValue: string
-    className?: string
-    isTitle?: boolean
-  }) => {
-    const currentValue = field === 'label_text' ? getLabel(fieldKey, defaultValue) :
-                        field === 'description_text' ? getDescription(fieldKey, defaultValue) :
-                        field === 'section_title' ? getSectionTitle(fieldKey, defaultValue) :
-                        getSectionDescription(fieldKey, defaultValue)
-    
-    const isEditing = editingLabel === `${fieldKey}-${field}`
-    const editKey = `${fieldKey}-${field}`
-    
-    if (!isAdmin) {
-      return isTitle ? <span className={className}>{currentValue}</span> : <p className={className}>{currentValue}</p>
-    }
-
-    if (isEditing) {
-      return (
-        <div className="flex items-center gap-2 flex-1">
-          {isTitle ? (
-            <Input
-              value={editingValue}
-              onChange={(e) => setEditingValue(e.target.value)}
-              className={className}
-              dir="ltr"
-              autoFocus
-            />
-          ) : (
-            <Textarea
-              value={editingValue}
-              onChange={(e) => setEditingValue(e.target.value)}
-              className={`${className} min-h-[60px]`}
-              dir="ltr"
-              autoFocus
-            />
-          )}
-          <Button
-            type="button"
-            size="sm"
-            onClick={() => handleSaveLabel(fieldKey, field)}
-            className="shrink-0"
-          >
-            <Save className="h-4 w-4" />
-          </Button>
-          <Button
-            type="button"
-            size="sm"
-            variant="ghost"
-            onClick={() => setEditingLabel(null)}
-            className="shrink-0"
-          >
-            <X className="h-4 w-4" />
-          </Button>
-        </div>
-      )
-    }
-
-    return (
-      <div className="group flex items-start gap-2 flex-1 relative">
-        <div className="flex-1">
-          {isTitle ? (
-            <span className={className}>{currentValue}</span>
-          ) : (
-            <p className={className}>{currentValue}</p>
-          )}
-        </div>
-        <Button
-          type="button"
-          size="sm"
-          variant="ghost"
-          className="absolute -right-8 top-0 h-6 w-6 p-0 invisible group-hover:visible transition-all"
-          onClick={(e) => {
-            e.preventDefault()
-            e.stopPropagation()
-            setEditingLabel(editKey)
-            setEditingValue(currentValue)
-          }}
-        >
-          <Settings className="h-3 w-3" />
-        </Button>
-      </div>
-    )
-  })
+  const editableTextContextValue: EditableTextContextValue = {
+    isAdmin,
+    editingLabel,
+    editingValue,
+    setEditingLabel,
+    setEditingValue,
+    handleSaveLabel,
+    resolveText,
+  }
 
   const fetchDefaultDocuments = async () => {
     if (!canAccessPrompts) return
@@ -994,7 +1017,8 @@ const [isLoading, setIsLoading] = useState(false)
   }
 
   return (
-    <div>
+    <EditableTextContext.Provider value={editableTextContextValue}>
+      <div>
       {/* Static header — never moves */}
       <div className="space-y-4 mb-6">
         {/* 1) Botão Voltar */}
@@ -2626,6 +2650,7 @@ EX: Mais de 1.000 projetos de placas solares instalados em todo o Rio Grande do 
           )}
         </DialogContent>
       </Dialog>
-    </div>
+      </div>
+    </EditableTextContext.Provider>
   )
 }
