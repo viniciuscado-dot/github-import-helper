@@ -1039,6 +1039,9 @@ const [mainTab, setMainTab] = useState<'onboarding' | 'ongoing'>('onboarding')
         </div>
       </div>
 
+      {/* Timeline estratégica */}
+      <StrategyTimeline currentStage={mainTab === 'onboarding' ? 0 : 1} />
+
       {/* Conteúdo - as mesmas tabs servem tanto para Onboarding quanto Ongoing */}
       {/* Os dados são filtrados automaticamente baseado no mainTab selecionado */}
       <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
