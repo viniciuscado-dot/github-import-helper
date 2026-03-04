@@ -17,9 +17,9 @@ export interface QuickAccessItem {
 }
 
 export const ALL_QUICK_ACCESS_ITEMS: (QuickAccessItem & { Icon: LucideIcon })[] = [
-  { key: "copy", label: "Copy e Estratégia", description: "Criação e gestão de textos", route: "copy", Icon: Copy },
+  { key: "copy", label: "Copy e Estratégia", description: "Criação e gestão de textos", route: "/copy-estrategia", Icon: Copy },
   { key: "aprovacao", label: "Aprovação", description: "Envios, ajustes e aprovações", route: "/aprovacao", Icon: CheckCircle },
-  { key: "analise-bench", label: "Análise e Bench", description: "Análises e benchmarks", route: "analise-bench", Icon: BarChart2 },
+  { key: "analise-bench", label: "Análise e Bench", description: "Análises e benchmarks", route: "/analise-bench", Icon: BarChart2 },
   { key: "planejamento-conteudo", label: "Planejamento de Conteúdo", description: "Calendário e planejamento", route: "/social-media/planejamento", Icon: CalendarDays },
   { key: "varredura", label: "Varredura", description: "Monitoramento social", route: "/social-media/varredura", Icon: Search },
   { key: "central-posts", label: "Central de Posts", description: "Gestão de posts sociais", route: "/social-media/central-posts", Icon: Newspaper },
