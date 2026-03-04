@@ -212,7 +212,7 @@ export function CopyHistoryFull({
                 <TableBody>
                   {paginated.map(briefing => (
                     <TableRow key={briefing.id} className="group">
-                      <TableCell className="font-medium">{briefing.nome_empresa || 'Sem nome'}</TableCell>
+                      <TableCell className="font-medium">{briefing.nomes_empresas || briefing.nome_empresa || 'Sem nome'}</TableCell>
                       <TableCell>
                         <Badge variant="outline" className="text-xs capitalize">
                           {briefing.copy_type || '—'}

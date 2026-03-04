@@ -74,7 +74,7 @@ export function CopyDetailDialog({ copy, open, onOpenChange }: CopyDetailDialogP
             <div className="space-y-2">
               <DialogTitle className="flex items-center gap-2 text-xl">
                 <Building2 className="h-5 w-5 text-muted-foreground" />
-                {copy.nome_empresa || 'Sem nome'}
+                {copy.nomes_empresas || copy.nome_empresa || 'Sem nome'}
               </DialogTitle>
               <div className="flex items-center gap-3 text-sm text-muted-foreground">
                 <span className="flex items-center gap-1">
