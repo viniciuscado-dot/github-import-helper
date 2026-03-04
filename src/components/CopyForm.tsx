@@ -36,6 +36,18 @@ import { CopyHistoryFull } from '@/components/copy/CopyHistoryFull';
 import { MarkdownRenderer } from '@/components/ui/markdown-renderer';
 import { StrategyTimeline, STRATEGY_STAGES } from '@/components/copy/StrategyTimeline';
 
+const PLATFORM_OPTIONS = [
+  { value: "meta_ads", label: "Meta Ads" },
+  { value: "google_ads", label: "Google Ads" },
+  { value: "tiktok_ads", label: "TikTok Ads" },
+  { value: "linkedin_ads", label: "LinkedIn Ads" },
+  { value: "youtube_ads", label: "YouTube Ads" },
+  { value: "pinterest_ads", label: "Pinterest Ads" },
+  { value: "twitter_ads", label: "X (Twitter) Ads" },
+  { value: "taboola", label: "Taboola" },
+  { value: "organico", label: "Orgânico" },
+];
+
 const copyFormSchema = z.object({
   // Transcrições das reuniões
   reuniao_boas_vindas: z.string().optional(),
@@ -143,6 +155,10 @@ const [isLoading, setIsLoading] = useState(false)
   const mainTab = STRATEGY_STAGES[currentPhase]?.id ?? 'onboarding'
   const [activeTab, setActiveTab] = useState<string>('form')
   const [materialType, setMaterialType] = useState<'criativos' | 'roteiros' | 'landing'>('criativos')
+  
+  // Estados para objetivo e plataformas
+  const [projectObjective, setProjectObjective] = useState('')
+  const [selectedPlatforms, setSelectedPlatforms] = useState<string[]>([])
   const fetchSeqRef = useRef(0) // evita condição de corrida entre abas
 
   // Verificações de permissão
@@ -991,6 +1007,53 @@ const [isLoading, setIsLoading] = useState(false)
               Cliente: <span className="font-medium text-foreground">{clientName}</span>
             </p>
           )}
+        </div>
+
+        {/* 2.5) Objetivo do projeto + Plataformas */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="space-y-1.5">
+            <label htmlFor="objetivo-projeto" className="text-sm font-medium text-foreground">
+              Objetivo do projeto
+            </label>
+            <Textarea
+              id="objetivo-projeto"
+              placeholder="Ex: Gerar leads qualificados para consultoria financeira..."
+              value={projectObjective}
+              onChange={(e) => setProjectObjective(e.target.value)}
+              className="min-h-[72px] resize-none bg-muted/30 border-border/50 focus:border-primary/50"
+            />
+          </div>
+          <div className="space-y-1.5">
+            <label className="text-sm font-medium text-foreground">
+              Plataformas de anúncio
+            </label>
+            <div className="flex flex-wrap gap-2 p-3 rounded-md border border-border/50 bg-muted/30 min-h-[72px] items-start content-start">
+              {PLATFORM_OPTIONS.map((platform) => {
+                const isSelected = selectedPlatforms.includes(platform.value);
+                return (
+                  <button
+                    key={platform.value}
+                    type="button"
+                    onClick={() => {
+                      setSelectedPlatforms(prev =>
+                        isSelected
+                          ? prev.filter(p => p !== platform.value)
+                          : [...prev, platform.value]
+                      );
+                    }}
+                    className={cn(
+                      "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-200 border",
+                      isSelected
+                        ? "bg-primary text-primary-foreground border-primary/50 shadow-sm"
+                        : "bg-background text-muted-foreground border-border hover:bg-accent hover:text-accent-foreground"
+                    )}
+                  >
+                    {platform.label}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
         </div>
 
         {/* 3) Menu de fases (timeline clicável) */}
