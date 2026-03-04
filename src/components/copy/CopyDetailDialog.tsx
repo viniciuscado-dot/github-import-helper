@@ -30,25 +30,19 @@ interface CopyDetailDialogProps {
   onRegenerate?: (copyId: string, instruction: string) => Promise<void>;
 }
 
-function exportMarkdownTableToExcel(content: string, fileName: string) {
-  const lines = content.split('\n');
-  const data: string[][] = [];
-  
-  lines.forEach(line => {
-    if (line.startsWith('|') && !line.match(/^\|[\s-|]+\|$/)) {
-      const cells = line.split('|').filter((_, i, arr) => i > 0 && i < arr.length - 1).map(c => c.trim());
-      data.push(cells);
-    }
-  });
-
-  if (data.length === 0) {
-    data.push([content]);
-  }
-  
-  const ws = XLSX.utils.aoa_to_sheet(data);
-  const wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, ws, 'Copy');
-  XLSX.writeFile(wb, `${fileName}.xlsx`);
+function exportMarkdownToWord(content: string, fileName: string) {
+  const html = `
+    <html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40">
+    <head><meta charset="utf-8"><title>${fileName}</title></head>
+    <body style="font-family: Calibri, sans-serif; font-size: 11pt;">${content.replace(/\n/g, '<br>')}</body>
+    </html>`;
+  const blob = new Blob([html], { type: 'application/msword' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `${fileName}.doc`;
+  a.click();
+  URL.revokeObjectURL(url);
 }
 
 export function CopyDetailDialog({ copy, open, onOpenChange, onRegenerate }: CopyDetailDialogProps) {
