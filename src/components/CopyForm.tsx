@@ -1481,9 +1481,9 @@ const [isLoading, setIsLoading] = useState(false)
                       name="nomes_empresas"
                       render={({ field }) => {
                         return (
-                          <FormItem>
+                          <FormItem className="space-y-1">
                             <FormLabel className="font-semibold">Campanha</FormLabel>
-                            <p className="text-sm text-muted-foreground/70 mb-2">Nome da campanha (aparecerá nos resultados).</p>
+                            <p className="text-sm text-muted-foreground/70">Nome da campanha — aparecerá nos resultados.</p>
                             <FormControl>
                               <Input 
                                 placeholder="Ex: Black Friday 2026"
