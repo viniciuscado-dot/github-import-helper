@@ -595,10 +595,15 @@ const [isLoading, setIsLoading] = useState(false)
 
       const { error } = await supabase
         .from('briefing_form_labels')
-        .upsert({
-          field_key: fieldKey,
-          ...updateData
-        })
+        .upsert(
+          {
+            field_key: fieldKey,
+            ...updateData,
+          },
+          {
+            onConflict: 'field_key',
+          }
+        )
 
       if (error) throw error
 
