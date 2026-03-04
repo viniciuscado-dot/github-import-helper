@@ -143,6 +143,10 @@ const [isLoading, setIsLoading] = useState(false)
   const mainTab = STRATEGY_STAGES[currentPhase]?.id ?? 'onboarding'
   const [activeTab, setActiveTab] = useState<string>('form')
   const [materialType, setMaterialType] = useState<'criativos' | 'roteiros' | 'landing'>('criativos')
+  
+  // Estados para objetivo e plataformas
+  const [projectObjective, setProjectObjective] = useState('')
+  const [selectedPlatforms, setSelectedPlatforms] = useState<string[]>([])
   const fetchSeqRef = useRef(0) // evita condição de corrida entre abas
 
   // Verificações de permissão
