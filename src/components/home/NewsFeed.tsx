@@ -64,7 +64,7 @@ export function NewsFeed() {
       {/* Header row */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 mb-4">
         <div>
-          <h2 className="text-base font-semibold text-foreground">Tendências e Notícias</h2>
+          <h2 className="text-base font-semibold text-foreground">Notícias e Conteúdos</h2>
           <p className="text-xs text-muted-foreground">Marketing, publicidade e negócios.</p>
         </div>
 
