@@ -103,13 +103,30 @@ interface RawItem {
   category: string;
 }
 
+async function fetchOgImage(url: string): Promise<string> {
+  try {
+    const res = await fetch(url, {
+      headers: { 'User-Agent': 'DOT-News-Bot/1.0' },
+      redirect: 'follow',
+    });
+    if (!res.ok) return '';
+    const html = await res.text();
+    // og:image
+    const og = html.match(/<meta[^>]+property=["']og:image["'][^>]+content=["']([^"']+)["']/i)
+      || html.match(/<meta[^>]+content=["']([^"']+)["'][^>]+property=["']og:image["']/i);
+    return og ? og[1] : '';
+  } catch {
+    return '';
+  }
+}
+
 async function fetchFeed(url: string, source: string, lang: string): Promise<RawItem[]> {
   try {
     const res = await fetch(url, { headers: { 'User-Agent': 'DOT-News-Bot/1.0' } });
     if (!res.ok) return [];
     const xml = await res.text();
     const blocks = xml.split(/<item>/i).slice(1);
-    return blocks.map(block => {
+    const items = blocks.map(block => {
       const itemXml = block.split(/<\/item>/i)[0];
       const title = stripHtml(extractTag(itemXml, 'title'));
       const description = stripHtml(extractTag(itemXml, 'description')).substring(0, 300);
@@ -124,6 +141,16 @@ async function fetchFeed(url: string, source: string, lang: string): Promise<Raw
         category: categorize(title, description),
       };
     }).filter(i => i.title && i.link);
+
+    // For items missing images, try fetching og:image (limit to 5 to avoid slowdown)
+    const noImage = items.filter(i => !i.image);
+    const toFetch = noImage.slice(0, 5);
+    await Promise.all(toFetch.map(async (item) => {
+      const ogImg = await fetchOgImage(item.link);
+      if (ogImg) item.image = ogImg;
+    }));
+
+    return items;
   } catch {
     return [];
   }
@@ -160,7 +187,16 @@ serve(async (req) => {
       return db - da;
     });
 
-    const items = combined.slice(0, 30).map(({ lang, ...rest }) => rest);
+    let items = combined.slice(0, 30).map(({ lang, ...rest }) => rest);
+
+    // Second pass: fetch og:image for top items still missing images (up to 5)
+    const missingImg = items.filter(i => !i.image).slice(0, 5);
+    if (missingImg.length > 0) {
+      await Promise.all(missingImg.map(async (item) => {
+        const ogImg = await fetchOgImage(item.link);
+        if (ogImg) item.image = ogImg;
+      }));
+    }
 
     return new Response(JSON.stringify({ items }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
