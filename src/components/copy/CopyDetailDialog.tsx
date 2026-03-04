@@ -68,7 +68,7 @@ export function CopyDetailDialog({ copy, open, onOpenChange }: CopyDetailDialogP
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-4xl max-h-[85vh] overflow-y-auto">
+      <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto">
         <DialogHeader className="pb-4 border-b border-border/50">
           <div className="flex items-start justify-between gap-4">
             <div className="space-y-2">
