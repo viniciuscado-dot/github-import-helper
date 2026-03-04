@@ -2044,7 +2044,7 @@ EX: Mais de 1.000 projetos de placas solares instalados em todo o Rio Grande do 
 
         {/* Aba de Histórico */}
         {canViewHistory && (
-          <TabsContent value="history" className="space-y-6">
+          <TabsContent value="history" className="space-y-6 w-full">
             {showFullHistory ? (
               <CopyHistoryFull
                 briefings={briefingHistory}

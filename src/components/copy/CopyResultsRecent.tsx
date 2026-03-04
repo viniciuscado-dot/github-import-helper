@@ -45,7 +45,7 @@ export function CopyResultsRecent({ briefings, onView, onViewHistory, isEmpty }:
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8 w-full">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
@@ -78,7 +78,7 @@ export function CopyResultsRecent({ briefings, onView, onViewHistory, isEmpty }:
             <Clock className="h-4 w-4 text-muted-foreground" />
             <span className="text-sm font-medium text-muted-foreground">Resultados recentes</span>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
             {recentBriefings.map((briefing) => (
               <Card
                 key={briefing.id}
@@ -91,7 +91,7 @@ export function CopyResultsRecent({ briefings, onView, onViewHistory, isEmpty }:
                 {/* Subtle top accent */}
                 <div className="absolute top-0 left-0 right-0 h-[2px] bg-gradient-to-r from-primary/40 via-primary/60 to-primary/40 opacity-0 group-hover:opacity-100 transition-opacity" />
 
-                <CardContent className="p-5">
+                <CardContent className="p-6">
                   <div className="flex items-start justify-between gap-3">
                     <div className="flex-1 min-w-0 space-y-3">
                       {/* Client & badges */}
