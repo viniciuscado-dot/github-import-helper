@@ -2,13 +2,12 @@ import { useState } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
-import { Copy, FileSpreadsheet, ChevronDown, ChevronRight, Building2, Calendar, Sparkles } from 'lucide-react';
+import { Copy, FileSpreadsheet, ChevronDown, ChevronRight, Building2, Calendar, Sparkles, RefreshCw, Loader2, Send } from 'lucide-react';
 import { MarkdownRenderer } from '@/components/ui/markdown-renderer';
 import { format } from 'date-fns';
 import { ptBR } from 'date-fns/locale';
-import ReactMarkdown from 'react-markdown';
-import remarkGfm from 'remark-gfm';
 import * as XLSX from 'xlsx';
 
 interface CopyFormRecord {
@@ -29,6 +28,7 @@ interface CopyDetailDialogProps {
   copy: CopyFormRecord | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  onRegenerate?: (copyId: string, instruction: string) => Promise<void>;
 }
 
 function exportMarkdownTableToExcel(content: string, fileName: string) {
@@ -52,8 +52,11 @@ function exportMarkdownTableToExcel(content: string, fileName: string) {
   XLSX.writeFile(wb, `${fileName}.xlsx`);
 }
 
-export function CopyDetailDialog({ copy, open, onOpenChange }: CopyDetailDialogProps) {
+export function CopyDetailDialog({ copy, open, onOpenChange, onRegenerate }: CopyDetailDialogProps) {
   const [expandedSections, setExpandedSections] = useState<Set<number>>(new Set([0]));
+  const [showRegenerateInput, setShowRegenerateInput] = useState(false);
+  const [regenerateInstruction, setRegenerateInstruction] = useState('');
+  const [isRegenerating, setIsRegenerating] = useState(false);
 
   if (!copy) return null;
 
@@ -66,8 +69,33 @@ export function CopyDetailDialog({ copy, open, onOpenChange }: CopyDetailDialogP
     setExpandedSections(next);
   };
 
+  const handleRegenerate = async () => {
+    if (!regenerateInstruction.trim()) {
+      toast.error('Informe a instrução para a nova versão');
+      return;
+    }
+    if (!onRegenerate) return;
+
+    setIsRegenerating(true);
+    try {
+      await onRegenerate(copy.id, regenerateInstruction.trim());
+      setShowRegenerateInput(false);
+      setRegenerateInstruction('');
+    } catch {
+      // error handled by parent
+    } finally {
+      setIsRegenerating(false);
+    }
+  };
+
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={(v) => {
+      if (!v) {
+        setShowRegenerateInput(false);
+        setRegenerateInstruction('');
+      }
+      onOpenChange(v);
+    }}>
       <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto">
         <DialogHeader className="pb-4 border-b border-border/50">
           <div className="flex items-start justify-between gap-4">
@@ -91,6 +119,60 @@ export function CopyDetailDialog({ copy, open, onOpenChange }: CopyDetailDialogP
             </div>
           </div>
         </DialogHeader>
+
+        {/* Regenerate section */}
+        {onRegenerate && copy.status === 'completed' && (
+          <div className="pt-2">
+            {!showRegenerateInput ? (
+              <Button
+                variant="outline"
+                size="sm"
+                className="gap-2"
+                onClick={() => setShowRegenerateInput(true)}
+              >
+                <RefreshCw className="h-3.5 w-3.5" />
+                Gerar nova versão
+              </Button>
+            ) : (
+              <div className="space-y-3 rounded-lg border border-border/60 p-4 bg-muted/20">
+                <p className="text-sm font-medium text-foreground">Instrução para nova versão</p>
+                <Textarea
+                  placeholder="Ex: Ajustar tom para ser mais formal, incluir mais dados numéricos, focar em outro diferencial..."
+                  value={regenerateInstruction}
+                  onChange={(e) => setRegenerateInstruction(e.target.value)}
+                  className="min-h-[80px] resize-none"
+                  dir="ltr"
+                />
+                <div className="flex items-center gap-2">
+                  <Button
+                    size="sm"
+                    onClick={handleRegenerate}
+                    disabled={isRegenerating || !regenerateInstruction.trim()}
+                    className="gap-2"
+                  >
+                    {isRegenerating ? (
+                      <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                    ) : (
+                      <Send className="h-3.5 w-3.5" />
+                    )}
+                    {isRegenerating ? 'Gerando...' : 'Gerar'}
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    onClick={() => {
+                      setShowRegenerateInput(false);
+                      setRegenerateInstruction('');
+                    }}
+                    disabled={isRegenerating}
+                  >
+                    Cancelar
+                  </Button>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
 
         {copies.length === 0 ? (
           <div className="text-center py-12 text-muted-foreground">

@@ -2399,6 +2399,44 @@ EX: Mais de 1.000 projetos de placas solares instalados em todo o Rio Grande do 
         copy={viewingCopy}
         open={!!viewingCopy}
         onOpenChange={() => setViewingCopy(null)}
+        onRegenerate={async (copyId, instruction) => {
+          try {
+            const { data, error } = await supabase
+              .functions
+              .invoke('generate-copy-ai', {
+                body: {
+                  copyFormId: copyId,
+                  newCopyContext: instruction,
+                  appendToExisting: true,
+                }
+              });
+
+            if (error) throw error;
+
+            toast.success("Nova versão gerada com sucesso!");
+            fetchBriefingHistory();
+
+            // Refresh the viewing copy with updated data
+            const { data: updated } = await supabase
+              .from('copy_forms')
+              .select('*')
+              .eq('id', copyId)
+              .single();
+
+            if (updated) {
+              const { data: profileData } = await supabase
+                .from('profiles')
+                .select('name, email')
+                .eq('id', updated.created_by)
+                .single();
+              setViewingCopy({ ...updated, profiles: profileData || { name: 'Usuário desconhecido', email: '' } });
+            }
+          } catch (error) {
+            console.error('Erro ao regenerar copy:', error);
+            toast.error("Erro ao gerar nova versão");
+            throw error;
+          }
+        }}
       />
 
       {/* Dialog para editar prompt */}
