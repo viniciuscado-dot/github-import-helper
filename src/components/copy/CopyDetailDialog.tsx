@@ -54,6 +54,7 @@ export function CopyDetailDialog({ copy, open, onOpenChange, onRegenerate }: Cop
   if (!copy) return null;
 
   const copies = copy.ai_response ? copy.ai_response.split('\n\n=== NOVA COPY ===\n\n') : [];
+  const reversedCopies = [...copies].reverse();
 
   const toggleSection = (index: number) => {
     const next = new Set(expandedSections);
