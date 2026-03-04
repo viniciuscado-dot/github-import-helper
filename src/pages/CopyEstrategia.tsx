@@ -1,6 +1,6 @@
 import { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Search, CalendarIcon } from "lucide-react";
+import { ArrowLeft, Search, CalendarIcon, X } from "lucide-react";
 import { format, parse } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { cn } from "@/lib/utils";
@@ -203,6 +203,19 @@ export default function CopyEstrategia() {
                     />
                   </PopoverContent>
                 </Popover>
+
+                {/* Reset filters */}
+                {(search || squadFilter !== "all" || startDate || endDate) && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() => { setSearch(""); setSquadFilter("all"); setStartDate(undefined); setEndDate(undefined); }}
+                    className="gap-1.5 text-muted-foreground hover:text-destructive h-10 whitespace-nowrap"
+                  >
+                    <X className="h-3.5 w-3.5" />
+                    Limpar filtros
+                  </Button>
+                )}
               </div>
 
               {/* Client cards grid */}
