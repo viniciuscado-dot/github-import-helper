@@ -394,6 +394,7 @@ const [isLoading, setIsLoading] = useState(false)
           created_by,
           status,
           nome_empresa,
+          nomes_empresas,
           document_files,
           ai_response,
           ai_provider,
