@@ -164,6 +164,7 @@ async function fetchFeed(url: string, source: string, lang: string): Promise<Raw
   } catch (err) {
     console.error(`Feed ${source} error:`, err);
     return [];
+  }
 }
 
 serve(async (req) => {
