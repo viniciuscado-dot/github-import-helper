@@ -36,6 +36,18 @@ import { CopyHistoryFull } from '@/components/copy/CopyHistoryFull';
 import { MarkdownRenderer } from '@/components/ui/markdown-renderer';
 import { StrategyTimeline, STRATEGY_STAGES } from '@/components/copy/StrategyTimeline';
 
+const PLATFORM_OPTIONS = [
+  { value: "meta_ads", label: "Meta Ads" },
+  { value: "google_ads", label: "Google Ads" },
+  { value: "tiktok_ads", label: "TikTok Ads" },
+  { value: "linkedin_ads", label: "LinkedIn Ads" },
+  { value: "youtube_ads", label: "YouTube Ads" },
+  { value: "pinterest_ads", label: "Pinterest Ads" },
+  { value: "twitter_ads", label: "X (Twitter) Ads" },
+  { value: "taboola", label: "Taboola" },
+  { value: "organico", label: "Orgânico" },
+];
+
 const copyFormSchema = z.object({
   // Transcrições das reuniões
   reuniao_boas_vindas: z.string().optional(),
