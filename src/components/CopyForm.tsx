@@ -422,34 +422,9 @@ const [isLoading, setIsLoading] = useState(false)
     }
   }
 
-  // Buscar clientes ativos do CRM
-  const fetchCRMClients = async () => {
-    try {
-      const { data, error } = await supabase
-        .from('crm_cards')
-        .select('id, company_name, title')
-        .order('company_name', { ascending: true })
-      
-      if (error) throw error
-      
-      // Filtrar apenas empresas com nome válido e remover duplicatas
-      const uniqueCompanies = Array.from(
-        new Map(
-          (data || [])
-            .filter(card => card.company_name && card.company_name.trim() !== '')
-            .map(card => [card.company_name, card])
-        ).values()
-      )
-      
-      setCrmClients(uniqueCompanies)
-    } catch (error) {
-      console.error('Erro ao buscar clientes do CRM:', error)
-    }
-  }
-
   // Carregar histórico quando componente monta ou mainTab muda
   useEffect(() => {
-    // Limpar estados ao trocar de aba para evitar mostrar dados da aba anterior
+    // Limpar estados ao trocar de fase para evitar mostrar dados da fase anterior
     setBriefingHistory([])
     setDefaultDocuments([])
     setDefaultPrompts([])
@@ -464,9 +439,7 @@ const [isLoading, setIsLoading] = useState(false)
     }
     // Carregar labels customizados
     fetchFormLabels()
-    // Carregar clientes do CRM
-    fetchCRMClients()
-  }, [canViewHistory, isAdmin, mainTab]) // Adiciona mainTab às dependências
+  }, [canViewHistory, isAdmin, mainTab]) // mainTab deriva de currentPhase
 
   const fetchFormLabels = async () => {
     try {
