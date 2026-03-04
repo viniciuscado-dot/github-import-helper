@@ -40,7 +40,7 @@ export function AppSidebar({ activeView, onViewChange }: AppSidebarProps) {
   const [openModulesDialog, setOpenModulesDialog] = useState(false)
 
   const criacaoSubmenu = useMemo(() => [
-    { id: 'copy', title: 'Copy', view: 'copy' as const, icon: Copy },
+    { id: 'copy', title: 'Copy e Estratégia', icon: Copy, route: '/copy-estrategia' },
     { id: 'aprovacao', title: 'Aprovação', view: 'aprovacao' as const, icon: CheckCircle, route: '/aprovacao' },
     { id: 'analise-bench', title: 'Análise e Bench', view: 'analise-bench' as const, icon: BarChart2 },
     { id: 'anuncios', title: 'Anúncios', view: 'anuncios' as const, icon: Megaphone, route: '/performance/anuncios' },
@@ -196,7 +196,9 @@ export function AppSidebar({ activeView, onViewChange }: AppSidebarProps) {
           <SidebarGroupContent>
             <SidebarMenu>
               {criacaoSubmenu.map((subItem) => {
-                const isSubActive = subItem.route ? location.pathname === subItem.route : activeView === subItem.view;
+                const isSubActive = subItem.route 
+                  ? (location.pathname === subItem.route || (subItem.id === 'copy' && activeView === 'copy'))
+                  : activeView === subItem.view;
                 return (
                   <SidebarMenuItem key={subItem.id}>
                     {renderMenuItem(

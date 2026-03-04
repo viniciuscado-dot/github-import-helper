@@ -28,6 +28,7 @@ import AprovacaoCliente from "./pages/AprovacaoCliente";
 const Anuncios = lazy(() => import("./pages/Anuncios"));
 const AnaliseArtefato = lazy(() => import("./pages/AnaliseArtefato"));
 const AnaliseBenchResultado = lazy(() => import("./pages/AnaliseBenchResultado"));
+const CopyEstrategia = lazy(() => import("./pages/CopyEstrategia"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -89,6 +90,15 @@ const App = () => (
                 <ProtectedRoute>
                   <Suspense fallback={<DashboardFallback />}>
                     <AnaliseBenchResultado />
+                  </Suspense>
+                </ProtectedRoute>
+              } />
+
+              {/* ── Copy e Estratégia ── */}
+              <Route path="/copy-estrategia" element={
+                <ProtectedRoute>
+                  <Suspense fallback={<DashboardFallback />}>
+                    <CopyEstrategia />
                   </Suspense>
                 </ProtectedRoute>
               } />
