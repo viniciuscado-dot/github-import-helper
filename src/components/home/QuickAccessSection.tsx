@@ -24,10 +24,19 @@ export function QuickAccessSection({ onNavigate }: QuickAccessSectionProps) {
   const [modalOpen, setModalOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
 
+  // Normalize stored items to always use latest labels/descriptions from master list
+  const normalizeItems = (stored: QuickAccessItem[]): QuickAccessItem[] =>
+    stored.map((item) => {
+      const master = ALL_QUICK_ACCESS_ITEMS.find((m) => m.key === item.key);
+      return master
+        ? { key: master.key, label: master.label, description: master.description, route: master.route }
+        : item;
+    });
+
   const loadPreferences = async () => {
     if (!user) {
       const stored = localStorage.getItem("quick_access");
-      setItems(stored ? JSON.parse(stored) : []);
+      setItems(stored ? normalizeItems(JSON.parse(stored)) : []);
       setLoading(false);
       return;
     }
@@ -38,11 +47,11 @@ export function QuickAccessSection({ onNavigate }: QuickAccessSectionProps) {
         .eq("user_id", user.id)
         .maybeSingle();
       if (data?.quick_access) {
-        setItems(data.quick_access as QuickAccessItem[]);
+        setItems(normalizeItems(data.quick_access as QuickAccessItem[]));
       }
     } catch {
       const stored = localStorage.getItem("quick_access");
-      if (stored) setItems(JSON.parse(stored));
+      if (stored) setItems(normalizeItems(JSON.parse(stored)));
     } finally {
       setLoading(false);
     }
