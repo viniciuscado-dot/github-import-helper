@@ -1092,16 +1092,40 @@ const [isLoading, setIsLoading] = useState(false)
           </div>
         </div>
 
-        {/* 2.7) Seletor de tipo de material */}
-        <div className="space-y-1.5">
-          <label className="text-sm font-medium text-foreground">
-            Materiais a gerar
-          </label>
-          <div className="flex flex-wrap gap-2">
+        {/* 3) Menu de fases (timeline clicável) */}
+        <StrategyTimeline currentStage={currentPhase} onStageClick={setCurrentPhase} />
+      </div>
+
+      {/* 4) Abas + seletor de materiais na mesma linha */}
+      <Tabs value={activeTab} onValueChange={setActiveTab}>
+        <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
+          <TabsList>
+            <TabsTrigger value="form" className="flex items-center gap-2">
+              <FileText className="h-4 w-4" />
+              Formulário
+            </TabsTrigger>
+            
+            {canViewHistory && (
+              <TabsTrigger value="history" className="flex items-center gap-2">
+                <Sparkles className="h-4 w-4" />
+                Resultados
+              </TabsTrigger>
+            )}
+            
+            {canAccessPrompts && (
+              <TabsTrigger value="prompts" className="flex items-center gap-2">
+                <Settings className="h-4 w-4" />
+                Prompts
+              </TabsTrigger>
+            )}
+          </TabsList>
+
+          <div className="flex items-center gap-2">
+            <span className="text-sm font-medium text-muted-foreground whitespace-nowrap">Gerar:</span>
             {[
-              { value: 'criativos', label: 'Criativos', icon: '🎨' },
-              { value: 'roteiro_video', label: 'Roteiro de Vídeo', icon: '🎬' },
-              { value: 'landing_page', label: 'Landing Page', icon: '🌐' },
+              { value: 'criativos', label: 'Criativos' },
+              { value: 'roteiro_video', label: 'Roteiros de Vídeo' },
+              { value: 'landing_page', label: 'Landing Page' },
             ].map((mat) => {
               const isSelected = selectedMaterialTypes.includes(mat.value);
               return (
@@ -1116,46 +1140,18 @@ const [isLoading, setIsLoading] = useState(false)
                     );
                   }}
                   className={cn(
-                    "inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 border",
+                    "inline-flex items-center px-3 py-1.5 rounded-md text-xs font-medium transition-all duration-200 border",
                     isSelected
                       ? "bg-primary text-primary-foreground border-primary/50 shadow-sm"
                       : "bg-background text-muted-foreground border-border hover:bg-accent hover:text-accent-foreground"
                   )}
                 >
-                  <span>{mat.icon}</span>
                   {mat.label}
                 </button>
               );
             })}
           </div>
         </div>
-
-        {/* 3) Menu de fases (timeline clicável) */}
-        <StrategyTimeline currentStage={currentPhase} onStageClick={setCurrentPhase} />
-      </div>
-
-      {/* 4) Abas — TabsList is static, only TabsContent changes */}
-      <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="mb-6">
-          <TabsTrigger value="form" className="flex items-center gap-2">
-            <FileText className="h-4 w-4" />
-            Formulário
-          </TabsTrigger>
-          
-          {canViewHistory && (
-            <TabsTrigger value="history" className="flex items-center gap-2">
-              <Sparkles className="h-4 w-4" />
-              Resultados
-            </TabsTrigger>
-          )}
-          
-          {canAccessPrompts && (
-            <TabsTrigger value="prompts" className="flex items-center gap-2">
-              <Settings className="h-4 w-4" />
-              Prompts
-            </TabsTrigger>
-          )}
-        </TabsList>
 
         <TabsContent value="form" className="space-y-6">
           <Form {...form}>
