@@ -1092,6 +1092,44 @@ const [isLoading, setIsLoading] = useState(false)
           </div>
         </div>
 
+        {/* 2.7) Seletor de tipo de material */}
+        <div className="space-y-1.5">
+          <label className="text-sm font-medium text-foreground">
+            Materiais a gerar
+          </label>
+          <div className="flex flex-wrap gap-2">
+            {[
+              { value: 'criativos', label: 'Criativos', icon: '🎨' },
+              { value: 'roteiro_video', label: 'Roteiro de Vídeo', icon: '🎬' },
+              { value: 'landing_page', label: 'Landing Page', icon: '🌐' },
+            ].map((mat) => {
+              const isSelected = selectedMaterialTypes.includes(mat.value);
+              return (
+                <button
+                  key={mat.value}
+                  type="button"
+                  onClick={() => {
+                    setSelectedMaterialTypes(prev =>
+                      isSelected
+                        ? prev.filter(m => m !== mat.value)
+                        : [...prev, mat.value]
+                    );
+                  }}
+                  className={cn(
+                    "inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition-all duration-200 border",
+                    isSelected
+                      ? "bg-primary text-primary-foreground border-primary/50 shadow-sm"
+                      : "bg-background text-muted-foreground border-border hover:bg-accent hover:text-accent-foreground"
+                  )}
+                >
+                  <span>{mat.icon}</span>
+                  {mat.label}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
         {/* 3) Menu de fases (timeline clicável) */}
         <StrategyTimeline currentStage={currentPhase} onStageClick={setCurrentPhase} />
       </div>
