@@ -97,6 +97,115 @@ interface CopyFormProps {
   clientName?: string
 }
 
+type EditableField = 'label_text' | 'description_text' | 'section_title' | 'section_description'
+
+interface EditableTextContextValue {
+  isAdmin: boolean
+  editingLabel: string | null
+  editingValue: string
+  setEditingLabel: (value: string | null) => void
+  setEditingValue: (value: string) => void
+  handleSaveLabel: (fieldKey: string, field: EditableField) => Promise<void>
+  resolveText: (fieldKey: string, field: EditableField, defaultValue: string) => string
+}
+
+const EditableTextContext = React.createContext<EditableTextContextValue | null>(null)
+
+const EditableText = React.memo(({
+  fieldKey,
+  field,
+  defaultValue,
+  className = "",
+  isTitle = false,
+}: {
+  fieldKey: string
+  field: EditableField
+  defaultValue: string
+  className?: string
+  isTitle?: boolean
+}) => {
+  const ctx = React.useContext(EditableTextContext)
+
+  if (!ctx) {
+    return isTitle ? <span className={className}>{defaultValue}</span> : <p className={className}>{defaultValue}</p>
+  }
+
+  const currentValue = ctx.resolveText(fieldKey, field, defaultValue)
+  const isEditing = ctx.editingLabel === `${fieldKey}-${field}`
+  const editKey = `${fieldKey}-${field}`
+
+  if (!ctx.isAdmin) {
+    return isTitle ? <span className={className}>{currentValue}</span> : <p className={className}>{currentValue}</p>
+  }
+
+  if (isEditing) {
+    return (
+      <div className="flex items-center gap-2 flex-1">
+        {isTitle ? (
+          <Input
+            value={ctx.editingValue}
+            onChange={(e) => ctx.setEditingValue(e.target.value)}
+            className={cn(className, "text-left")}
+            dir="ltr"
+            autoFocus
+          />
+        ) : (
+          <Textarea
+            value={ctx.editingValue}
+            onChange={(e) => ctx.setEditingValue(e.target.value)}
+            className={cn(className, "min-h-[60px] text-left")}
+            dir="ltr"
+            autoFocus
+          />
+        )}
+        <Button
+          type="button"
+          size="sm"
+          onClick={() => void ctx.handleSaveLabel(fieldKey, field)}
+          className="shrink-0"
+        >
+          <Save className="h-4 w-4" />
+        </Button>
+        <Button
+          type="button"
+          size="sm"
+          variant="ghost"
+          onClick={() => ctx.setEditingLabel(null)}
+          className="shrink-0"
+        >
+          <X className="h-4 w-4" />
+        </Button>
+      </div>
+    )
+  }
+
+  return (
+    <div className="group flex items-start gap-2 flex-1 relative">
+      <div className="flex-1">
+        {isTitle ? (
+          <span className={className}>{currentValue}</span>
+        ) : (
+          <p className={className}>{currentValue}</p>
+        )}
+      </div>
+      <Button
+        type="button"
+        size="sm"
+        variant="ghost"
+        className="absolute -right-8 top-0 h-6 w-6 p-0 invisible group-hover:visible transition-all"
+        onClick={(e) => {
+          e.preventDefault()
+          e.stopPropagation()
+          ctx.setEditingLabel(editKey)
+          ctx.setEditingValue(currentValue)
+        }}
+      >
+        <Settings className="h-3 w-3" />
+      </Button>
+    </div>
+  )
+})
+
 export function CopyForm({ onBack, clientName }: CopyFormProps = {}) {
   const { profile } = useAuth()
   const { checkModulePermission } = useModulePermissions()
