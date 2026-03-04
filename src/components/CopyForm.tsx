@@ -974,29 +974,32 @@ const [isLoading, setIsLoading] = useState(false)
   }
 
   return (
-    <div className="space-y-6">
-      {/* 1) Botão Voltar */}
-      <Button variant="ghost" size="sm" onClick={() => window.location.href = '/copy-estrategia'} className="gap-1.5 text-muted-foreground hover:text-foreground -ml-2">
-        <ArrowLeft className="h-4 w-4" />
-        Voltar
-      </Button>
+    <div>
+      {/* Static header — never moves */}
+      <div className="space-y-4 mb-6">
+        {/* 1) Botão Voltar */}
+        <Button variant="ghost" size="sm" onClick={() => window.location.href = '/copy-estrategia'} className="gap-1.5 text-muted-foreground hover:text-foreground -ml-2">
+          <ArrowLeft className="h-4 w-4" />
+          Voltar
+        </Button>
 
-      {/* 2) Título */}
-      <div>
-        <h1 className="text-2xl font-bold text-foreground">Gerador de Copy</h1>
-        {clientName && (
-          <p className="text-muted-foreground text-sm mt-0.5">
-            Cliente: <span className="font-medium text-foreground">{clientName}</span>
-          </p>
-        )}
+        {/* 2) Título */}
+        <div>
+          <h1 className="text-2xl font-bold text-foreground">Gerador de Copy</h1>
+          {clientName && (
+            <p className="text-muted-foreground text-sm mt-0.5">
+              Cliente: <span className="font-medium text-foreground">{clientName}</span>
+            </p>
+          )}
+        </div>
+
+        {/* 3) Menu de fases (timeline clicável) */}
+        <StrategyTimeline currentStage={currentPhase} onStageClick={setCurrentPhase} />
       </div>
 
-      {/* 3) Menu de fases (timeline clicável) */}
-      <StrategyTimeline currentStage={currentPhase} onStageClick={setCurrentPhase} />
-
-      {/* 4) Abas da fase (Formulário / Resultados / Prompts) */}
-      <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-4">
-        <TabsList>
+      {/* 4) Abas — TabsList is static, only TabsContent changes */}
+      <Tabs value={activeTab} onValueChange={setActiveTab}>
+        <TabsList className="mb-6">
           <TabsTrigger value="form" className="flex items-center gap-2">
             <FileText className="h-4 w-4" />
             Formulário
