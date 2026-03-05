@@ -236,7 +236,7 @@ export default function CopyEstrategia() {
                         variant="outline"
                         className={`text-[11px] font-medium ${SQUAD_COLORS[client.squad]}`}
                       >
-                        Squad {client.squad}
+                        {client.squad}
                       </Badge>
                     </CardContent>
                   </Card>
