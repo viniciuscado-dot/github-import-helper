@@ -160,10 +160,10 @@ export default function CopyEstrategia() {
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">Todos os Squads</SelectItem>
-                    <SelectItem value="Apollo">Squad Apollo</SelectItem>
-                    <SelectItem value="Athena">Squad Athena</SelectItem>
-                    <SelectItem value="Ares">Squad Ares</SelectItem>
-                    <SelectItem value="Artemis">Squad Artemis</SelectItem>
+                    <SelectItem value="Apollo">Apollo</SelectItem>
+                    <SelectItem value="Athena">Athena</SelectItem>
+                    <SelectItem value="Ares">Ares</SelectItem>
+                    <SelectItem value="Artemis">Artemis</SelectItem>
                   </SelectContent>
                 </Select>
 
@@ -236,7 +236,7 @@ export default function CopyEstrategia() {
                         variant="outline"
                         className={`text-[11px] font-medium ${SQUAD_COLORS[client.squad]}`}
                       >
-                        Squad {client.squad}
+                        {client.squad}
                       </Badge>
                     </CardContent>
                   </Card>
