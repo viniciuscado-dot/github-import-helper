@@ -172,6 +172,7 @@ export default function Noticias() {
   const [loading, setLoading] = useState(true);
   const [query, setQuery] = useState("");
   const [visibleCount, setVisibleCount] = useState(18);
+  const [activeTab, setActiveTab] = useState<"todos" | "noticias" | "conteudos">("todos");
   const debouncedQuery = useDebounce(query, 300);
 
   const load = async () => {
