@@ -395,6 +395,7 @@ const [isLoading, setIsLoading] = useState(false)
         .from('copy_forms')
         .insert({
           ...filtered,
+          ...(clientName ? { nome_empresa: clientName } : {}),
           created_by: createdBy,
           status: 'processing',
           copy_type: mainTab,
@@ -498,7 +499,7 @@ const [isLoading, setIsLoading] = useState(false)
     const tabAtRequest = mainTab
 
     try {
-      const { data, error } = await supabase
+      let query = supabase
         .from('copy_forms')
         .select(`
           id,
@@ -513,8 +514,15 @@ const [isLoading, setIsLoading] = useState(false)
           response_generated_at,
           copy_type
         `)
-        .eq('copy_type', tabAtRequest) // usa aba no momento da requisição
+        .eq('copy_type', tabAtRequest)
         .order('created_at', { ascending: false })
+
+      // Filtrar por cliente quando acessado via seleção de cliente
+      if (clientName) {
+        query = query.eq('nome_empresa', clientName)
+      }
+
+      const { data, error } = await query
 
       if (error) throw error
 
