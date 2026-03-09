@@ -139,6 +139,30 @@ export type Database = {
         }
         Relationships: []
       }
+      copy_clients: {
+        Row: {
+          created_at: string
+          created_by: string
+          id: string
+          name: string
+          squad: string
+        }
+        Insert: {
+          created_at?: string
+          created_by: string
+          id?: string
+          name: string
+          squad: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string
+          id?: string
+          name?: string
+          squad?: string
+        }
+        Relationships: []
+      }
       copy_forms: {
         Row: {
           ai_provider: string | null

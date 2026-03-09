@@ -1,6 +1,6 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Search, CalendarIcon, X } from "lucide-react";
+import { ArrowLeft, Search, CalendarIcon, X, Plus } from "lucide-react";
 import { format, parse } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { cn } from "@/lib/utils";
@@ -11,29 +11,24 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
 import { AppSidebar } from "@/components/app-sidebar";
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
 import { TopBar } from "@/components/TopBar";
 import { MobileSidebarTrigger } from "@/components/MobileSidebarTrigger";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
+import { toast } from "sonner";
 
 type Squad = "Apollo" | "Athena" | "Ares" | "Artemis";
 
-interface MockClient {
+interface CopyClient {
+  id: string;
   name: string;
-  entryDate: string; // DD/MM/YYYY
   squad: Squad;
+  created_at: string;
 }
-
-const MOCK_CLIENTS: MockClient[] = [
-  { name: "Construlima", entryDate: "05/01/2026", squad: "Apollo" },
-  { name: "Sul Solar", entryDate: "12/01/2026", squad: "Athena" },
-  { name: "Isocompósitos", entryDate: "18/01/2026", squad: "Ares" },
-  { name: "Napelle Laser", entryDate: "22/01/2026", squad: "Artemis" },
-  { name: "Thermal Beer", entryDate: "28/01/2026", squad: "Apollo" },
-  { name: "Lucab Corporate", entryDate: "02/02/2026", squad: "Athena" },
-  { name: "FMP", entryDate: "10/02/2026", squad: "Ares" },
-  { name: "Aquiraz Investimentos", entryDate: "18/02/2026", squad: "Artemis" },
-];
 
 const SQUAD_COLORS: Record<Squad, string> = {
   Apollo: "bg-blue-500/15 text-blue-400 border-blue-500/20",
@@ -42,42 +37,83 @@ const SQUAD_COLORS: Record<Squad, string> = {
   Artemis: "bg-green-500/15 text-green-400 border-green-500/20",
 };
 
-function parseDate(dateStr: string): Date {
-  return parse(dateStr, "dd/MM/yyyy", new Date());
-}
-
 export default function CopyEstrategia() {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const [search, setSearch] = useState("");
   const [squadFilter, setSquadFilter] = useState("all");
   const [startDate, setStartDate] = useState<Date | undefined>();
   const [endDate, setEndDate] = useState<Date | undefined>();
+  const [clients, setClients] = useState<CopyClient[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  // Dialog state
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [newName, setNewName] = useState("");
+  const [newSquad, setNewSquad] = useState<Squad>("Apollo");
+  const [saving, setSaving] = useState(false);
+
+  const fetchClients = async () => {
+    const { data, error } = await supabase
+      .from("copy_clients" as any)
+      .select("*")
+      .order("created_at", { ascending: false });
+
+    if (!error && data) {
+      setClients(data as any as CopyClient[]);
+    }
+    setLoading(false);
+  };
+
+  useEffect(() => {
+    fetchClients();
+  }, []);
+
+  const handleAddClient = async () => {
+    if (!newName.trim()) return;
+    if (!user?.id) {
+      toast.error("Você precisa estar autenticado.");
+      return;
+    }
+    setSaving(true);
+    const { error } = await supabase.from("copy_clients" as any).insert([
+      { name: newName.trim(), squad: newSquad, created_by: user.id } as any,
+    ]);
+    if (error) {
+      toast.error("Erro ao adicionar cliente.");
+      console.error(error);
+    } else {
+      toast.success("Cliente adicionado com sucesso!");
+      setDialogOpen(false);
+      setNewName("");
+      setNewSquad("Apollo");
+      await fetchClients();
+    }
+    setSaving(false);
+  };
 
   const filteredClients = useMemo(() => {
-    let clients = [...MOCK_CLIENTS];
+    let list = [...clients];
 
     if (search) {
       const q = search.toLowerCase();
-      clients = clients.filter((c) => c.name.toLowerCase().includes(q));
+      list = list.filter((c) => c.name.toLowerCase().includes(q));
     }
 
     if (squadFilter !== "all") {
-      clients = clients.filter((c) => c.squad === squadFilter);
+      list = list.filter((c) => c.squad === squadFilter);
     }
 
     if (startDate) {
-      clients = clients.filter((c) => parseDate(c.entryDate) >= startDate);
+      list = list.filter((c) => new Date(c.created_at) >= startDate);
     }
 
     if (endDate) {
-      clients = clients.filter((c) => parseDate(c.entryDate) <= endDate);
+      list = list.filter((c) => new Date(c.created_at) <= endDate);
     }
 
-    // Sort by entry date descending (most recent first)
-    clients.sort((a, b) => parseDate(b.entryDate).getTime() - parseDate(a.entryDate).getTime());
-
-    return clients;
-  }, [search, squadFilter, startDate, endDate]);
+    return list;
+  }, [search, squadFilter, startDate, endDate, clients]);
 
   const handleBack = () => {
     if (window.history.length > 2) {
@@ -131,15 +167,21 @@ export default function CopyEstrategia() {
                       Selecione o cliente/projeto para iniciar a geração estratégica de copy.
                     </p>
                   </div>
-                  {(search || squadFilter !== "all" || startDate || endDate) && (
-                    <button
-                      onClick={() => { setSearch(""); setSquadFilter("all"); setStartDate(undefined); setEndDate(undefined); }}
-                      className="text-xs text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1"
-                    >
-                      <X className="h-3 w-3" />
-                      Limpar filtros
-                    </button>
-                  )}
+                  <div className="flex items-center gap-2">
+                    {(search || squadFilter !== "all" || startDate || endDate) && (
+                      <button
+                        onClick={() => { setSearch(""); setSquadFilter("all"); setStartDate(undefined); setEndDate(undefined); }}
+                        className="text-xs text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1"
+                      >
+                        <X className="h-3 w-3" />
+                        Limpar filtros
+                      </button>
+                    )}
+                    <Button onClick={() => setDialogOpen(true)} size="sm" className="gap-1.5">
+                      <Plus className="h-4 w-4" />
+                      Adicionar Cliente
+                    </Button>
+                  </div>
                 </div>
               </div>
 
@@ -217,33 +259,38 @@ export default function CopyEstrategia() {
                   </PopoverContent>
                 </Popover>
               </div>
-              {/* Client cards grid */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                {filteredClients.map((client) => (
-                  <Card
-                    key={client.name}
-                    onClick={() => handleClientClick(client.name)}
-                    className="cursor-pointer transition-all duration-200 hover:shadow-lg hover:shadow-primary/5 hover:border-primary/30 hover:-translate-y-0.5 group"
-                  >
-                    <CardContent className="p-5 space-y-3">
-                      <h3 className="font-semibold text-foreground text-base group-hover:text-primary transition-colors">
-                        {client.name}
-                      </h3>
-                      <p className="text-xs text-muted-foreground">
-                        Entrou na DOT em {client.entryDate}
-                      </p>
-                      <Badge
-                        variant="outline"
-                        className={`text-[11px] font-medium ${SQUAD_COLORS[client.squad]}`}
-                      >
-                        {client.squad}
-                      </Badge>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
 
-              {filteredClients.length === 0 && (
+              {/* Client cards grid */}
+              {loading ? (
+                <div className="text-center py-12 text-muted-foreground">Carregando clientes...</div>
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                  {filteredClients.map((client) => (
+                    <Card
+                      key={client.id}
+                      onClick={() => handleClientClick(client.name)}
+                      className="cursor-pointer transition-all duration-200 hover:shadow-lg hover:shadow-primary/5 hover:border-primary/30 hover:-translate-y-0.5 group"
+                    >
+                      <CardContent className="p-5 space-y-3">
+                        <h3 className="font-semibold text-foreground text-base group-hover:text-primary transition-colors">
+                          {client.name}
+                        </h3>
+                        <p className="text-xs text-muted-foreground">
+                          Entrou na DOT em {format(new Date(client.created_at), "dd/MM/yyyy", { locale: ptBR })}
+                        </p>
+                        <Badge
+                          variant="outline"
+                          className={`text-[11px] font-medium ${SQUAD_COLORS[client.squad]}`}
+                        >
+                          {client.squad}
+                        </Badge>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              )}
+
+              {!loading && filteredClients.length === 0 && (
                 <div className="text-center py-12 text-muted-foreground">
                   Nenhum cliente encontrado com os filtros aplicados.
                 </div>
@@ -252,6 +299,46 @@ export default function CopyEstrategia() {
           </SidebarInset>
         </div>
       </div>
+
+      {/* Add Client Dialog */}
+      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Adicionar Cliente</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-2">
+            <div className="space-y-2">
+              <Label htmlFor="client-name">Nome do cliente</Label>
+              <Input
+                id="client-name"
+                placeholder="Ex: Empresa XYZ"
+                value={newName}
+                onChange={(e) => setNewName(e.target.value)}
+              />
+            </div>
+            <div className="space-y-2">
+              <Label>Squad</Label>
+              <Select value={newSquad} onValueChange={(v) => setNewSquad(v as Squad)}>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Apollo">Apollo</SelectItem>
+                  <SelectItem value="Athena">Athena</SelectItem>
+                  <SelectItem value="Ares">Ares</SelectItem>
+                  <SelectItem value="Artemis">Artemis</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setDialogOpen(false)}>Cancelar</Button>
+            <Button onClick={handleAddClient} disabled={saving || !newName.trim()}>
+              {saving ? "Salvando..." : "Adicionar"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </SidebarProvider>
   );
 }
