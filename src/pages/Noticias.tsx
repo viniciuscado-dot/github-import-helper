@@ -274,7 +274,27 @@ export default function Noticias() {
                 </div>
               </div>
 
-              {/* ── Result counter ── */}
+              {/* ── Tab filter ── */}
+              <div className="flex items-center gap-1 p-1 rounded-xl bg-card/[0.06] backdrop-blur-lg border border-border/10 w-fit">
+                {([
+                  { key: "todos", label: "Todos" },
+                  { key: "noticias", label: "Notícias" },
+                  { key: "conteudos", label: "Conteúdos" },
+                ] as const).map(tab => (
+                  <button
+                    key={tab.key}
+                    onClick={() => { setActiveTab(tab.key); setVisibleCount(18); }}
+                    className={`px-4 py-1.5 rounded-lg text-xs font-medium transition-all duration-200 ${
+                      activeTab === tab.key
+                        ? "bg-primary text-primary-foreground shadow-sm"
+                        : "text-muted-foreground hover:text-foreground hover:bg-card/[0.1]"
+                    }`}
+                  >
+                    {tab.label}
+                  </button>
+                ))}
+              </div>
+
               {isSearchActive && !loading && (
                 <p className="text-xs text-muted-foreground">
                   {filtered.length} {filtered.length === 1 ? "resultado" : "resultados"} encontrado{filtered.length !== 1 ? "s" : ""}
