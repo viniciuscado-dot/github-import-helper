@@ -311,6 +311,18 @@ export default function Noticias() {
                       ))}
                     </div>
                   )}
+                  {hasMore && (
+                    <div className="flex justify-center pt-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setVisibleCount(prev => prev + 6)}
+                        className="gap-1.5 text-xs h-9 rounded-xl border-border/20 bg-card/[0.06] backdrop-blur-lg hover:border-primary/30"
+                      >
+                        Ver mais notícias ({filtered.length - visibleCount} restantes)
+                      </Button>
+                    </div>
+                  )}
                 </div>
               )}
             </main>
