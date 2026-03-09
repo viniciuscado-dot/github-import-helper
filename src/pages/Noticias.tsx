@@ -232,134 +232,140 @@ export default function Noticias() {
         />
         <div className="flex-1 flex h-svh min-h-0 flex-col min-w-0">
           <MobileSidebarTrigger />
-          <SidebarInset className="flex-1 min-h-0 overflow-y-auto">
+          <SidebarInset className="flex-1 min-h-0 flex flex-col">
             <TopBar />
-            <main className="max-w-[1280px] mx-auto px-4 md:px-6 py-6 space-y-6">
-
-              {/* ── Header ── */}
-              <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
-                <div>
-                  <h1 className="text-2xl font-bold text-foreground">Notícias e Conteúdos</h1>
-                  <p className="text-muted-foreground">Marketing, publicidade e negócios.</p>
-                </div>
-
-                <div className="flex items-center gap-2 w-full md:w-auto">
-                  <div className="relative flex-1 md:w-64">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                    <Input
-                      placeholder="Buscar por palavra-chave…"
-                      value={query}
-                      onChange={(e) => setQuery(e.target.value)}
-                      className="pl-9 pr-9 h-9 text-sm bg-card/[0.06] backdrop-blur-lg border-border/10 rounded-xl"
-                    />
-                    {query && (
-                      <button
-                        onClick={() => setQuery("")}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
-                      >
-                        <X className="h-3.5 w-3.5" />
-                      </button>
-                    )}
+            {/* ── Sticky header ── */}
+            <div className="sticky top-0 z-10 bg-background/80 backdrop-blur-xl border-b border-border/10">
+              <div className="max-w-[1280px] mx-auto px-4 md:px-6 py-4 space-y-4">
+                <div className="flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+                  <div>
+                    <h1 className="text-2xl font-bold text-foreground">Notícias e Conteúdos</h1>
+                    <p className="text-muted-foreground">Marketing, publicidade e negócios.</p>
                   </div>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={load}
-                    disabled={loading}
-                    className="gap-1.5 text-xs shrink-0 h-9 rounded-xl"
-                  >
-                    <RefreshCw className={`h-3.5 w-3.5 ${loading ? "animate-spin" : ""}`} />
-                    Atualizar
-                  </Button>
-                </div>
-              </div>
 
-              {/* ── Tab filter ── */}
-              <div className="flex items-center gap-1 p-1 rounded-xl bg-card/[0.06] backdrop-blur-lg border border-border/10 w-fit">
-                {([
-                  { key: "todos", label: "Todos" },
-                  { key: "noticias", label: "Notícias" },
-                  { key: "conteudos", label: "Conteúdos" },
-                ] as const).map(tab => (
-                  <button
-                    key={tab.key}
-                    onClick={() => { setActiveTab(tab.key); setVisibleCount(18); }}
-                    className={`px-4 py-1.5 rounded-lg text-xs font-medium transition-all duration-200 ${
-                      activeTab === tab.key
-                        ? "bg-primary text-primary-foreground shadow-sm"
-                        : "text-muted-foreground hover:text-foreground hover:bg-card/[0.1]"
-                    }`}
-                  >
-                    {tab.label}
-                  </button>
-                ))}
-              </div>
-
-              {isSearchActive && !loading && (
-                <p className="text-xs text-muted-foreground">
-                  {filtered.length} {filtered.length === 1 ? "resultado" : "resultados"} encontrado{filtered.length !== 1 ? "s" : ""}
-                </p>
-              )}
-
-              {/* ── Loading state ── */}
-              {loading ? (
-                <div className="flex flex-col items-center justify-center py-24 gap-6">
-                  <DotLogo size={48} animate />
-                  <div className="w-48">
-                    <Progress value={undefined} className="h-1.5 bg-muted/30" />
+                  <div className="flex items-center gap-2 w-full md:w-auto">
+                    <div className="relative flex-1 md:w-64">
+                      <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                      <Input
+                        placeholder="Buscar por palavra-chave…"
+                        value={query}
+                        onChange={(e) => setQuery(e.target.value)}
+                        className="pl-9 pr-9 h-9 text-sm bg-card/[0.06] backdrop-blur-lg border-border/10 rounded-xl"
+                      />
+                      {query && (
+                        <button
+                          onClick={() => setQuery("")}
+                          className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                        >
+                          <X className="h-3.5 w-3.5" />
+                        </button>
+                      )}
+                    </div>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={load}
+                      disabled={loading}
+                      className="gap-1.5 text-xs shrink-0 h-9 rounded-xl"
+                    >
+                      <RefreshCw className={`h-3.5 w-3.5 ${loading ? "animate-spin" : ""}`} />
+                      Atualizar
+                    </Button>
                   </div>
-                  <p className="text-xs text-muted-foreground animate-pulse">Carregando notícias…</p>
                 </div>
-              ) : filtered.length === 0 ? (
-                <div className="flex flex-col items-center justify-center rounded-2xl border border-border/10 bg-card/[0.03] backdrop-blur-lg p-16 text-muted-foreground">
-                  {isSearchActive ? (
-                    <>
-                      <p className="text-sm">Nenhum resultado para "<span className="text-foreground font-medium">{debouncedQuery}</span>"</p>
-                      <Button variant="link" size="sm" onClick={() => setQuery("")} className="mt-2 text-xs">
-                        Limpar busca
-                      </Button>
-                    </>
-                  ) : (
-                    <p className="text-sm">Nenhuma notícia disponível.</p>
-                  )}
-                </div>
-              ) : isSearchActive ? (
-                <div className="flex flex-col gap-3">
-                  {searchItems.map((item, i) => (
-                    <ListRow key={item.id} item={item} index={i} onImageGenerated={handleImageGenerated} />
+
+                {/* ── Tab filter ── */}
+                <div className="flex items-center gap-1 p-1 rounded-xl bg-card/[0.06] backdrop-blur-lg border border-border/10 w-fit">
+                  {([
+                    { key: "todos", label: "Todos" },
+                    { key: "noticias", label: "Notícias" },
+                    { key: "conteudos", label: "Conteúdos" },
+                  ] as const).map(tab => (
+                    <button
+                      key={tab.key}
+                      onClick={() => { setActiveTab(tab.key); setVisibleCount(18); }}
+                      className={`px-4 py-1.5 rounded-lg text-xs font-medium transition-all duration-200 ${
+                        activeTab === tab.key
+                          ? "bg-primary text-primary-foreground shadow-sm"
+                          : "text-muted-foreground hover:text-foreground hover:bg-card/[0.1]"
+                      }`}
+                    >
+                      {tab.label}
+                    </button>
                   ))}
                 </div>
-              ) : (
-                <div className="space-y-6">
-                  {topItems.length > 0 && (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-                      {topItems.map((item) => (
-                        <HeroCard key={item.id} item={item} onImageGenerated={handleImageGenerated} />
-                      ))}
+              </div>
+            </div>
+
+            {/* ── Scrollable content ── */}
+            <div className="flex-1 overflow-y-auto">
+              <main className="max-w-[1280px] mx-auto px-4 md:px-6 py-6 space-y-6">
+
+                {isSearchActive && !loading && (
+                  <p className="text-xs text-muted-foreground">
+                    {filtered.length} {filtered.length === 1 ? "resultado" : "resultados"} encontrado{filtered.length !== 1 ? "s" : ""}
+                  </p>
+                )}
+
+                {loading ? (
+                  <div className="flex flex-col items-center justify-center py-24 gap-6">
+                    <DotLogo size={48} animate />
+                    <div className="w-48">
+                      <Progress value={undefined} className="h-1.5 bg-muted/30" />
                     </div>
-                  )}
-                  {gridItems.length > 0 && (
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-                      {gridItems.map((item, i) => (
-                        <GridCard key={item.id} item={item} index={i} onImageGenerated={handleImageGenerated} />
-                      ))}
-                    </div>
-                  )}
-                  {hasMore && (
-                    <div className="flex justify-center pt-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setVisibleCount(prev => prev + 6)}
-                        className="gap-1.5 text-xs h-9 rounded-xl border-border/20 bg-card/[0.06] backdrop-blur-lg hover:border-primary/30"
-                      >
-                        Ver mais notícias ({filtered.length - visibleCount} restantes)
-                      </Button>
-                    </div>
-                  )}
-                </div>
-              )}
-            </main>
+                    <p className="text-xs text-muted-foreground animate-pulse">Carregando notícias…</p>
+                  </div>
+                ) : filtered.length === 0 ? (
+                  <div className="flex flex-col items-center justify-center rounded-2xl border border-border/10 bg-card/[0.03] backdrop-blur-lg p-16 text-muted-foreground">
+                    {isSearchActive ? (
+                      <>
+                        <p className="text-sm">Nenhum resultado para "<span className="text-foreground font-medium">{debouncedQuery}</span>"</p>
+                        <Button variant="link" size="sm" onClick={() => setQuery("")} className="mt-2 text-xs">
+                          Limpar busca
+                        </Button>
+                      </>
+                    ) : (
+                      <p className="text-sm">Nenhuma notícia disponível.</p>
+                    )}
+                  </div>
+                ) : isSearchActive ? (
+                  <div className="flex flex-col gap-3">
+                    {searchItems.map((item, i) => (
+                      <ListRow key={item.id} item={item} index={i} onImageGenerated={handleImageGenerated} />
+                    ))}
+                  </div>
+                ) : (
+                  <div className="space-y-6">
+                    {topItems.length > 0 && (
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                        {topItems.map((item) => (
+                          <HeroCard key={item.id} item={item} onImageGenerated={handleImageGenerated} />
+                        ))}
+                      </div>
+                    )}
+                    {gridItems.length > 0 && (
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                        {gridItems.map((item, i) => (
+                          <GridCard key={item.id} item={item} index={i} onImageGenerated={handleImageGenerated} />
+                        ))}
+                      </div>
+                    )}
+                    {hasMore && (
+                      <div className="flex justify-center pt-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setVisibleCount(prev => prev + 6)}
+                          className="gap-1.5 text-xs h-9 rounded-xl border-border/20 bg-card/[0.06] backdrop-blur-lg hover:border-primary/30"
+                        >
+                          Ver mais notícias ({filtered.length - visibleCount} restantes)
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </main>
+            </div>
           </SidebarInset>
         </div>
       </div>
