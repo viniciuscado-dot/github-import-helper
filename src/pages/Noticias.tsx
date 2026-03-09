@@ -171,6 +171,7 @@ export default function Noticias() {
   const [news, setNews] = useState<NewsItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [query, setQuery] = useState("");
+  const [visibleCount, setVisibleCount] = useState(12);
   const debouncedQuery = useDebounce(query, 300);
 
   const load = async () => {
@@ -199,9 +200,11 @@ export default function Noticias() {
   }, [news, debouncedQuery]);
 
   const isSearchActive = debouncedQuery.trim().length > 0;
-  const topItems = !isSearchActive ? filtered.slice(0, 2) : [];
-  const gridItems = !isSearchActive ? filtered.slice(2) : [];
+  const visibleItems = !isSearchActive ? filtered.slice(0, visibleCount) : filtered;
+  const topItems = !isSearchActive ? visibleItems.slice(0, 2) : [];
+  const gridItems = !isSearchActive ? visibleItems.slice(2) : [];
   const searchItems = isSearchActive ? filtered : [];
+  const hasMore = !isSearchActive && visibleCount < filtered.length;
 
   return (
     <SidebarProvider defaultOpen={true}>
@@ -306,6 +309,18 @@ export default function Noticias() {
                       {gridItems.map((item, i) => (
                         <GridCard key={item.id} item={item} index={i} onImageGenerated={handleImageGenerated} />
                       ))}
+                    </div>
+                  )}
+                  {hasMore && (
+                    <div className="flex justify-center pt-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setVisibleCount(prev => prev + 6)}
+                        className="gap-1.5 text-xs h-9 rounded-xl border-border/20 bg-card/[0.06] backdrop-blur-lg hover:border-primary/30"
+                      >
+                        Ver mais notícias ({filtered.length - visibleCount} restantes)
+                      </Button>
                     </div>
                   )}
                 </div>
