@@ -189,16 +189,29 @@ export default function Noticias() {
   }, []);
 
   const filtered = useMemo(() => {
-    if (!debouncedQuery.trim()) return news;
-    const q = debouncedQuery.toLowerCase();
-    return news.filter(
-      (n) =>
-        n.title.toLowerCase().includes(q) ||
-        n.excerpt.toLowerCase().includes(q) ||
-        n.source.toLowerCase().includes(q) ||
-        n.category.toLowerCase().includes(q)
-    );
-  }, [news, debouncedQuery]);
+    let items = news;
+
+    // Tab filter
+    if (activeTab === "conteudos") {
+      items = items.filter(n => n.source.toLowerCase().includes("rock content"));
+    } else if (activeTab === "noticias") {
+      items = items.filter(n => !n.source.toLowerCase().includes("rock content"));
+    }
+
+    // Search filter
+    if (debouncedQuery.trim()) {
+      const q = debouncedQuery.toLowerCase();
+      items = items.filter(
+        (n) =>
+          n.title.toLowerCase().includes(q) ||
+          n.excerpt.toLowerCase().includes(q) ||
+          n.source.toLowerCase().includes(q) ||
+          n.category.toLowerCase().includes(q)
+      );
+    }
+
+    return items;
+  }, [news, debouncedQuery, activeTab]);
 
   const isSearchActive = debouncedQuery.trim().length > 0;
   const visibleItems = !isSearchActive ? filtered.slice(0, visibleCount) : filtered;
