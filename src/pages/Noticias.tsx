@@ -172,6 +172,7 @@ export default function Noticias() {
   const [loading, setLoading] = useState(true);
   const [query, setQuery] = useState("");
   const [visibleCount, setVisibleCount] = useState(18);
+  const [activeTab, setActiveTab] = useState<"todos" | "noticias" | "conteudos">("todos");
   const debouncedQuery = useDebounce(query, 300);
 
   const load = async () => {
@@ -188,16 +189,29 @@ export default function Noticias() {
   }, []);
 
   const filtered = useMemo(() => {
-    if (!debouncedQuery.trim()) return news;
-    const q = debouncedQuery.toLowerCase();
-    return news.filter(
-      (n) =>
-        n.title.toLowerCase().includes(q) ||
-        n.excerpt.toLowerCase().includes(q) ||
-        n.source.toLowerCase().includes(q) ||
-        n.category.toLowerCase().includes(q)
-    );
-  }, [news, debouncedQuery]);
+    let items = news;
+
+    // Tab filter
+    if (activeTab === "conteudos") {
+      items = items.filter(n => n.source.toLowerCase().includes("rock content"));
+    } else if (activeTab === "noticias") {
+      items = items.filter(n => !n.source.toLowerCase().includes("rock content"));
+    }
+
+    // Search filter
+    if (debouncedQuery.trim()) {
+      const q = debouncedQuery.toLowerCase();
+      items = items.filter(
+        (n) =>
+          n.title.toLowerCase().includes(q) ||
+          n.excerpt.toLowerCase().includes(q) ||
+          n.source.toLowerCase().includes(q) ||
+          n.category.toLowerCase().includes(q)
+      );
+    }
+
+    return items;
+  }, [news, debouncedQuery, activeTab]);
 
   const isSearchActive = debouncedQuery.trim().length > 0;
   const visibleItems = !isSearchActive ? filtered.slice(0, visibleCount) : filtered;
@@ -260,7 +274,27 @@ export default function Noticias() {
                 </div>
               </div>
 
-              {/* ── Result counter ── */}
+              {/* ── Tab filter ── */}
+              <div className="flex items-center gap-1 p-1 rounded-xl bg-card/[0.06] backdrop-blur-lg border border-border/10 w-fit">
+                {([
+                  { key: "todos", label: "Todos" },
+                  { key: "noticias", label: "Notícias" },
+                  { key: "conteudos", label: "Conteúdos" },
+                ] as const).map(tab => (
+                  <button
+                    key={tab.key}
+                    onClick={() => { setActiveTab(tab.key); setVisibleCount(18); }}
+                    className={`px-4 py-1.5 rounded-lg text-xs font-medium transition-all duration-200 ${
+                      activeTab === tab.key
+                        ? "bg-primary text-primary-foreground shadow-sm"
+                        : "text-muted-foreground hover:text-foreground hover:bg-card/[0.1]"
+                    }`}
+                  >
+                    {tab.label}
+                  </button>
+                ))}
+              </div>
+
               {isSearchActive && !loading && (
                 <p className="text-xs text-muted-foreground">
                   {filtered.length} {filtered.length === 1 ? "resultado" : "resultados"} encontrado{filtered.length !== 1 ? "s" : ""}
