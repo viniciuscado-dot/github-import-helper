@@ -200,7 +200,7 @@ serve(async (req) => {
       return db - da;
     });
 
-    let items = combined.slice(0, 30).map(({ lang, ...rest }) => rest);
+    let items = combined.slice(0, 60).map(({ lang, ...rest }) => rest);
 
     // Second pass: fetch og:image for top items still missing images (up to 5)
     const missingImg = items.filter(i => !i.image).slice(0, 5);
