@@ -108,7 +108,13 @@ serve(async (req) => {
 
     let systemPrompt = '';
     if (prompts && prompts.length > 0) {
-      systemPrompt = prompts.map(p => p.content).join('\n\n');
+      systemPrompt = `=== INSTRUÇÕES OBRIGATÓRIAS ===
+VOCÊ DEVE seguir EXATAMENTE o formato, estrutura e estilo dos exemplos fornecidos abaixo.
+NÃO invente seções novas. Use as MESMAS seções, cabeçalhos e nível de detalhe dos exemplos.
+Cada prompt abaixo contém instruções e/ou exemplos que devem ser seguidos rigorosamente.
+================================
+
+` + prompts.map((p, idx) => `=== PROMPT ${idx + 1}: ${p.title} ===\n${p.content}\n=== FIM PROMPT ${idx + 1} ===`).join('\n\n');
     }
 
     // Usar Claude via Supabase secrets
