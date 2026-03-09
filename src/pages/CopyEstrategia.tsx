@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Search, CalendarIcon, X, Plus } from "lucide-react";
+import { ArrowLeft, Search, CalendarIcon, X, Plus, Check, ChevronsUpDown } from "lucide-react";
 import { format, parse } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { cn } from "@/lib/utils";
