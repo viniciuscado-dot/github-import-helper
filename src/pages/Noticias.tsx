@@ -200,9 +200,11 @@ export default function Noticias() {
   }, [news, debouncedQuery]);
 
   const isSearchActive = debouncedQuery.trim().length > 0;
-  const topItems = !isSearchActive ? filtered.slice(0, 2) : [];
-  const gridItems = !isSearchActive ? filtered.slice(2) : [];
+  const visibleItems = !isSearchActive ? filtered.slice(0, visibleCount) : filtered;
+  const topItems = !isSearchActive ? visibleItems.slice(0, 2) : [];
+  const gridItems = !isSearchActive ? visibleItems.slice(2) : [];
   const searchItems = isSearchActive ? filtered : [];
+  const hasMore = !isSearchActive && visibleCount < filtered.length;
 
   return (
     <SidebarProvider defaultOpen={true}>
