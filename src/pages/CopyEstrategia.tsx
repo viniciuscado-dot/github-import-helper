@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Search, CalendarIcon, X, Plus } from "lucide-react";
+import { ArrowLeft, Search, CalendarIcon, X, Plus, Check, ChevronsUpDown } from "lucide-react";
 import { format, parse } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { cn } from "@/lib/utils";
@@ -13,6 +13,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
+import { Command, CommandInput, CommandList, CommandEmpty, CommandItem } from "@/components/ui/command";
 import { AppSidebar } from "@/components/app-sidebar";
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
 import { TopBar } from "@/components/TopBar";
@@ -187,15 +188,34 @@ export default function CopyEstrategia() {
 
               {/* Filters */}
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                  <Input
-                    placeholder="Buscar cliente..."
-                    value={search}
-                    onChange={(e) => setSearch(e.target.value)}
-                    className="pl-9"
-                  />
-                </div>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button variant="outline" role="combobox" className={cn("w-full justify-between font-normal h-10", !search && "text-muted-foreground")}>
+                      <span className="truncate">{search || "Buscar cliente..."}</span>
+                      <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-[--radix-popover-trigger-width] p-0" align="start">
+                    <Command>
+                      <CommandInput placeholder="Digitar nome do cliente..." />
+                      <CommandList>
+                        <CommandEmpty>Nenhum cliente encontrado.</CommandEmpty>
+                        {search && (
+                          <CommandItem onSelect={() => setSearch("")} className="text-muted-foreground">
+                            <X className="mr-2 h-4 w-4" />
+                            Limpar seleção
+                          </CommandItem>
+                        )}
+                        {clients.map((client) => (
+                          <CommandItem key={client.id} value={client.name} onSelect={(val) => setSearch(val === search ? "" : val)}>
+                            <Check className={cn("mr-2 h-4 w-4", search === client.name ? "opacity-100" : "opacity-0")} />
+                            {client.name}
+                          </CommandItem>
+                        ))}
+                      </CommandList>
+                    </Command>
+                  </PopoverContent>
+                </Popover>
                 <Select value={squadFilter} onValueChange={setSquadFilter}>
                   <SelectTrigger>
                     <SelectValue placeholder="Filtro por Squad" />
