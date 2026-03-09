@@ -171,6 +171,7 @@ export default function Noticias() {
   const [news, setNews] = useState<NewsItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [query, setQuery] = useState("");
+  const [visibleCount, setVisibleCount] = useState(12);
   const debouncedQuery = useDebounce(query, 300);
 
   const load = async () => {
