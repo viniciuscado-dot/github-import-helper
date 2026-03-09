@@ -64,9 +64,24 @@ serve(async (req) => {
           
           const fileName = filePath.split('/').pop() || 'arquivo';
           const isTextLike = /\.(txt|md|csv|json)$/i.test(fileName);
+          const isPdf = /\.pdf$/i.test(fileName);
+          
           if (isTextLike) {
             const text = await fileData.text();
             return `=== DOCUMENTO: ${fileName} ===\n${text}\n`;
+          } else if (isPdf) {
+            try {
+              console.log(`📄 Extraindo texto do PDF: ${fileName}`);
+              const pdfParse = await import("https://esm.sh/pdf-parse@1.1.1");
+              const arrayBuffer = await fileData.arrayBuffer();
+              const buffer = new Uint8Array(arrayBuffer);
+              const pdfData = await pdfParse.default(buffer);
+              console.log(`✅ PDF ${fileName}: ${pdfData.text.length} caracteres extraídos`);
+              return `=== DOCUMENTO PDF: ${fileName} ===\n${pdfData.text}\n`;
+            } catch (pdfError) {
+              console.error(`❌ Erro ao extrair PDF ${fileName}:`, pdfError);
+              return `=== DOCUMENTO: ${fileName} ===\n[Erro ao extrair texto do PDF]\n`;
+            }
           } else {
             return `=== DOCUMENTO: ${fileName} (anexado) ===\n[Conteúdo não textual omitido no prompt para evitar ruído]\n`;
           }
@@ -93,7 +108,13 @@ serve(async (req) => {
 
     let systemPrompt = '';
     if (prompts && prompts.length > 0) {
-      systemPrompt = prompts.map(p => p.content).join('\n\n');
+      systemPrompt = `=== INSTRUÇÕES OBRIGATÓRIAS ===
+VOCÊ DEVE seguir EXATAMENTE o formato, estrutura e estilo dos exemplos fornecidos abaixo.
+NÃO invente seções novas. Use as MESMAS seções, cabeçalhos e nível de detalhe dos exemplos.
+Cada prompt abaixo contém instruções e/ou exemplos que devem ser seguidos rigorosamente.
+================================
+
+` + prompts.map((p, idx) => `=== PROMPT ${idx + 1}: ${p.title} ===\n${p.content}\n=== FIM PROMPT ${idx + 1} ===`).join('\n\n');
     }
 
     // Usar Claude via Supabase secrets
@@ -172,7 +193,7 @@ DADOS DO NEGÓCIO:
 
 TAMANHO DA LP SOLICITADO: ${formData.tamanho_lp || 'Não especificado'}
 
-Agora gere o material completo seguindo todos os padrões e exemplos fornecidos no sistema.
+Agora gere o material completo usando EXATAMENTE a mesma estrutura, formato, seções e estilo dos exemplos fornecidos no system prompt. Mantenha os mesmos cabeçalhos, a mesma ordem de seções e o mesmo nível de detalhe. NÃO adicione seções extras que não existam nos exemplos.
 `;
 
     let aiResponse = '';
