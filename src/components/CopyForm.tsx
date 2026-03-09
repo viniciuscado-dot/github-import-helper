@@ -395,6 +395,7 @@ const [isLoading, setIsLoading] = useState(false)
         .from('copy_forms')
         .insert({
           ...filtered,
+          ...(clientName ? { nome_empresa: clientName } : {}),
           created_by: createdBy,
           status: 'processing',
           copy_type: mainTab,
