@@ -193,7 +193,7 @@ DADOS DO NEGÓCIO:
 
 TAMANHO DA LP SOLICITADO: ${formData.tamanho_lp || 'Não especificado'}
 
-Agora gere o material completo seguindo todos os padrões e exemplos fornecidos no sistema.
+Agora gere o material completo usando EXATAMENTE a mesma estrutura, formato, seções e estilo dos exemplos fornecidos no system prompt. Mantenha os mesmos cabeçalhos, a mesma ordem de seções e o mesmo nível de detalhe. NÃO adicione seções extras que não existam nos exemplos.
 `;
 
     let aiResponse = '';
