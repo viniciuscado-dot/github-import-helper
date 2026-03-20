@@ -144,6 +144,7 @@ export type Database = {
           created_at: string
           created_by: string
           id: string
+          is_archived: boolean
           name: string
           squad: string
         }
@@ -151,6 +152,7 @@ export type Database = {
           created_at?: string
           created_by: string
           id?: string
+          is_archived?: boolean
           name: string
           squad: string
         }
@@ -158,6 +160,7 @@ export type Database = {
           created_at?: string
           created_by?: string
           id?: string
+          is_archived?: boolean
           name?: string
           squad?: string
         }

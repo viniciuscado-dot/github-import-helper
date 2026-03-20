@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Search, CalendarIcon, X, Plus, Loader2, Check, ChevronsUpDown, Pencil } from "lucide-react";
+import { ArrowLeft, Search, CalendarIcon, X, Plus, Loader2, Check, ChevronsUpDown, Pencil, Archive, ArchiveRestore } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { cn } from "@/lib/utils";
@@ -29,6 +29,7 @@ interface CopyClient {
   name: string;
   squad: Squad;
   created_at: string;
+  is_archived: boolean;
 }
 
 const SQUAD_COLORS: Record<Squad, string> = {
@@ -59,6 +60,9 @@ export default function AnaliseBenchSelecao() {
   const [editingClient, setEditingClient] = useState<CopyClient | null>(null);
   const [editName, setEditName] = useState("");
   const [editSquad, setEditSquad] = useState<Squad>("Apollo");
+
+  // Archive state
+  const [showArchived, setShowArchived] = useState(false);
 
   const fetchClients = async () => {
     const { data, error } = await supabase
@@ -124,8 +128,23 @@ export default function AnaliseBenchSelecao() {
     fetchClients();
   };
 
+  const handleArchiveClient = async (e: React.MouseEvent, client: CopyClient) => {
+    e.stopPropagation();
+    const newValue = !client.is_archived;
+    const { error } = await supabase
+      .from("copy_clients" as any)
+      .update({ is_archived: newValue } as any)
+      .eq("id", client.id);
+    if (error) {
+      toast({ title: "Erro ao arquivar cliente", variant: "destructive" });
+      return;
+    }
+    toast({ title: newValue ? "Cliente arquivado" : "Cliente restaurado" });
+    fetchClients();
+  };
+
   const filteredClients = useMemo(() => {
-    let result = [...clients];
+    let result = clients.filter((c) => c.is_archived === showArchived);
 
     if (search) {
       const q = search.toLowerCase();
@@ -142,7 +161,9 @@ export default function AnaliseBenchSelecao() {
     }
 
     return result;
-  }, [search, squadFilter, startDate, endDate, clients]);
+  }, [search, squadFilter, startDate, endDate, clients, showArchived]);
+
+  const archivedCount = useMemo(() => clients.filter((c) => c.is_archived).length, [clients]);
 
   const handleBack = () => {
     if (window.history.length > 2) navigate(-1);
@@ -194,6 +215,15 @@ export default function AnaliseBenchSelecao() {
                     <Button size="sm" onClick={() => setDialogOpen(true)} className="gap-1.5">
                       <Plus className="h-4 w-4" />
                       Adicionar Cliente
+                    </Button>
+                    <Button
+                      variant={showArchived ? "secondary" : "outline"}
+                      size="sm"
+                      onClick={() => setShowArchived(!showArchived)}
+                      className="gap-1.5"
+                    >
+                      <Archive className="h-4 w-4" />
+                      Arquivados{archivedCount > 0 && ` (${archivedCount})`}
                     </Button>
                   </div>
                 </div>
@@ -276,13 +306,22 @@ export default function AnaliseBenchSelecao() {
                       onClick={() => handleClientClick(client.name)}
                       className="cursor-pointer transition-all duration-200 hover:shadow-lg hover:shadow-primary/5 hover:border-primary/30 hover:-translate-y-0.5 group relative"
                     >
-                      <button
-                        onClick={(e) => handleEditClient(e, client)}
-                        className="absolute top-3 right-3 p-1.5 rounded-md bg-muted/80 text-muted-foreground hover:text-foreground hover:bg-muted opacity-0 group-hover:opacity-100 transition-opacity duration-150 z-10"
-                        title="Editar cliente"
-                      >
-                        <Pencil className="h-3.5 w-3.5" />
-                      </button>
+                      <div className="absolute top-3 right-3 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-150 z-10">
+                        <button
+                          onClick={(e) => handleArchiveClient(e, client)}
+                          className="p-1.5 rounded-md bg-muted/80 text-muted-foreground hover:text-foreground hover:bg-muted"
+                          title={client.is_archived ? "Restaurar cliente" : "Arquivar cliente"}
+                        >
+                          {client.is_archived ? <ArchiveRestore className="h-3.5 w-3.5" /> : <Archive className="h-3.5 w-3.5" />}
+                        </button>
+                        <button
+                          onClick={(e) => handleEditClient(e, client)}
+                          className="p-1.5 rounded-md bg-muted/80 text-muted-foreground hover:text-foreground hover:bg-muted"
+                          title="Editar cliente"
+                        >
+                          <Pencil className="h-3.5 w-3.5" />
+                        </button>
+                      </div>
                       <CardContent className="p-5 space-y-3">
                         <h3 className="font-semibold text-foreground text-base group-hover:text-primary transition-colors">{client.name}</h3>
                         <p className="text-xs text-muted-foreground">
