@@ -128,6 +128,21 @@ export default function AnaliseBenchSelecao() {
     fetchClients();
   };
 
+  const handleArchiveClient = async (e: React.MouseEvent, client: CopyClient) => {
+    e.stopPropagation();
+    const newValue = !client.is_archived;
+    const { error } = await supabase
+      .from("copy_clients" as any)
+      .update({ is_archived: newValue } as any)
+      .eq("id", client.id);
+    if (error) {
+      toast({ title: "Erro ao arquivar cliente", variant: "destructive" });
+      return;
+    }
+    toast({ title: newValue ? "Cliente arquivado" : "Cliente restaurado" });
+    fetchClients();
+  };
+
   const filteredClients = useMemo(() => {
     let result = [...clients];
 
