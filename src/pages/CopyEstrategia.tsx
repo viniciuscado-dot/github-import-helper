@@ -269,7 +269,7 @@ export default function CopyEstrategia() {
                             Limpar seleção
                           </CommandItem>
                         )}
-                        {clients.map((client) => (
+                        {clients.filter(c => !c.is_archived).map((client) => (
                           <CommandItem key={client.id} value={client.name} onSelect={(val) => setSearch(val === search ? "" : val)}>
                             <Check className={cn("mr-2 h-4 w-4", search === client.name ? "opacity-100" : "opacity-0")} />
                             {client.name}
