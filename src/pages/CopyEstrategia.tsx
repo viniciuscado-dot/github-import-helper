@@ -99,6 +99,32 @@ export default function CopyEstrategia() {
     setSaving(false);
   };
 
+  const handleEditClient = (e: React.MouseEvent, client: CopyClient) => {
+    e.stopPropagation();
+    setEditingClient(client);
+    setEditName(client.name);
+    setEditSquad(client.squad);
+    setEditDialogOpen(true);
+  };
+
+  const handleSaveEdit = async () => {
+    if (!editingClient || !editName.trim()) return;
+    setSaving(true);
+    const { error } = await supabase
+      .from("copy_clients" as any)
+      .update({ name: editName.trim(), squad: editSquad } as any)
+      .eq("id", editingClient.id);
+    setSaving(false);
+    if (error) {
+      toast.error("Erro ao editar cliente.");
+      console.error(error);
+      return;
+    }
+    toast.success("Cliente atualizado com sucesso!");
+    setEditDialogOpen(false);
+    setEditingClient(null);
+    await fetchClients();
+
   const filteredClients = useMemo(() => {
     let list = [...clients];
 
