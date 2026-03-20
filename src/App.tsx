@@ -114,6 +114,15 @@ const App = () => (
                 </ProtectedRoute>
               } />
 
+              {/* ── Data-Driven ── */}
+              <Route path="/data-driven" element={
+                <ProtectedRoute>
+                  <Suspense fallback={<DashboardFallback />}>
+                    <DataDriven />
+                  </Suspense>
+                </ProtectedRoute>
+              } />
+
               {/* ── Anúncios ── */}
               <Route path="/performance/anuncios" element={
                 <ProtectedRoute>
