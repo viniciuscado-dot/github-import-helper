@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Search, CalendarIcon, X, Plus, Loader2, Check, ChevronsUpDown } from "lucide-react";
+import { ArrowLeft, Search, CalendarIcon, X, Plus, Loader2, Check, ChevronsUpDown, Pencil } from "lucide-react";
 import { format } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { cn } from "@/lib/utils";
@@ -54,6 +54,12 @@ export default function AnaliseBenchSelecao() {
   const [newSquad, setNewSquad] = useState<Squad>("Apollo");
   const [saving, setSaving] = useState(false);
 
+  // Edit dialog state
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [editingClient, setEditingClient] = useState<CopyClient | null>(null);
+  const [editName, setEditName] = useState("");
+  const [editSquad, setEditSquad] = useState<Squad>("Apollo");
+
   const fetchClients = async () => {
     const { data, error } = await supabase
       .from("copy_clients")
@@ -89,6 +95,32 @@ export default function AnaliseBenchSelecao() {
     setNewName("");
     setNewSquad("Apollo");
     setDialogOpen(false);
+    fetchClients();
+  };
+
+  const handleEditClient = (e: React.MouseEvent, client: CopyClient) => {
+    e.stopPropagation();
+    setEditingClient(client);
+    setEditName(client.name);
+    setEditSquad(client.squad);
+    setEditDialogOpen(true);
+  };
+
+  const handleSaveEdit = async () => {
+    if (!editingClient || !editName.trim()) return;
+    setSaving(true);
+    const { error } = await supabase
+      .from("copy_clients" as any)
+      .update({ name: editName.trim(), squad: editSquad } as any)
+      .eq("id", editingClient.id);
+    setSaving(false);
+    if (error) {
+      toast({ title: "Erro ao editar cliente", description: error.message, variant: "destructive" });
+      return;
+    }
+    toast({ title: "Cliente atualizado com sucesso" });
+    setEditDialogOpen(false);
+    setEditingClient(null);
     fetchClients();
   };
 
@@ -242,8 +274,15 @@ export default function AnaliseBenchSelecao() {
                     <Card
                       key={client.id}
                       onClick={() => handleClientClick(client.name)}
-                      className="cursor-pointer transition-all duration-200 hover:shadow-lg hover:shadow-primary/5 hover:border-primary/30 hover:-translate-y-0.5 group"
+                      className="cursor-pointer transition-all duration-200 hover:shadow-lg hover:shadow-primary/5 hover:border-primary/30 hover:-translate-y-0.5 group relative"
                     >
+                      <button
+                        onClick={(e) => handleEditClient(e, client)}
+                        className="absolute top-3 right-3 p-1.5 rounded-md bg-muted/80 text-muted-foreground hover:text-foreground hover:bg-muted opacity-0 group-hover:opacity-100 transition-opacity duration-150 z-10"
+                        title="Editar cliente"
+                      >
+                        <Pencil className="h-3.5 w-3.5" />
+                      </button>
                       <CardContent className="p-5 space-y-3">
                         <h3 className="font-semibold text-foreground text-base group-hover:text-primary transition-colors">{client.name}</h3>
                         <p className="text-xs text-muted-foreground">
@@ -295,6 +334,45 @@ export default function AnaliseBenchSelecao() {
           <DialogFooter>
             <Button variant="outline" onClick={() => setDialogOpen(false)}>Cancelar</Button>
             <Button onClick={handleAddClient} disabled={!newName.trim() || saving}>
+              {saving && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
+              Salvar
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit Client Dialog */}
+      <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Editar Cliente</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-2">
+            <div className="space-y-2">
+              <Label htmlFor="edit-client-name">Nome do cliente</Label>
+              <Input id="edit-client-name" value={editName} onChange={(e) => setEditName(e.target.value)} />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="edit-client-squad">Squad</Label>
+              <Select value={editSquad} onValueChange={(v) => setEditSquad(v as Squad)}>
+                <SelectTrigger id="edit-client-squad"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Apollo">Apollo</SelectItem>
+                  <SelectItem value="Athena">Athena</SelectItem>
+                  <SelectItem value="Ares">Ares</SelectItem>
+                  <SelectItem value="Artemis">Artemis</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            {editingClient && (
+              <p className="text-xs text-muted-foreground">
+                Criado em {format(new Date(editingClient.created_at), "dd/MM/yyyy", { locale: ptBR })}
+              </p>
+            )}
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEditDialogOpen(false)}>Cancelar</Button>
+            <Button onClick={handleSaveEdit} disabled={!editName.trim() || saving}>
               {saving && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
               Salvar
             </Button>

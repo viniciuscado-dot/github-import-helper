@@ -1,6 +1,6 @@
 import { useState, useMemo, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { ArrowLeft, Search, CalendarIcon, X, Plus, Check, ChevronsUpDown } from "lucide-react";
+import { ArrowLeft, Search, CalendarIcon, X, Plus, Check, ChevronsUpDown, Pencil } from "lucide-react";
 import { format, parse } from "date-fns";
 import { ptBR } from "date-fns/locale";
 import { cn } from "@/lib/utils";
@@ -54,6 +54,12 @@ export default function CopyEstrategia() {
   const [newSquad, setNewSquad] = useState<Squad>("Apollo");
   const [saving, setSaving] = useState(false);
 
+  // Edit dialog state
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [editingClient, setEditingClient] = useState<CopyClient | null>(null);
+  const [editName, setEditName] = useState("");
+  const [editSquad, setEditSquad] = useState<Squad>("Apollo");
+
   const fetchClients = async () => {
     const { data, error } = await supabase
       .from("copy_clients" as any)
@@ -91,6 +97,33 @@ export default function CopyEstrategia() {
       await fetchClients();
     }
     setSaving(false);
+  };
+
+  const handleEditClient = (e: React.MouseEvent, client: CopyClient) => {
+    e.stopPropagation();
+    setEditingClient(client);
+    setEditName(client.name);
+    setEditSquad(client.squad);
+    setEditDialogOpen(true);
+  };
+
+  const handleSaveEdit = async () => {
+    if (!editingClient || !editName.trim()) return;
+    setSaving(true);
+    const { error } = await supabase
+      .from("copy_clients" as any)
+      .update({ name: editName.trim(), squad: editSquad } as any)
+      .eq("id", editingClient.id);
+    setSaving(false);
+    if (error) {
+      toast.error("Erro ao editar cliente.");
+      console.error(error);
+      return;
+    }
+    toast.success("Cliente atualizado com sucesso!");
+    setEditDialogOpen(false);
+    setEditingClient(null);
+    await fetchClients();
   };
 
   const filteredClients = useMemo(() => {
@@ -289,8 +322,15 @@ export default function CopyEstrategia() {
                     <Card
                       key={client.id}
                       onClick={() => handleClientClick(client.name)}
-                      className="cursor-pointer transition-all duration-200 hover:shadow-lg hover:shadow-primary/5 hover:border-primary/30 hover:-translate-y-0.5 group"
+                      className="cursor-pointer transition-all duration-200 hover:shadow-lg hover:shadow-primary/5 hover:border-primary/30 hover:-translate-y-0.5 group relative"
                     >
+                      <button
+                        onClick={(e) => handleEditClient(e, client)}
+                        className="absolute top-3 right-3 p-1.5 rounded-md bg-muted/80 text-muted-foreground hover:text-foreground hover:bg-muted opacity-0 group-hover:opacity-100 transition-opacity duration-150 z-10"
+                        title="Editar cliente"
+                      >
+                        <Pencil className="h-3.5 w-3.5" />
+                      </button>
                       <CardContent className="p-5 space-y-3">
                         <h3 className="font-semibold text-foreground text-base group-hover:text-primary transition-colors">
                           {client.name}
@@ -355,6 +395,44 @@ export default function CopyEstrategia() {
             <Button variant="outline" onClick={() => setDialogOpen(false)}>Cancelar</Button>
             <Button onClick={handleAddClient} disabled={saving || !newName.trim()}>
               {saving ? "Salvando..." : "Adicionar"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Edit Client Dialog */}
+      <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Editar Cliente</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-2">
+            <div className="space-y-2">
+              <Label htmlFor="edit-name">Nome do cliente</Label>
+              <Input id="edit-name" value={editName} onChange={(e) => setEditName(e.target.value)} />
+            </div>
+            <div className="space-y-2">
+              <Label>Squad</Label>
+              <Select value={editSquad} onValueChange={(v) => setEditSquad(v as Squad)}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Apollo">Apollo</SelectItem>
+                  <SelectItem value="Athena">Athena</SelectItem>
+                  <SelectItem value="Ares">Ares</SelectItem>
+                  <SelectItem value="Artemis">Artemis</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            {editingClient && (
+              <p className="text-xs text-muted-foreground">
+                Criado em {format(new Date(editingClient.created_at), "dd/MM/yyyy", { locale: ptBR })}
+              </p>
+            )}
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEditDialogOpen(false)}>Cancelar</Button>
+            <Button onClick={handleSaveEdit} disabled={saving || !editName.trim()}>
+              {saving ? "Salvando..." : "Salvar"}
             </Button>
           </DialogFooter>
         </DialogContent>
