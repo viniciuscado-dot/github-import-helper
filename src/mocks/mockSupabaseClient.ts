@@ -497,7 +497,7 @@ const mockStorage = {
 
 // ─── Mock RPC ────────────────────────────────────────────────
 
-function mockRpc(fnName: string, _params?: any) {
+async function mockRpc(fnName: string, _params?: any) {
   // For permission checks, always grant access (admin user)
   if (fnName === 'user_has_module_permission') {
     return Promise.resolve({ data: true, error: null });
