@@ -263,6 +263,21 @@ export function AppSidebar({ activeView, onViewChange }: AppSidebarProps) {
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
+
+        {/* Data-Driven */}
+        <SidebarGroup className="pt-3 pb-1">
+          <SidebarGroupLabel className={groupLabelClass}>Data-Driven</SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              <SidebarMenuItem>
+                {renderMenuItem(
+                  { id: 'data-driven', title: 'Data-Driven', icon: BarChart3, route: '/data-driven' },
+                  location.pathname === '/data-driven'
+                )}
+              </SidebarMenuItem>
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
       </SidebarContent>
 
       {/* ══════════ BLOCO INFERIOR FIXO ══════════ */}
