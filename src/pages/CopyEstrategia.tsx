@@ -29,6 +29,7 @@ interface CopyClient {
   name: string;
   squad: Squad;
   created_at: string;
+  is_archived: boolean;
 }
 
 const SQUAD_COLORS: Record<Squad, string> = {
