@@ -31,6 +31,7 @@ const AnaliseBenchResultado = lazy(() => import("./pages/AnaliseBenchResultado")
 const CopyEstrategia = lazy(() => import("./pages/CopyEstrategia"));
 const AnaliseBenchSelecao = lazy(() => import("./pages/AnaliseBenchSelecao"));
 const DataDriven = lazy(() => import("./pages/DataDriven"));
+const DataDrivenProdutividade = lazy(() => import("./pages/DataDrivenProdutividade"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -119,6 +120,13 @@ const App = () => (
                 <ProtectedRoute>
                   <Suspense fallback={<DashboardFallback />}>
                     <DataDriven />
+                  </Suspense>
+                </ProtectedRoute>
+              } />
+              <Route path="/data-driven/produtividade" element={
+                <ProtectedRoute>
+                  <Suspense fallback={<DashboardFallback />}>
+                    <DataDrivenProdutividade />
                   </Suspense>
                 </ProtectedRoute>
               } />
