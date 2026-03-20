@@ -61,6 +61,9 @@ export default function AnaliseBenchSelecao() {
   const [editName, setEditName] = useState("");
   const [editSquad, setEditSquad] = useState<Squad>("Apollo");
 
+  // Archive state
+  const [showArchived, setShowArchived] = useState(false);
+
   const fetchClients = async () => {
     const { data, error } = await supabase
       .from("copy_clients")
