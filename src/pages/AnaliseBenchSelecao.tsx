@@ -54,6 +54,12 @@ export default function AnaliseBenchSelecao() {
   const [newSquad, setNewSquad] = useState<Squad>("Apollo");
   const [saving, setSaving] = useState(false);
 
+  // Edit dialog state
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [editingClient, setEditingClient] = useState<CopyClient | null>(null);
+  const [editName, setEditName] = useState("");
+  const [editSquad, setEditSquad] = useState<Squad>("Apollo");
+
   const fetchClients = async () => {
     const { data, error } = await supabase
       .from("copy_clients")
