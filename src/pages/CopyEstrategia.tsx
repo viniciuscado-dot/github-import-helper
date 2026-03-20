@@ -398,6 +398,44 @@ export default function CopyEstrategia() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      {/* Edit Client Dialog */}
+      <Dialog open={editDialogOpen} onOpenChange={setEditDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Editar Cliente</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-2">
+            <div className="space-y-2">
+              <Label htmlFor="edit-name">Nome do cliente</Label>
+              <Input id="edit-name" value={editName} onChange={(e) => setEditName(e.target.value)} />
+            </div>
+            <div className="space-y-2">
+              <Label>Squad</Label>
+              <Select value={editSquad} onValueChange={(v) => setEditSquad(v as Squad)}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="Apollo">Apollo</SelectItem>
+                  <SelectItem value="Athena">Athena</SelectItem>
+                  <SelectItem value="Ares">Ares</SelectItem>
+                  <SelectItem value="Artemis">Artemis</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            {editingClient && (
+              <p className="text-xs text-muted-foreground">
+                Criado em {format(new Date(editingClient.created_at), "dd/MM/yyyy", { locale: ptBR })}
+              </p>
+            )}
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setEditDialogOpen(false)}>Cancelar</Button>
+            <Button onClick={handleSaveEdit} disabled={saving || !editName.trim()}>
+              {saving ? "Salvando..." : "Salvar"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </SidebarProvider>
   );
 }
