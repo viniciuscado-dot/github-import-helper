@@ -146,7 +146,7 @@ export default function CopyEstrategia() {
   };
 
   const filteredClients = useMemo(() => {
-    let list = [...clients];
+    let list = clients.filter((c) => c.is_archived === showArchived);
 
     if (search) {
       const q = search.toLowerCase();
@@ -166,7 +166,9 @@ export default function CopyEstrategia() {
     }
 
     return list;
-  }, [search, squadFilter, startDate, endDate, clients]);
+  }, [search, squadFilter, startDate, endDate, clients, showArchived]);
+
+  const archivedCount = useMemo(() => clients.filter((c) => c.is_archived).length, [clients]);
 
   const handleBack = () => {
     if (window.history.length > 2) {
