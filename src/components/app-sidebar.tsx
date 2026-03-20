@@ -1,4 +1,4 @@
-import { Users, Settings, Copy, CheckCircle, BarChart2, Sparkles, LogOut, TrendingUp, Shield, Home, Video, Lightbulb, Layout, Eye, Newspaper, ClipboardList, Activity, Megaphone } from "lucide-react"
+import { Users, Settings, Copy, CheckCircle, BarChart2, BarChart3, Sparkles, LogOut, TrendingUp, Shield, Home, Video, Lightbulb, Layout, Eye, Newspaper, ClipboardList, Activity, Megaphone } from "lucide-react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { UserProfilePopover } from "./UserProfilePopover"
 import { useAuth } from "@/contexts/AuthContext"
@@ -260,6 +260,21 @@ export function AppSidebar({ activeView, onViewChange }: AppSidebarProps) {
                   </SidebarMenuItem>
                 );
               })}
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
+
+        {/* Data-Driven */}
+        <SidebarGroup className="pt-3 pb-1">
+          <SidebarGroupLabel className={groupLabelClass}>Data-Driven</SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              <SidebarMenuItem>
+                {renderMenuItem(
+                  { id: 'data-driven', title: 'Data-Driven', icon: BarChart3, route: '/data-driven' },
+                  location.pathname === '/data-driven'
+                )}
+              </SidebarMenuItem>
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
