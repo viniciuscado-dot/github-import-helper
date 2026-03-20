@@ -144,7 +144,7 @@ export default function AnaliseBenchSelecao() {
   };
 
   const filteredClients = useMemo(() => {
-    let result = [...clients];
+    let result = clients.filter((c) => c.is_archived === showArchived);
 
     if (search) {
       const q = search.toLowerCase();
@@ -161,7 +161,9 @@ export default function AnaliseBenchSelecao() {
     }
 
     return result;
-  }, [search, squadFilter, startDate, endDate, clients]);
+  }, [search, squadFilter, startDate, endDate, clients, showArchived]);
+
+  const archivedCount = useMemo(() => clients.filter((c) => c.is_archived).length, [clients]);
 
   const handleBack = () => {
     if (window.history.length > 2) navigate(-1);
