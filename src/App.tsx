@@ -30,6 +30,7 @@ const AnaliseArtefato = lazy(() => import("./pages/AnaliseArtefato"));
 const AnaliseBenchResultado = lazy(() => import("./pages/AnaliseBenchResultado"));
 const CopyEstrategia = lazy(() => import("./pages/CopyEstrategia"));
 const AnaliseBenchSelecao = lazy(() => import("./pages/AnaliseBenchSelecao"));
+const DataDriven = lazy(() => import("./pages/DataDriven"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
