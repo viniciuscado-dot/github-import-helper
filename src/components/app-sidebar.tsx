@@ -264,25 +264,21 @@ export function AppSidebar({ activeView, onViewChange }: AppSidebarProps) {
           </SidebarGroupContent>
         </SidebarGroup>
 
-        {/* Data-Driven */}
-        <SidebarGroup className="pt-3 pb-1">
-          <SidebarGroupLabel className={groupLabelClass}>Data-Driven</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              <SidebarMenuItem>
-                {renderMenuItem(
-                  { id: 'data-driven', title: 'Data-Driven', icon: BarChart3, route: '/data-driven' },
-                  location.pathname === '/data-driven'
-                )}
-              </SidebarMenuItem>
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
+
+
       </SidebarContent>
 
       {/* ══════════ BLOCO INFERIOR FIXO ══════════ */}
       <SidebarFooter className={`flex-shrink-0 border-t border-border/20 ${shouldShowText ? "px-2 pt-4 pb-2" : "py-3"}`}>
         <SidebarMenu>
+          {/* Data-Driven */}
+          <SidebarMenuItem>
+            {renderMenuItem(
+              { id: 'data-driven', title: 'Data-Driven', icon: BarChart3, route: '/data-driven' },
+              location.pathname === '/data-driven'
+            )}
+          </SidebarMenuItem>
+
           {/* Usuários - admin only */}
           {profile?.effectiveRole === 'admin' && checkModulePermission('users', 'view') && (
             <SidebarMenuItem>
