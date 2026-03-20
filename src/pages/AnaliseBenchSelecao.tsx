@@ -216,6 +216,15 @@ export default function AnaliseBenchSelecao() {
                       <Plus className="h-4 w-4" />
                       Adicionar Cliente
                     </Button>
+                    <Button
+                      variant={showArchived ? "secondary" : "outline"}
+                      size="sm"
+                      onClick={() => setShowArchived(!showArchived)}
+                      className="gap-1.5"
+                    >
+                      <Archive className="h-4 w-4" />
+                      Arquivados{archivedCount > 0 && ` (${archivedCount})`}
+                    </Button>
                   </div>
                 </div>
               </div>
