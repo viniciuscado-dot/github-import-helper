@@ -321,8 +321,15 @@ export default function CopyEstrategia() {
                     <Card
                       key={client.id}
                       onClick={() => handleClientClick(client.name)}
-                      className="cursor-pointer transition-all duration-200 hover:shadow-lg hover:shadow-primary/5 hover:border-primary/30 hover:-translate-y-0.5 group"
+                      className="cursor-pointer transition-all duration-200 hover:shadow-lg hover:shadow-primary/5 hover:border-primary/30 hover:-translate-y-0.5 group relative"
                     >
+                      <button
+                        onClick={(e) => handleEditClient(e, client)}
+                        className="absolute top-3 right-3 p-1.5 rounded-md bg-muted/80 text-muted-foreground hover:text-foreground hover:bg-muted opacity-0 group-hover:opacity-100 transition-opacity duration-150 z-10"
+                        title="Editar cliente"
+                      >
+                        <Pencil className="h-3.5 w-3.5" />
+                      </button>
                       <CardContent className="p-5 space-y-3">
                         <h3 className="font-semibold text-foreground text-base group-hover:text-primary transition-colors">
                           {client.name}
