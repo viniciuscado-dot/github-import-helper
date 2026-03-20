@@ -505,7 +505,7 @@ function mockRpc(fnName: string, _params?: any) {
   // Approval client page: return job data by share token
   if (fnName === 'get_approval_job_public') {
     try {
-      const { getJobByShareToken } = require('@/services/approvalDataService');
+      const { getJobByShareToken } = await import('@/services/approvalDataService');
       const token = _params?._token;
       if (token) {
         const job = getJobByShareToken(token);
