@@ -124,6 +124,7 @@ export default function CopyEstrategia() {
     setEditDialogOpen(false);
     setEditingClient(null);
     await fetchClients();
+  };
 
   const filteredClients = useMemo(() => {
     let list = [...clients];
