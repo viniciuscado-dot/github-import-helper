@@ -98,6 +98,32 @@ export default function AnaliseBenchSelecao() {
     fetchClients();
   };
 
+  const handleEditClient = (e: React.MouseEvent, client: CopyClient) => {
+    e.stopPropagation();
+    setEditingClient(client);
+    setEditName(client.name);
+    setEditSquad(client.squad);
+    setEditDialogOpen(true);
+  };
+
+  const handleSaveEdit = async () => {
+    if (!editingClient || !editName.trim()) return;
+    setSaving(true);
+    const { error } = await supabase
+      .from("copy_clients" as any)
+      .update({ name: editName.trim(), squad: editSquad } as any)
+      .eq("id", editingClient.id);
+    setSaving(false);
+    if (error) {
+      toast({ title: "Erro ao editar cliente", description: error.message, variant: "destructive" });
+      return;
+    }
+    toast({ title: "Cliente atualizado com sucesso" });
+    setEditDialogOpen(false);
+    setEditingClient(null);
+    fetchClients();
+  };
+
   const filteredClients = useMemo(() => {
     let result = [...clients];
 
