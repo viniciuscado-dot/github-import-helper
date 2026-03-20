@@ -306,13 +306,22 @@ export default function AnaliseBenchSelecao() {
                       onClick={() => handleClientClick(client.name)}
                       className="cursor-pointer transition-all duration-200 hover:shadow-lg hover:shadow-primary/5 hover:border-primary/30 hover:-translate-y-0.5 group relative"
                     >
-                      <button
-                        onClick={(e) => handleEditClient(e, client)}
-                        className="absolute top-3 right-3 p-1.5 rounded-md bg-muted/80 text-muted-foreground hover:text-foreground hover:bg-muted opacity-0 group-hover:opacity-100 transition-opacity duration-150 z-10"
-                        title="Editar cliente"
-                      >
-                        <Pencil className="h-3.5 w-3.5" />
-                      </button>
+                      <div className="absolute top-3 right-3 flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-150 z-10">
+                        <button
+                          onClick={(e) => handleArchiveClient(e, client)}
+                          className="p-1.5 rounded-md bg-muted/80 text-muted-foreground hover:text-foreground hover:bg-muted"
+                          title={client.is_archived ? "Restaurar cliente" : "Arquivar cliente"}
+                        >
+                          {client.is_archived ? <ArchiveRestore className="h-3.5 w-3.5" /> : <Archive className="h-3.5 w-3.5" />}
+                        </button>
+                        <button
+                          onClick={(e) => handleEditClient(e, client)}
+                          className="p-1.5 rounded-md bg-muted/80 text-muted-foreground hover:text-foreground hover:bg-muted"
+                          title="Editar cliente"
+                        >
+                          <Pencil className="h-3.5 w-3.5" />
+                        </button>
+                      </div>
                       <CardContent className="p-5 space-y-3">
                         <h3 className="font-semibold text-foreground text-base group-hover:text-primary transition-colors">{client.name}</h3>
                         <p className="text-xs text-muted-foreground">
