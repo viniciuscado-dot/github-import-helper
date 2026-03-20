@@ -130,6 +130,21 @@ export default function CopyEstrategia() {
     await fetchClients();
   };
 
+  const handleArchiveClient = async (e: React.MouseEvent, client: CopyClient) => {
+    e.stopPropagation();
+    const newValue = !client.is_archived;
+    const { error } = await supabase
+      .from("copy_clients" as any)
+      .update({ is_archived: newValue } as any)
+      .eq("id", client.id);
+    if (error) {
+      toast.error("Erro ao arquivar cliente.");
+      return;
+    }
+    toast.success(newValue ? "Cliente arquivado." : "Cliente restaurado.");
+    await fetchClients();
+  };
+
   const filteredClients = useMemo(() => {
     let list = [...clients];
 
