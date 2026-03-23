@@ -1,50 +1,28 @@
 
 
-## Plan: Build Data-Driven Home + Gestao de Produtividade Module
+## Plan: Make Material Type Selectors Functional
 
 ### Overview
-Transform the Data-Driven page from a "Coming Soon" placeholder into a module hub, and create a full productivity management page with upload, filters, and dashboard structure.
+Make the "Criativos", "Roteiros de Vídeo", and "Landing Page" selectors functional by: defaulting all 3 as selected, passing them to the Edge Function, and instructing the AI to generate only the selected material types.
 
-### Files to Create/Modify
+### Changes
 
-**1. Modify `src/pages/DataDriven.tsx`**
-- Remove `PageComingSoon` component
-- Keep title and subtitle
-- Add a grid of module cards (currently just one)
-- Create a large clickable card "Gestao de Produtividade" with icon (`BarChart3` or `Activity`), title, subtitle, and hover effect
-- Card links to `/data-driven/produtividade` via `useNavigate`
+**1. `src/components/CopyForm.tsx`**
+- Change default state from `[]` to `['criativos', 'roteiro_video', 'landing_page']`
+- Pass `selectedMaterialTypes` in the body of all 3 `generate-copy-ai` invocations (lines ~413, ~992, ~2452)
+- Add validation: at least 1 type must be selected before submitting
 
-**2. Create `src/pages/DataDrivenProdutividade.tsx`**
-New page with standard layout (AppSidebar, TopBar, SidebarProvider) containing:
+**2. `supabase/functions/generate-copy-ai/index.ts`**
+- Read `materialTypes` from the request body
+- Inject a section into the `userMessage` that tells the AI which material types to generate, e.g.:
+  ```
+  TIPOS DE MATERIAL SOLICITADOS: Criativos, Landing Page
+  Gere APENAS os materiais dos tipos listados acima. NÃO gere materiais de tipos não solicitados.
+  ```
+- If no `materialTypes` provided, default to all 3 (backward compatibility)
 
-- **Back button**: `ArrowLeft` icon + "Voltar" linking to `/data-driven`
-- **Title/subtitle**: "Gestao de Produtividade" / "Dashboards e inteligencia sobre a produtividade do time."
-- **Data upload block** (Card):
-  - Textarea for instructions (label + placeholder as specified)
-  - File upload area accepting `.xlsx, .xls, .csv` with drag-and-drop styling
-  - "Atualizar dashboards" button (gradient variant)
-- **Filters bar** (Card or inline):
-  - Select dropdowns: Mes (Jan-Jun), Periodo, Squad, Colaborador
-  - All static/mock for now
-- **KPI cards row** (6 cards in responsive grid):
-  - Horas totais lancadas, Media de horas por colaborador, Produtividade por squad, Entregas por periodo, Colaboradores com maior volume, Eficiencia media
-  - Using mock numeric values
-- **Charts section** (2x2 grid using recharts):
-  - Bar chart: Horas por Squad
-  - Line chart: Produtividade por Periodo
-  - Bar chart: Horas por Colaborador
-  - Area chart: Distribuicao de Horas
-  - All with mock data, using existing `ChartContainer`/recharts patterns
-
-**3. Modify `src/App.tsx`**
-- Add lazy import for `DataDrivenProdutividade`
-- Add protected route for `/data-driven/produtividade`
-
-### Technical Details
-- Reuse existing UI components: `Card`, `Button`, `Select`, `Textarea`, `Input`, `Label`
-- Reuse recharts via the project's `ChartContainer`, `ChartTooltip` pattern from `src/components/ui/chart.tsx`
-- KPI cards using a simple inline card structure (similar to `KPICard` component pattern)
-- File upload uses a hidden `<input type="file" accept=".xlsx,.xls,.csv">` with a styled drop zone
-- All data is static/mock -- no backend processing yet
-- Standard layout wrapper: `max-w-[1280px] mx-auto px-4 md:px-6 py-6 space-y-6`
+### Technical Notes
+- No database migration needed — `materialTypes` is passed as a runtime parameter to the Edge Function, not stored
+- The filtering happens at the AI prompt level: the AI is instructed to only produce content for selected types
+- Edge Function needs redeployment after changes
 
