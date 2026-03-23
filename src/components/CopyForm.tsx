@@ -2454,6 +2454,7 @@ EX: Mais de 1.000 projetos de placas solares instalados em todo o Rio Grande do 
                   copyFormId: copyId,
                   newCopyContext: instruction,
                   appendToExisting: true,
+                  materialTypes: selectedMaterialTypes,
                 }
               });
 
