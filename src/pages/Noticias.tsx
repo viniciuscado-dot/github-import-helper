@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { DotLogo } from "@/components/DotLogo";
 import { motion } from "framer-motion";
-import { fetchNews, type NewsItem } from "@/services/newsService";
+import { fetchNews, ROCK_CONTENT_ARCHIVE, type NewsItem } from "@/services/newsService";
 import { NewsThumbnail } from "@/components/home/NewsThumbnail";
 import { AppSidebar } from "@/components/app-sidebar";
 import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
