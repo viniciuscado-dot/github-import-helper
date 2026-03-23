@@ -17,7 +17,7 @@ serve(async (req) => {
   try {
     let copyFormIdVar: string | null = null;
     console.log('🚀 Edge function generate-copy-ai iniciada');
-    const { copyFormId, newCopyContext, appendToExisting } = await req.json();
+    const { copyFormId, newCopyContext, appendToExisting, materialTypes } = await req.json();
     copyFormIdVar = copyFormId;
     console.log('📝 ID do formulário recebido:', copyFormId);
     console.log('📝 Contexto de nova copy:', newCopyContext ? 'Sim' : 'Não');

@@ -377,6 +377,12 @@ const [isLoading, setIsLoading] = useState(false)
       const createdBy = profile?.user_id ?? authUser?.user?.id
       if (!createdBy) throw new Error('Usuário não autenticado')
 
+      // Validar que pelo menos 1 tipo de material foi selecionado
+      if (selectedMaterialTypes.length === 0) {
+        toast.error('Selecione pelo menos um tipo de material para gerar.')
+        return
+      }
+
       // Filtrar apenas colunas existentes na tabela copy_forms (evita erro de coluna inexistente)
       const allowedFields = [
         'reuniao_boas_vindas','reuniao_kick_off','reuniao_brainstorm',
