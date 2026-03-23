@@ -193,7 +193,13 @@ export default function Noticias() {
 
     // Tab filter
     if (activeTab === "conteudos") {
-      items = items.filter(n => n.source.toLowerCase().includes("rock content"));
+      const liveRock = items.filter(n => n.source.toLowerCase().includes("rock content"));
+      // Merge archive, deduplicate by URL
+      const seenUrls = new Set(liveRock.map(n => n.url));
+      const archiveExtras = ROCK_CONTENT_ARCHIVE.filter(a => !seenUrls.has(a.url));
+      items = [...liveRock, ...archiveExtras].sort(
+        (a, b) => new Date(b.published_at).getTime() - new Date(a.published_at).getTime()
+      );
     } else if (activeTab === "noticias") {
       items = items.filter(n => !n.source.toLowerCase().includes("rock content"));
     }
