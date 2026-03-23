@@ -156,7 +156,31 @@ IMPORTANTE: Use as informações dos documentos acima para enriquecer sua análi
 ===========================
 ` : ''}`;
 
+    // Mapear tipos de material para labels legíveis
+    const materialTypeLabels: Record<string, string> = {
+      'criativos': 'Criativos Estáticos (headlines, textos para anúncios, copies de criativos)',
+      'roteiro_video': 'Roteiros de Vídeo (scripts, storyboards, roteiros completos)',
+      'landing_page': 'Landing Page (copy completa para página de vendas/captura)',
+    };
+
+    const activeMaterialTypes = (materialTypes && Array.isArray(materialTypes) && materialTypes.length > 0)
+      ? materialTypes
+      : ['criativos', 'roteiro_video', 'landing_page'];
+
+    const materialLabels = activeMaterialTypes.map((t: string) => materialTypeLabels[t] || t);
+    console.log('📦 Tipos de material solicitados:', materialLabels);
+
+    const materialInstruction = `
+=== TIPOS DE MATERIAL SOLICITADOS ===
+Gere APENAS os seguintes tipos de material:
+${materialLabels.map((l: string, i: number) => `${i + 1}. ${l}`).join('\n')}
+
+ATENÇÃO: NÃO gere materiais de tipos que NÃO estejam listados acima. Se apenas "Landing Page" foi solicitada, NÃO gere criativos nem roteiros de vídeo. Se apenas "Criativos" foi solicitado, NÃO gere landing page nem roteiros. Siga RIGOROSAMENTE esta restrição.
+===================================
+`;
+
     const userMessage = `
+${materialInstruction}
 ${newCopyContext ? `
 === SOLICITAÇÃO DE NOVA COPY ===
 MOTIVO/CONTEXTO: ${newCopyContext}
@@ -193,7 +217,7 @@ DADOS DO NEGÓCIO:
 
 TAMANHO DA LP SOLICITADO: ${formData.tamanho_lp || 'Não especificado'}
 
-Agora gere o material completo usando EXATAMENTE a mesma estrutura, formato, seções e estilo dos exemplos fornecidos no system prompt. Mantenha os mesmos cabeçalhos, a mesma ordem de seções e o mesmo nível de detalhe. NÃO adicione seções extras que não existam nos exemplos.
+Agora gere o material completo usando EXATAMENTE a mesma estrutura, formato, seções e estilo dos exemplos fornecidos no system prompt. Mantenha os mesmos cabeçalhos, a mesma ordem de seções e o mesmo nível de detalhe. NÃO adicione seções extras que não existam nos exemplos. Lembre-se: gere SOMENTE os tipos de material solicitados acima.
 `;
 
     let aiResponse = '';
