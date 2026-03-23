@@ -254,7 +254,7 @@ const [isLoading, setIsLoading] = useState(false)
   const [expandedCopies, setExpandedCopies] = useState<Set<number>>(new Set([0]))
   
   // Estado para tipos de material selecionados
-  const [selectedMaterialTypes, setSelectedMaterialTypes] = useState<string[]>([])
+  const [selectedMaterialTypes, setSelectedMaterialTypes] = useState<string[]>(['criativos', 'roteiro_video', 'landing_page'])
   
   // Estado para rastrear campos modificados e visualizar briefing
   const [modifiedFields, setModifiedFields] = useState<Set<string>>(new Set())
@@ -377,6 +377,12 @@ const [isLoading, setIsLoading] = useState(false)
       const createdBy = profile?.user_id ?? authUser?.user?.id
       if (!createdBy) throw new Error('Usuário não autenticado')
 
+      // Validar que pelo menos 1 tipo de material foi selecionado
+      if (selectedMaterialTypes.length === 0) {
+        toast.error('Selecione pelo menos um tipo de material para gerar.')
+        return
+      }
+
       // Filtrar apenas colunas existentes na tabela copy_forms (evita erro de coluna inexistente)
       const allowedFields = [
         'reuniao_boas_vindas','reuniao_kick_off','reuniao_brainstorm',
@@ -410,7 +416,7 @@ const [isLoading, setIsLoading] = useState(false)
       const { data: copyResponse, error: copyError } = await supabase
         .functions
         .invoke('generate-copy-ai', {
-          body: { copyFormId: savedForm.id }
+          body: { copyFormId: savedForm.id, materialTypes: selectedMaterialTypes }
         })
       console.info('📨 generate-copy-ai response:', { copyResponse, copyError })
 
@@ -990,9 +996,10 @@ const [isLoading, setIsLoading] = useState(false)
         .functions
         .invoke('generate-copy-ai', {
           body: { 
-            copyFormId: selectedBriefingForNewCopy.id, // Usar ID do briefing original
-            newCopyContext: newCopyContext, // Passar contexto para a edge function
-            appendToExisting: true // Flag para indicar que deve concatenar
+            copyFormId: selectedBriefingForNewCopy.id,
+            newCopyContext: newCopyContext,
+            appendToExisting: true,
+            materialTypes: selectedMaterialTypes
           }
         })
 
@@ -2453,6 +2460,7 @@ EX: Mais de 1.000 projetos de placas solares instalados em todo o Rio Grande do 
                   copyFormId: copyId,
                   newCopyContext: instruction,
                   appendToExisting: true,
+                  materialTypes: selectedMaterialTypes,
                 }
               });
 
