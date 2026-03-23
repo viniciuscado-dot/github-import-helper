@@ -990,9 +990,10 @@ const [isLoading, setIsLoading] = useState(false)
         .functions
         .invoke('generate-copy-ai', {
           body: { 
-            copyFormId: selectedBriefingForNewCopy.id, // Usar ID do briefing original
-            newCopyContext: newCopyContext, // Passar contexto para a edge function
-            appendToExisting: true // Flag para indicar que deve concatenar
+            copyFormId: selectedBriefingForNewCopy.id,
+            newCopyContext: newCopyContext,
+            appendToExisting: true,
+            materialTypes: selectedMaterialTypes
           }
         })
 
