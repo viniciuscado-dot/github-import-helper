@@ -410,7 +410,7 @@ const [isLoading, setIsLoading] = useState(false)
       const { data: copyResponse, error: copyError } = await supabase
         .functions
         .invoke('generate-copy-ai', {
-          body: { copyFormId: savedForm.id }
+          body: { copyFormId: savedForm.id, materialTypes: selectedMaterialTypes }
         })
       console.info('📨 generate-copy-ai response:', { copyResponse, copyError })
 
