@@ -797,7 +797,7 @@ const [isLoading, setIsLoading] = useState(false)
           content: newPromptContent,
           created_by: profile?.user_id,
           position: defaultPrompts.length,
-          copy_type: 'copy_estrategia', // Unificado: mesmo prompt para todas as fases
+          copy_type: mainTab === 'onboarding' ? 'onboarding' : 'ongoing', // Onboarding separado, demais fases unificadas
           is_active: true
         })
 
