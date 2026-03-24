@@ -769,7 +769,7 @@ const [isLoading, setIsLoading] = useState(false)
         .from('default_prompts')
         .select('*')
         .eq('is_active', true)
-        .eq('copy_type', 'copy_estrategia') // Unificado: mesmo prompt para todas as fases
+        .eq('copy_type', mainTab === 'onboarding' ? 'onboarding' : 'ongoing') // Onboarding separado, demais fases unificadas
         .order('position', { ascending: true })
 
       if (error) throw error
