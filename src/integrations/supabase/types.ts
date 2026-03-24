@@ -166,6 +166,39 @@ export type Database = {
         }
         Relationships: []
       }
+      copy_form_drafts: {
+        Row: {
+          client_name: string
+          copy_type: string
+          form_data: Json
+          id: string
+          project_objective: string | null
+          selected_platforms: string[] | null
+          updated_at: string | null
+          updated_by: string | null
+        }
+        Insert: {
+          client_name: string
+          copy_type: string
+          form_data?: Json
+          id?: string
+          project_objective?: string | null
+          selected_platforms?: string[] | null
+          updated_at?: string | null
+          updated_by?: string | null
+        }
+        Update: {
+          client_name?: string
+          copy_type?: string
+          form_data?: Json
+          id?: string
+          project_objective?: string | null
+          selected_platforms?: string[] | null
+          updated_at?: string | null
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
       copy_forms: {
         Row: {
           ai_provider: string | null
