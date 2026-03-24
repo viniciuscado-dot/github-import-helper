@@ -648,6 +648,28 @@ const [isLoading, setIsLoading] = useState(false)
     }
   }, [clientName, mainTab, projectObjective, selectedPlatforms, profile?.user_id])
 
+  // Save draft when objective/platforms change independently
+  useEffect(() => {
+    if (!clientName || isLoadingDraft.current) return
+    const timer = setTimeout(async () => {
+      try {
+        const currentValues = form.getValues()
+        await (supabase.from('copy_form_drafts' as any) as any).upsert({
+          client_name: clientName,
+          copy_type: mainTab,
+          form_data: currentValues,
+          project_objective: projectObjective,
+          selected_platforms: selectedPlatforms,
+          updated_at: new Date().toISOString(),
+          updated_by: profile?.user_id || null,
+        }, { onConflict: 'client_name,copy_type' })
+      } catch (err) {
+        console.error('Draft save error:', err)
+      }
+    }, 1500)
+    return () => clearTimeout(timer)
+  }, [projectObjective, selectedPlatforms])
+
   const fetchFormLabels = async () => {
     try {
       const { data, error } = await supabase
