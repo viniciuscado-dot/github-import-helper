@@ -271,6 +271,8 @@ const [isLoading, setIsLoading] = useState(false)
   const [projectObjective, setProjectObjective] = useState('')
   const [selectedPlatforms, setSelectedPlatforms] = useState<string[]>([])
   const fetchSeqRef = useRef(0) // evita condição de corrida entre abas
+  const draftSaveTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const isLoadingDraft = useRef(false) // prevents auto-save from firing during draft load
 
   // Verificações de permissão
   const canViewHistory = checkModulePermission('copy', 'view')
