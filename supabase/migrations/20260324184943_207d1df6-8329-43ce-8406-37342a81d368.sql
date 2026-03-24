@@ -1,0 +1,1 @@
+UPDATE default_prompts SET copy_type = 'copy_estrategia' WHERE copy_type IN ('onboarding', 'mes_teste', 'refinamento', 'escala', 'expansao');
