@@ -769,7 +769,7 @@ const [isLoading, setIsLoading] = useState(false)
         .from('default_prompts')
         .select('*')
         .eq('is_active', true)
-        .eq('copy_type', mainTab) // Filtra prompts pelo tipo de copy
+        .eq('copy_type', 'copy_estrategia') // Unificado: mesmo prompt para todas as fases
         .order('position', { ascending: true })
 
       if (error) throw error
