@@ -124,6 +124,7 @@ export function AppSidebar({ activeView, onViewChange }: AppSidebarProps) {
     { id: 'banco-ideias', title: 'Banco de Ideias', icon: Lightbulb, route: '/laboratorio/banco-ideias' },
     { id: 'lp-builder', title: 'LP Builder', icon: Layout, route: '/laboratorio/lp-builder' },
     { id: 'diagnostico-visual', title: 'Diagnóstico Visual', icon: Eye, route: '/laboratorio/diagnostico-visual' },
+    { id: 'ai-agent', title: 'AI Agent', icon: Bot, route: '/laboratorio/ai-agent' },
   ];
 
   const newsItems = [
