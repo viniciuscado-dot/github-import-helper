@@ -797,7 +797,7 @@ const [isLoading, setIsLoading] = useState(false)
           content: newPromptContent,
           created_by: profile?.user_id,
           position: defaultPrompts.length,
-          copy_type: mainTab, // Define o tipo de copy para o prompt
+          copy_type: 'copy_estrategia', // Unificado: mesmo prompt para todas as fases
           is_active: true
         })
 
