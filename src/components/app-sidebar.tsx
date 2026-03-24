@@ -1,4 +1,4 @@
-import { Users, Settings, Copy, CheckCircle, BarChart2, BarChart3, Sparkles, LogOut, TrendingUp, Shield, Home, Video, Lightbulb, Layout, Eye, Newspaper, ClipboardList, Activity, Megaphone } from "lucide-react"
+import { Users, Settings, Copy, CheckCircle, BarChart2, BarChart3, Sparkles, LogOut, TrendingUp, Shield, Home, Video, Lightbulb, Layout, Eye, Newspaper, ClipboardList, Activity, Megaphone, Bot } from "lucide-react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { UserProfilePopover } from "./UserProfilePopover"
 import { useAuth } from "@/contexts/AuthContext"
@@ -124,6 +124,7 @@ export function AppSidebar({ activeView, onViewChange }: AppSidebarProps) {
     { id: 'banco-ideias', title: 'Banco de Ideias', icon: Lightbulb, route: '/laboratorio/banco-ideias' },
     { id: 'lp-builder', title: 'LP Builder', icon: Layout, route: '/laboratorio/lp-builder' },
     { id: 'diagnostico-visual', title: 'Diagnóstico Visual', icon: Eye, route: '/laboratorio/diagnostico-visual' },
+    { id: 'ai-agent', title: 'AI Agent', icon: Bot, route: '/laboratorio/ai-agent' },
   ];
 
   const newsItems = [

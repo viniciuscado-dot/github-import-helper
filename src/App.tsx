@@ -23,6 +23,7 @@ const LaboratorioEditorVideo = lazy(() => import("./pages/LaboratorioEditorVideo
 const LaboratorioBancoIdeias = lazy(() => import("./pages/LaboratorioBancoIdeias"));
 const LaboratorioLPBuilder = lazy(() => import("./pages/LaboratorioLPBuilder"));
 const LaboratorioDiagnosticoVisual = lazy(() => import("./pages/LaboratorioDiagnosticoVisual"));
+const LaboratorioAIAgent = lazy(() => import("./pages/LaboratorioAIAgent"));
 const Noticias = lazy(() => import("./pages/Noticias"));
 import AprovacaoCliente from "./pages/AprovacaoCliente";
 const Anuncios = lazy(() => import("./pages/Anuncios"));
@@ -189,6 +190,13 @@ const App = () => (
                 <ProtectedRoute>
                   <Suspense fallback={<DashboardFallback />}>
                     <LaboratorioDiagnosticoVisual />
+                  </Suspense>
+                </ProtectedRoute>
+              } />
+              <Route path="/laboratorio/ai-agent" element={
+                <ProtectedRoute>
+                  <Suspense fallback={<DashboardFallback />}>
+                    <LaboratorioAIAgent />
                   </Suspense>
                 </ProtectedRoute>
               } />
