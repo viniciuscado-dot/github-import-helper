@@ -97,7 +97,7 @@ serve(async (req) => {
     }
 
     // Buscar prompts padrão do sistema filtrando pelo tipo de copy do briefing
-    const copyType = formData.copy_type || 'onboarding';
+    const copyType = 'copy_estrategia';
     console.log('📋 Buscando prompts do tipo:', copyType);
     const { data: prompts } = await supabase
       .from('default_prompts')
