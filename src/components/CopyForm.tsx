@@ -740,7 +740,7 @@ const [isLoading, setIsLoading] = useState(false)
         .from('default_briefing_documents')
         .select('file_path')
         .eq('is_active', true)
-        .eq('copy_type', mainTab) // Filtra documentos pelo tipo de copy
+        .eq('copy_type', 'copy_estrategia') // Unificado: mesmo prompt para todas as fases
         .order('created_at', { ascending: false })
 
       if (error) throw error
