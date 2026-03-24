@@ -193,6 +193,13 @@ const App = () => (
                   </Suspense>
                 </ProtectedRoute>
               } />
+              <Route path="/laboratorio/ai-agent" element={
+                <ProtectedRoute>
+                  <Suspense fallback={<DashboardFallback />}>
+                    <LaboratorioAIAgent />
+                  </Suspense>
+                </ProtectedRoute>
+              } />
 
               {/* ── Notícias ── */}
               <Route path="/noticias" element={
