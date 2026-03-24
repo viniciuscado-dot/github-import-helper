@@ -665,7 +665,7 @@ const [isLoading, setIsLoading] = useState(false)
         .from('default_briefing_documents')
         .select('*')
         .eq('is_active', true)
-        .eq('copy_type', 'copy_estrategia') // Unificado: mesmo prompt para todas as fases
+        .eq('copy_type', mainTab === 'onboarding' ? 'onboarding' : 'ongoing') // Onboarding separado, demais fases unificadas
         .order('created_at', { ascending: false })
 
       if (error) throw error
@@ -740,7 +740,7 @@ const [isLoading, setIsLoading] = useState(false)
         .from('default_briefing_documents')
         .select('file_path')
         .eq('is_active', true)
-        .eq('copy_type', 'copy_estrategia') // Unificado: mesmo prompt para todas as fases
+        .eq('copy_type', mainTab === 'onboarding' ? 'onboarding' : 'ongoing') // Onboarding separado, demais fases unificadas
         .order('created_at', { ascending: false })
 
       if (error) throw error
@@ -769,7 +769,7 @@ const [isLoading, setIsLoading] = useState(false)
         .from('default_prompts')
         .select('*')
         .eq('is_active', true)
-        .eq('copy_type', 'copy_estrategia') // Unificado: mesmo prompt para todas as fases
+        .eq('copy_type', mainTab === 'onboarding' ? 'onboarding' : 'ongoing') // Onboarding separado, demais fases unificadas
         .order('position', { ascending: true })
 
       if (error) throw error
@@ -797,7 +797,7 @@ const [isLoading, setIsLoading] = useState(false)
           content: newPromptContent,
           created_by: profile?.user_id,
           position: defaultPrompts.length,
-          copy_type: 'copy_estrategia', // Unificado: mesmo prompt para todas as fases
+          copy_type: mainTab === 'onboarding' ? 'onboarding' : 'ongoing', // Onboarding separado, demais fases unificadas
           is_active: true
         })
 
