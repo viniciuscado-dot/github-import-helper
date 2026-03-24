@@ -585,6 +585,69 @@ const [isLoading, setIsLoading] = useState(false)
     fetchFormLabels()
   }, [canViewHistory, isAdmin, mainTab]) // mainTab deriva de currentPhase
 
+  // --- Draft auto-load: restore form when client/phase changes ---
+  useEffect(() => {
+    if (!clientName) return
+    isLoadingDraft.current = true
+    const loadDraft = async () => {
+      try {
+        const { data } = await supabase
+          .from('copy_form_drafts' as any)
+          .select('form_data, project_objective, selected_platforms')
+          .eq('client_name', clientName)
+          .eq('copy_type', mainTab)
+          .maybeSingle()
+        if (data) {
+          const d = data as any
+          if (d.form_data && typeof d.form_data === 'object') {
+            form.reset({ ...d.form_data, nome_empresa: clientName })
+          }
+          if (d.project_objective) setProjectObjective(d.project_objective)
+          if (d.selected_platforms && Array.isArray(d.selected_platforms) && d.selected_platforms.length > 0) {
+            setSelectedPlatforms(d.selected_platforms)
+          }
+        } else {
+          form.reset({ nome_empresa: clientName })
+          setProjectObjective('')
+          setSelectedPlatforms([])
+        }
+      } catch (err) {
+        console.error('Error loading draft:', err)
+      } finally {
+        setTimeout(() => { isLoadingDraft.current = false }, 500)
+      }
+    }
+    loadDraft()
+  }, [clientName, mainTab])
+
+  // --- Draft auto-save: debounced upsert on form changes ---
+  useEffect(() => {
+    if (!clientName) return
+    const subscription = form.watch((values) => {
+      if (isLoadingDraft.current) return
+      if (draftSaveTimer.current) clearTimeout(draftSaveTimer.current)
+      draftSaveTimer.current = setTimeout(async () => {
+        try {
+          await (supabase.from('copy_form_drafts' as any) as any).upsert({
+            client_name: clientName,
+            copy_type: mainTab,
+            form_data: values,
+            project_objective: projectObjective,
+            selected_platforms: selectedPlatforms,
+            updated_at: new Date().toISOString(),
+            updated_by: profile?.user_id || null,
+          }, { onConflict: 'client_name,copy_type' })
+        } catch (err) {
+          console.error('Draft save error:', err)
+        }
+      }, 1500)
+    })
+    return () => {
+      subscription.unsubscribe()
+      if (draftSaveTimer.current) clearTimeout(draftSaveTimer.current)
+    }
+  }, [clientName, mainTab, projectObjective, selectedPlatforms, profile?.user_id])
+
   const fetchFormLabels = async () => {
     try {
       const { data, error } = await supabase
