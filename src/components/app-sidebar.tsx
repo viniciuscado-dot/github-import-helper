@@ -61,7 +61,7 @@ export function AppSidebar({ activeView, onViewChange }: AppSidebarProps) {
 
   // Shared menu button classes
   const menuBtnBase = "w-full transition-all duration-150 ease-in-out rounded-lg"
-  const menuBtnExpanded = `${menuBtnBase} justify-start py-2.5 px-3 gap-3`
+  const menuBtnExpanded = `${menuBtnBase} justify-start py-2.5 px-3 gap-3 sidebar-menu-item`
   const menuBtnCollapsed = `${menuBtnBase} justify-center py-2.5`
 
   const activeClass = "bg-[#ec4a55]/15 text-[#ec4a55] font-medium"
