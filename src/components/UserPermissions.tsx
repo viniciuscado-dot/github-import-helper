@@ -677,6 +677,15 @@ export const UserPermissions = ({
                             {section.title}
                           </span>
                         </div>
+                        <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
+                          <Checkbox
+                            checked={hasAllSectionPermissions(section)}
+                            onCheckedChange={(checked) => {
+                              toggleAllSectionPermissions(section, checked as boolean)
+                            }}
+                          />
+                          <span className="text-xs text-muted-foreground">Todos</span>
+                        </div>
                       </div>
                     </CollapsibleTrigger>
                     <CollapsibleContent>
