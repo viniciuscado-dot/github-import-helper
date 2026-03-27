@@ -2,10 +2,12 @@ import { useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import gsap from "gsap";
 import { DotLogo } from "@/components/DotLogo";
+import { useAuth } from "@/contexts/AuthContext";
 
 export default function Intro() {
   const containerRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
+  const { isAuthenticated, loading } = useAuth();
 
   const handleEnter = useCallback(() => {
     if (!containerRef.current) return;
@@ -18,6 +20,12 @@ export default function Intro() {
       onComplete: () => navigate("/auth"),
     });
   }, [navigate]);
+
+  // If already authenticated, skip intro and go to dashboard
+  if (!loading && isAuthenticated) {
+    navigate("/dashboard", { replace: true });
+    return null;
+  }
 
   return (
     <div
