@@ -299,6 +299,21 @@ export const UserPermissions = ({
     return allMods.some(m => getPermissionForModule(m))
   }
 
+  const hasAllSectionPermissions = (section: MenuSection): boolean => {
+    const allMods = getAllModulesFromSection(section).filter(m => getPermissionForModule(m))
+    return allMods.length > 0 && allMods.every(m => hasAllPermissions(m))
+  }
+
+  const toggleAllSectionPermissions = (section: MenuSection, value: boolean) => {
+    const allMods = getAllModulesFromSection(section)
+    setUserPermissions(prev => prev.map(p => {
+      if (allMods.includes(p.module_name)) {
+        return { ...p, can_view: value, can_create: value, can_edit: value, can_delete: value }
+      }
+      return p
+    }))
+  }
+
   const handleSave = async () => {
     setLoading(true)
     

@@ -194,6 +194,21 @@ const RolePermissionsEditor: React.FC<RolePermissionsEditorProps> = ({
     return allModules.some(m => getPermissionForModule(m));
   };
 
+  const hasAllSectionPermissions = (section: MenuSection): boolean => {
+    const allMods = getAllModulesFromSection(section).filter(m => getPermissionForModule(m));
+    return allMods.length > 0 && allMods.every(m => hasAllPermissions(m));
+  };
+
+  const toggleAllSectionPermissions = (section: MenuSection, value: boolean) => {
+    const allMods = getAllModulesFromSection(section);
+    onPermissionsChange(prev => prev.map(p => {
+      if (allMods.includes(p.module_name)) {
+        return { ...p, can_view: value, can_create: value, can_edit: value, can_delete: value };
+      }
+      return p;
+    }));
+  };
+
   // Renderizar módulo com ou sem submodules
   const renderModule = (module: MenuModule) => {
     const ModuleIcon = module.icon;
