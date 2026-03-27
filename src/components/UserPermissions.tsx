@@ -6,7 +6,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Badge } from '@/components/ui/badge'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
-import { Shield, User, ChevronDown, ChevronRight, Settings, Users, DollarSign, BarChart3, FolderCheck, Wallet, Trophy, BarChart2, ClipboardList, FileText, FolderOpen, Activity, Sparkles, Eye, PenLine, Trash, PlusCircle, UserCheck } from 'lucide-react'
+import { Shield, User, ChevronDown, ChevronRight, Settings, Users, BarChart3, Copy, CheckCircle, BarChart2, Megaphone, ClipboardList, Activity, Newspaper, Video, Lightbulb, Layout, Eye, PenLine, Trash, PlusCircle, UserCheck, Bot } from 'lucide-react'
 import { supabase } from '@/integrations/supabase/external-client'
 import { useToast } from '@/hooks/use-toast'
 
@@ -62,88 +62,52 @@ interface MenuSection {
 
 const menuStructure: MenuSection[] = [
   {
-    title: 'Comercial',
+    title: 'Performance',
     color: '#ec4a55',
-    icon: DollarSign,
+    icon: BarChart3,
     modules: [
-      { name: 'crm', displayName: 'CRM', icon: DollarSign },
-      { name: 'dashboard', displayName: 'Quadro de vendas', icon: BarChart3 },
-      { name: 'projetos', displayName: 'Lista de espera', icon: FolderCheck },
-      { name: 'wallet', displayName: 'Wallet', icon: Wallet },
+      { name: 'copy', displayName: 'Copy e Estratégia', icon: Copy },
+      { name: 'aprovacao', displayName: 'Aprovação', icon: CheckCircle },
+      { name: 'analise-bench', displayName: 'Análise e Bench', icon: BarChart2 },
+      { name: 'anuncios', displayName: 'Anúncios', icon: Megaphone },
     ]
   },
   {
-    title: 'Customer Success',
+    title: 'Social Media',
     color: '#ec4a55',
-    icon: UserCheck,
+    icon: Newspaper,
     modules: [
-      { name: 'csm', displayName: 'CSM', icon: UserCheck },
-      { name: 'cs', displayName: 'Cases de sucesso', icon: Trophy },
+      { name: 'planejamento-conteudo', displayName: 'Planejamento de Conteúdo', icon: ClipboardList },
+      { name: 'varredura', displayName: 'Varredura', icon: Activity },
+      { name: 'central-posts', displayName: 'Central de Posts', icon: Newspaper },
     ]
   },
   {
-    title: 'Customer Experience',
+    title: 'Laboratório',
     color: '#ec4a55',
-    icon: BarChart2,
+    icon: Lightbulb,
     modules: [
-      { 
-        name: 'dashboards_cx', 
-        displayName: 'Dashboards', 
-        icon: BarChart2,
-        submodules: [
-          { name: 'csat', displayName: 'CSAT', icon: ClipboardList },
-          { name: 'nps', displayName: 'NPS', icon: ClipboardList },
-          { name: 'churn', displayName: 'CHURN', icon: BarChart2 },
-        ]
-      },
-      { 
-        name: 'pipelines_cx', 
-        displayName: 'Pipelines', 
-        icon: ClipboardList,
-        submodules: [
-          { name: 'csat', displayName: 'CSAT', icon: ClipboardList },
-          { name: 'nps', displayName: 'NPS', icon: ClipboardList },
-          { name: 'churn', displayName: 'CHURN', icon: BarChart2 },
-        ]
-      },
-      { 
-        name: 'formularios_cx', 
-        displayName: 'Formulários', 
-        icon: FileText,
-        submodules: [
-          { name: 'formularios', displayName: 'Gerar Forms', icon: FileText },
-          { name: 'csat', displayName: 'CSAT', icon: ClipboardList },
-          { name: 'nps', displayName: 'NPS', icon: ClipboardList },
-          { name: 'churn', displayName: 'CHURN', icon: BarChart2 },
-        ]
-      },
+      { name: 'editor-video', displayName: 'Editor de Vídeo', icon: Video },
+      { name: 'banco-ideias', displayName: 'Banco de Ideias', icon: Lightbulb },
+      { name: 'lp-builder', displayName: 'LP Builder', icon: Layout },
+      { name: 'diagnostico-visual', displayName: 'Diagnóstico Visual', icon: Eye },
+      { name: 'ai-agent', displayName: 'AI Agent', icon: Bot },
     ]
   },
   {
-    title: 'Operação',
+    title: 'News',
     color: '#ec4a55',
-    icon: FolderOpen,
+    icon: Newspaper,
     modules: [
-      { 
-        name: 'projetos_op', 
-        displayName: 'Projetos', 
-        icon: FolderOpen,
-        submodules: [
-          { name: 'projetos_clientes', displayName: 'Clientes', icon: Users },
-          { name: 'metricas_financeiras', displayName: 'Métricas Financeiras', icon: BarChart3 },
-        ]
-      },
-      { name: 'performance', displayName: 'Performance', icon: Activity },
-      { 
-        name: 'criacao_op', 
-        displayName: 'Criação', 
-        icon: Sparkles,
-        submodules: [
-          { name: 'aprovacao', displayName: 'Aprovação', icon: Sparkles },
-          { name: 'copy', displayName: 'Copy', icon: Sparkles },
-          { name: 'analise_bench', displayName: 'Análise e Bench', icon: Sparkles },
-        ]
-      },
+      { name: 'noticias', displayName: 'Notícias e Conteúdos', icon: Newspaper },
+    ]
+  },
+  {
+    title: 'Data-Driven',
+    color: '#ec4a55',
+    icon: BarChart3,
+    modules: [
+      { name: 'data-driven', displayName: 'Data-Driven', icon: BarChart3 },
     ]
   },
   {
