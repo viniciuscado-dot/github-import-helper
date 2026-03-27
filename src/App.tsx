@@ -212,7 +212,11 @@ const App = () => (
               } />
 
               {/* ── Auth ── */}
-              <Route path="/" element={<Navigate to="/dashboard" replace />} />
+              <Route path="/" element={
+                <Suspense fallback={<DashboardFallback />}>
+                  <Intro />
+                </Suspense>
+              } />
               <Route path="/auth" element={
                 <Suspense fallback={<DashboardFallback />}>
                   <Auth />
