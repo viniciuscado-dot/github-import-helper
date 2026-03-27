@@ -9,12 +9,6 @@ export default function Intro() {
   const navigate = useNavigate();
   const { isAuthenticated, loading } = useAuth();
 
-  // If already authenticated, skip intro and go to dashboard
-  if (!loading && isAuthenticated) {
-    navigate("/dashboard", { replace: true });
-    return null;
-  }
-
   const handleEnter = useCallback(() => {
     if (!containerRef.current) return;
     gsap.to(containerRef.current, {
@@ -26,6 +20,12 @@ export default function Intro() {
       onComplete: () => navigate("/auth"),
     });
   }, [navigate]);
+
+  // If already authenticated, skip intro and go to dashboard
+  if (!loading && isAuthenticated) {
+    navigate("/dashboard", { replace: true });
+    return null;
+  }
 
   return (
     <div
