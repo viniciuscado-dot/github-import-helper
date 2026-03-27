@@ -15,7 +15,6 @@ export default function Auth() {
   const [isLoggingIn, setIsLoggingIn] = useState(false);
   const navigate = useNavigate();
 
-  // Already logged in → go to dashboard
   if (!loading && isAuthenticated) {
     navigate('/dashboard', { replace: true });
     return null;
@@ -24,7 +23,6 @@ export default function Auth() {
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoggingIn(true);
-
     const success = await login(email, password);
     if (success) {
       toast.success('Login realizado com sucesso!');
@@ -44,83 +42,172 @@ export default function Auth() {
   }
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-background via-background to-muted/30 overflow-hidden">
-      {/* Background decorative elements */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute -top-40 -right-40 w-80 h-80 bg-primary/5 rounded-full blur-3xl animate-pulse" />
-        <div className="absolute -bottom-40 -left-40 w-80 h-80 bg-primary/5 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }} />
-      </div>
+    <div className="min-h-screen flex flex-col items-center justify-center overflow-hidden"
+      style={{ background: '#0a0a0f' }}
+    >
+      {/* Background radial glows */}
+      <div aria-hidden className="absolute inset-0 pointer-events-none" style={{
+        background: 'radial-gradient(ellipse 50% 40% at 50% 30%, rgba(56,100,220,0.08) 0%, transparent 70%), radial-gradient(ellipse 60% 50% at 70% 70%, rgba(80,60,200,0.06) 0%, transparent 70%), radial-gradient(ellipse 40% 30% at 20% 60%, rgba(30,160,200,0.04) 0%, transparent 70%)'
+      }} />
 
-      <div className="relative z-10 flex flex-col items-center gap-8 animate-fade-in">
-        {/* Logo */}
-        <div className="relative">
-          <div className="absolute inset-0 bg-primary/20 blur-2xl rounded-full scale-150 animate-pulse" />
-          <div className="relative bg-card/80 backdrop-blur-sm p-6 rounded-2xl border border-border/50 shadow-xl">
-            <DotLogo size={64} />
-          </div>
-        </div>
+      {/* Glass login card */}
+      <div className="auth-glass-card relative z-10 w-full max-w-sm px-8 py-10 flex flex-col items-center gap-6">
+        {/* Rotating border effect */}
+        <div className="auth-glass-card-border" aria-hidden />
 
-        {/* Brand */}
-        <div className="text-center space-y-2">
-          <h1 className="text-3xl font-bold text-foreground tracking-tight">
-            Módulo de Criação
-          </h1>
-        </div>
+        {/* Bubble decorations */}
+        <div className="auth-bubble auth-bubble-1" aria-hidden />
+        <div className="auth-bubble auth-bubble-2" aria-hidden />
 
-        {/* Login form */}
-        <div className="mt-4 w-full max-w-sm">
-          <div className="bg-card/50 backdrop-blur-sm px-6 py-6 rounded-xl border border-border/50 space-y-6">
-            <p className="text-sm text-muted-foreground">
-              Faça login para acessar o módulo.
-            </p>
+        {/* Specular shine */}
+        <div className="auth-specular" aria-hidden />
 
-            <form onSubmit={handleLogin} className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="email">E-mail</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="seu@email.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                />
-              </div>
-              <div className="space-y-2">
-                <Label htmlFor="password">Senha</Label>
-                <Input
-                  id="password"
-                  type="password"
-                  placeholder="••••••••"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                />
-              </div>
-              <Button type="submit" className="w-full" disabled={isLoggingIn}>
-                {isLoggingIn ? (
-                  <>
-                    <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                    Entrando...
-                  </>
-                ) : (
-                  <>
-                    <Mail className="h-4 w-4 mr-2" />
-                    Entrar
-                  </>
-                )}
-              </Button>
-            </form>
-          </div>
+        {/* Content */}
+        <div className="relative z-10 flex flex-col items-center gap-6 w-full">
+          {/* Logo */}
+          <DotLogo size={36} />
+
+          {/* Description */}
+          <p className="text-sm text-muted-foreground text-center">
+            Faça login para acessar o módulo.
+          </p>
+
+          {/* Form */}
+          <form onSubmit={handleLogin} className="space-y-4 w-full">
+            <div className="space-y-2">
+              <Label htmlFor="email">E-mail</Label>
+              <Input
+                id="email"
+                type="email"
+                placeholder="seu@email.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="password">Senha</Label>
+              <Input
+                id="password"
+                type="password"
+                placeholder="••••••••"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+              />
+            </div>
+            <Button type="submit" className="w-full" disabled={isLoggingIn}>
+              {isLoggingIn ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Entrando...
+                </>
+              ) : (
+                <>
+                  <Mail className="h-4 w-4 mr-2" />
+                  Entrar
+                </>
+              )}
+            </Button>
+          </form>
         </div>
       </div>
 
       {/* Footer */}
-      <div className="absolute bottom-8 text-center">
+      <div className="absolute bottom-8 text-center z-10">
         <p className="text-xs text-muted-foreground/60">
           Powered by DOT Conceito
         </p>
       </div>
+
+      {/* Scoped styles */}
+      <style>{`
+        .auth-glass-card {
+          background: rgba(255, 255, 255, 0.04);
+          backdrop-filter: blur(16px);
+          -webkit-backdrop-filter: blur(16px);
+          border: 1px solid rgba(255, 255, 255, 0.08);
+          border-radius: 2rem;
+          box-shadow:
+            inset 0 0 40px rgba(56, 100, 220, 0.04),
+            0 20px 60px -10px rgba(0, 0, 0, 0.5);
+          overflow: hidden;
+          position: relative;
+        }
+
+        .auth-glass-card-border {
+          content: "";
+          position: absolute;
+          top: -50%;
+          left: -50%;
+          width: 200%;
+          height: 200%;
+          background: conic-gradient(
+            from 0deg,
+            transparent 0%,
+            transparent 75%,
+            rgba(56, 100, 220, 0.15) 90%,
+            rgba(80, 60, 200, 0.1) 95%,
+            transparent 100%
+          );
+          animation: auth-border-rotate 20s linear infinite;
+          z-index: 1;
+          filter: blur(20px);
+          opacity: 0.6;
+          pointer-events: none;
+        }
+
+        @keyframes auth-border-rotate {
+          from { transform: rotate(0deg); }
+          to { transform: rotate(360deg); }
+        }
+
+        .auth-bubble {
+          position: absolute;
+          border-radius: 50%;
+          pointer-events: none;
+          z-index: 2;
+        }
+
+        .auth-bubble-1 {
+          width: 140px;
+          height: 140px;
+          top: -30px;
+          right: -20px;
+          background: radial-gradient(130% 130% at 30% 30%, rgba(255,255,255,0.06) 10%, rgba(255,255,255,0.01) 100%);
+          box-shadow: inset 2px 2px 5px rgba(255,255,255,0.03);
+          animation: auth-float-1 12s infinite ease-in-out;
+        }
+
+        .auth-bubble-2 {
+          width: 100px;
+          height: 100px;
+          bottom: 10px;
+          left: -25px;
+          background: radial-gradient(130% 130% at 70% 70%, rgba(56,100,220,0.06) 0%, transparent 100%);
+          box-shadow: inset 2px 2px 5px rgba(255,255,255,0.03);
+          animation: auth-float-2 9s infinite ease-in-out reverse;
+        }
+
+        @keyframes auth-float-1 {
+          0%, 100% { transform: translate(0, 0) scale(1); }
+          50% { transform: translate(-15px, 20px) scale(1.04); }
+        }
+
+        @keyframes auth-float-2 {
+          0%, 100% { transform: translate(0, 0) scale(1); }
+          50% { transform: translate(20px, -15px) scale(0.96); }
+        }
+
+        .auth-specular {
+          position: absolute;
+          inset: 0;
+          border-radius: 2rem;
+          background: linear-gradient(135deg, rgba(255,255,255,0.06) 0%, transparent 40%, transparent 100%);
+          pointer-events: none;
+          z-index: 3;
+        }
+      `}</style>
     </div>
   );
 }
