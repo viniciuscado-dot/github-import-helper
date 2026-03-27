@@ -105,6 +105,18 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         setUser(newSession?.user ?? null);
 
         if (newSession?.user) {
+          // Domain restriction: only @dotconceito.com emails allowed
+          const userEmail = newSession.user.email || '';
+          if (userEmail && !userEmail.endsWith('@dotconceito.com')) {
+            console.warn('Domain not allowed:', userEmail);
+            await supabase.auth.signOut();
+            setUser(null);
+            setSession(null);
+            setProfile(null);
+            setProfiles([]);
+            setLoading(false);
+            return;
+          }
           // Use setTimeout to avoid Supabase deadlock
           setTimeout(async () => {
             await fetchProfile(newSession.user.id);
