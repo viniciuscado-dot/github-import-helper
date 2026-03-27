@@ -1,25 +1,33 @@
 
 
-## Plan: Replace Bubbles with Mouse-Follow Specular Effect on Auth Page
+## Plan: Add Mouse-Follow Specular Effect to All Cards
 
-### Changes — `src/pages/Auth.tsx` only
+### Approach
+Modify the `Card` component in `src/components/ui/card.tsx` to include the mouse-follow specular shine effect. Since every card in the app uses this component, the effect will be applied globally with a single change.
 
-**1. Remove bubble elements**
-Delete the two `auth-bubble` divs (lines 59-60) and all their CSS (`.auth-bubble`, `.auth-bubble-1`, `.auth-bubble-2`, `@keyframes auth-float-1`, `@keyframes auth-float-2`).
+### Changes — `src/components/ui/card.tsx` only
 
-**2. Add mouse-follow specular shine**
-- Add a `useRef` for the card and an `onMouseMove` handler that sets `--mouse-x` and `--mouse-y` CSS variables on the card element (same pattern as the reference HTML's `GlassCard`).
-- Update `.auth-specular` CSS to use `radial-gradient(circle at var(--mouse-x, 50%) var(--mouse-y, 50%), rgba(255,255,255,0.08) 0%, transparent 60%)` instead of the static linear gradient.
-- Add `opacity: 0` by default and `opacity: 1` on `.auth-glass-card:hover .auth-specular` with a smooth transition.
+**1. Add mouse tracking to the Card component**
+- Add an internal ref (merged with forwarded ref) and an `onMouseMove` handler that sets `--mouse-x` and `--mouse-y` CSS variables on the card element.
+- Inject a specular overlay `<div>` as the first child inside every Card, absolutely positioned, with `pointer-events: none` so it doesn't interfere with content.
+- Add `position: relative` and `overflow: hidden` to the card base classes.
 
-**3. Keep rotating border effect** — unchanged, it stays as-is.
+**2. Specular overlay styling (inline or scoped)**
+- `radial-gradient(circle at var(--mouse-x, 50%) var(--mouse-y, 50%), rgba(255,255,255,0.06) 0%, transparent 60%)`
+- `opacity: 0` by default, `opacity: 1` on card hover via group-hover
+- Smooth `transition: opacity 0.3s ease`
+- `z-index: 1` with `pointer-events: none`
+
+**3. Card children get `relative z-[2]`** — not needed since specular has `pointer-events: none` and low opacity. The overlay is purely decorative.
+
+### Visual result
+Every card across the entire app (dashboards, KPIs, forms, approval cards, etc.) will show a subtle light spot following the mouse cursor on hover, matching the login page effect.
 
 ### What stays unchanged
-- All auth logic, state, navigation
-- Glass card structure, logo, form
-- Background radial glows
-- No `index.css` changes
+- All card content, layout, logic, and responsiveness
+- No changes to `index.css` or any other component files
+- CardHeader, CardTitle, CardContent, CardFooter, CardDescription unchanged
 
 ### Files Modified
-- `src/pages/Auth.tsx`
+- `src/components/ui/card.tsx`
 
