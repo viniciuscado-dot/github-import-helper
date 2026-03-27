@@ -1,43 +1,41 @@
 
 
-## Plan: Add Google Login (restricted to @dotconceito.com)
+## Plan: Add Shimmer + Icon Reveal Effect to Sidebar Menu Items
 
-### How it works
-- Add a "Entrar com Google" button on the Auth page
-- After Google OAuth callback, check if the email ends with `@dotconceito.com`
-- If not, sign the user out immediately and show an error toast
-- The `handle_new_user` trigger already creates a profile automatically with role `equipe`
+### What changes
 
-### Prerequisites (user action required)
-You need to configure Google OAuth in two places:
+**Single file: `src/components/app-sidebar.tsx`**
 
-**1. Google Cloud Console**
-- Create OAuth Client ID (Web Application)
-- Add `https://cesohdhspysooaowtvsu.supabase.co` to Authorized redirect URIs as: `https://cesohdhspysooaowtvsu.supabase.co/auth/v1/callback`
-- Add your site URL to Authorized JavaScript origins
+Add a scoped `<style>` block inside the component with the hover effects from the reference, adapted to the sidebar's existing structure. Modify the `renderMenuItem` helper to apply the effect classes.
 
-**2. Supabase Dashboard**
-- Go to Authentication → Providers → Google
-- Enable it and paste Client ID + Client Secret
+### Effect details (expanded sidebar only)
 
-### Code Changes
+1. **Icon reveal on hover** — Icons start with `opacity: 0`, `width: 0`, `transform: scale(0.2)`. On hover they animate to full size with a smooth 0.5s transition.
+2. **Shimmer border** — Each menu button gets a `::before` pseudo-element with a traveling gradient shine on hover (the `shinerySync` keyframe).
+3. **Active items** keep their current red highlight styling unchanged.
+4. **Collapsed sidebar** — No changes, tooltip behavior stays identical.
 
-**1. `src/pages/Auth.tsx`**
-- Add a "Entrar com Google" button below the existing login form
-- On click: `supabase.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: window.location.origin + '/auth' } })`
-- Add a `useEffect` that listens to auth state changes — if a new Google user's email doesn't end with `@dotconceito.com`, call `signOut()` and show error toast "Apenas emails @dotconceito.com podem acessar"
+### Implementation
 
-**2. `src/contexts/AuthContext.tsx`**
-- In the `onAuthStateChange` handler, add a domain check: if the user's email doesn't end with `@dotconceito.com`, sign them out and clear state
+1. Add a `<style>` block inside the return, with:
+   - `.sidebar-menu-item` base styles: `position: relative`, `overflow: hidden`, `transition: 0.3s`
+   - `.sidebar-menu-item::before` shimmer pseudo-element (hidden by default, visible on hover with `shinerySync` animation)
+   - `.sidebar-menu-item .sidebar-icon` — starts at `opacity: 0; width: 0; transform: scale(0.2); transition: 0.5s`
+   - `.sidebar-menu-item:hover .sidebar-icon` — `opacity: 1; width: 20px; transform: scale(1.05); margin-right: 8px`
 
-### Security note
-The domain restriction is enforced both client-side (UX) and via the profile system (admins control permissions). For stronger server-side enforcement, a Supabase auth hook could be added later, but the client-side check + existing permission system is sufficient for this use case.
+2. Update `renderMenuItem` (expanded mode only):
+   - Add `sidebar-menu-item` class to `SidebarMenuButton`
+   - Add `sidebar-icon` class to the `Icon` wrapper
+   - Text stays as-is
+
+3. Footer items (Settings, Logout, Data-Driven, Users) get the same classes.
+
+### What stays unchanged
+- All colors, active states, navigation, routes, structure
+- Collapsed sidebar behavior and tooltips
+- Footer user profile section
+- Group labels and spacing
 
 ### Files Modified
-- `src/pages/Auth.tsx` — add Google button + domain validation
-- `src/contexts/AuthContext.tsx` — add domain check on auth state change
-
-### Unchanged
-- Database, RLS, edge functions, permissions system
-- Existing email/password login flow
+- `src/components/app-sidebar.tsx`
 
