@@ -465,7 +465,7 @@ const RolePermissionsEditor: React.FC<RolePermissionsEditorProps> = ({
       {/* Módulos que não estão na estrutura do menu - filtrados para ocultar módulos escondidos */}
       {(() => {
         // Módulos ocultos que não devem aparecer nas permissões
-        const hiddenModules = ['gestao_contratos', 'cs_dashboards', 'cs_pipelines', 'dashboards_cx', 'pipelines_cx', 'formularios_cx', 'projetos_op', 'criacao_op'];
+        const hiddenModules = ['gestao_contratos', 'cs_dashboards', 'cs_pipelines', 'dashboards_cx', 'pipelines_cx', 'formularios_cx', 'projetos_op', 'criacao_op', 'data-driven', 'users'];
         
         // Coletar todos os módulos mapeados (incluindo submodules)
         const allMappedModules: string[] = [];
