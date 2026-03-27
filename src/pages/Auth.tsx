@@ -51,15 +51,15 @@ export default function Auth() {
       }} />
 
       {/* Glass login card */}
-      <div className="auth-glass-card relative z-10 w-full max-w-sm px-8 py-10 flex flex-col items-center gap-6">
+      <div
+        ref={cardRef}
+        onMouseMove={handleMouseMove}
+        className="auth-glass-card relative z-10 w-full max-w-sm px-8 py-10 flex flex-col items-center gap-6"
+      >
         {/* Rotating border effect */}
         <div className="auth-glass-card-border" aria-hidden />
 
-        {/* Bubble decorations */}
-        <div className="auth-bubble auth-bubble-1" aria-hidden />
-        <div className="auth-bubble auth-bubble-2" aria-hidden />
-
-        {/* Specular shine */}
+        {/* Mouse-follow specular shine */}
         <div className="auth-specular" aria-hidden />
 
         {/* Content */}
