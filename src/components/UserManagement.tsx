@@ -104,22 +104,6 @@ const menuStructure: MenuSection[] = [
       { name: 'noticias', displayName: 'Notícias e Conteúdos', icon: Newspaper },
     ]
   },
-  {
-    title: 'Data-Driven',
-    color: '#ec4a55',
-    icon: BarChart3,
-    modules: [
-      { name: 'data-driven', displayName: 'Data-Driven', icon: BarChart3 },
-    ]
-  },
-  {
-    title: 'Configurações',
-    color: '#ec4a55',
-    icon: Settings,
-    modules: [
-      { name: 'users', displayName: 'Usuários', icon: Users },
-    ]
-  },
 ];
 
 // Componente para edição de permissões com estrutura de menu
@@ -208,6 +192,21 @@ const RolePermissionsEditor: React.FC<RolePermissionsEditorProps> = ({
   const hasPermissionsInSection = (section: MenuSection): boolean => {
     const allModules = getAllModulesFromSection(section);
     return allModules.some(m => getPermissionForModule(m));
+  };
+
+  const hasAllSectionPermissions = (section: MenuSection): boolean => {
+    const allMods = getAllModulesFromSection(section).filter(m => getPermissionForModule(m));
+    return allMods.length > 0 && allMods.every(m => hasAllPermissions(m));
+  };
+
+  const toggleAllSectionPermissions = (section: MenuSection, value: boolean) => {
+    const allMods = getAllModulesFromSection(section);
+    onPermissionsChange(prev => prev.map(p => {
+      if (allMods.includes(p.module_name)) {
+        return { ...p, can_view: value, can_create: value, can_edit: value, can_delete: value };
+      }
+      return p;
+    }));
   };
 
   // Renderizar módulo com ou sem submodules
@@ -443,6 +442,15 @@ const RolePermissionsEditor: React.FC<RolePermissionsEditorProps> = ({
                       {section.title}
                     </span>
                   </div>
+                  <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
+                    <Checkbox
+                      checked={hasAllSectionPermissions(section)}
+                      onCheckedChange={(checked) => {
+                        toggleAllSectionPermissions(section, checked as boolean);
+                      }}
+                    />
+                    <span className="text-xs text-muted-foreground">Todos</span>
+                  </div>
                 </div>
               </CollapsibleTrigger>
               <CollapsibleContent>
@@ -457,7 +465,7 @@ const RolePermissionsEditor: React.FC<RolePermissionsEditorProps> = ({
       {/* Módulos que não estão na estrutura do menu - filtrados para ocultar módulos escondidos */}
       {(() => {
         // Módulos ocultos que não devem aparecer nas permissões
-        const hiddenModules = ['gestao_contratos', 'cs_dashboards', 'cs_pipelines', 'dashboards_cx', 'pipelines_cx', 'formularios_cx', 'projetos_op', 'criacao_op'];
+        const hiddenModules = ['gestao_contratos', 'cs_dashboards', 'cs_pipelines', 'dashboards_cx', 'pipelines_cx', 'formularios_cx', 'projetos_op', 'criacao_op', 'data-driven', 'users'];
         
         // Coletar todos os módulos mapeados (incluindo submodules)
         const allMappedModules: string[] = [];

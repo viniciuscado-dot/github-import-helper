@@ -121,8 +121,8 @@ export function AnaliseBench() {
   const canDelete = checkModulePermission('analise_bench', 'delete')
   const isAdmin = profile?.effectiveRole === 'admin'
   
-  // Regra de negócio: Acesso aos prompts requer permissões de editar E excluir
-  const canAccessPrompts = (canEdit && canDelete) || isAdmin
+  // Regra de negócio: Acesso aos prompts apenas para administradores
+  const canAccessPrompts = isAdmin
 
   const form = useForm<AnaliseFormData>({
     resolver: zodResolver(analiseFormSchema),

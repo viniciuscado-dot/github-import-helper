@@ -102,22 +102,6 @@ const menuStructure: MenuSection[] = [
       { name: 'noticias', displayName: 'Notícias e Conteúdos', icon: Newspaper },
     ]
   },
-  {
-    title: 'Data-Driven',
-    color: '#ec4a55',
-    icon: BarChart3,
-    modules: [
-      { name: 'data-driven', displayName: 'Data-Driven', icon: BarChart3 },
-    ]
-  },
-  {
-    title: 'Configurações',
-    color: '#ec4a55',
-    icon: Settings,
-    modules: [
-      { name: 'users', displayName: 'Usuários', icon: Users },
-    ]
-  },
 ];
 
 export const UserPermissions = ({ 
@@ -313,6 +297,21 @@ export const UserPermissions = ({
   const hasPermissionsInSection = (section: MenuSection): boolean => {
     const allMods = getAllModulesFromSection(section)
     return allMods.some(m => getPermissionForModule(m))
+  }
+
+  const hasAllSectionPermissions = (section: MenuSection): boolean => {
+    const allMods = getAllModulesFromSection(section).filter(m => getPermissionForModule(m))
+    return allMods.length > 0 && allMods.every(m => hasAllPermissions(m))
+  }
+
+  const toggleAllSectionPermissions = (section: MenuSection, value: boolean) => {
+    const allMods = getAllModulesFromSection(section)
+    setUserPermissions(prev => prev.map(p => {
+      if (allMods.includes(p.module_name)) {
+        return { ...p, can_view: value, can_create: value, can_edit: value, can_delete: value }
+      }
+      return p
+    }))
   }
 
   const handleSave = async () => {
@@ -677,6 +676,15 @@ export const UserPermissions = ({
                           <span className="font-semibold" style={{ color: section.color }}>
                             {section.title}
                           </span>
+                        </div>
+                        <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
+                          <Checkbox
+                            checked={hasAllSectionPermissions(section)}
+                            onCheckedChange={(checked) => {
+                              toggleAllSectionPermissions(section, checked as boolean)
+                            }}
+                          />
+                          <span className="text-xs text-muted-foreground">Todos</span>
                         </div>
                       </div>
                     </CollapsibleTrigger>
