@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { DotLogo } from '@/components/DotLogo';
 import { Loader2, Mail } from 'lucide-react';
