@@ -1,20 +1,55 @@
 import * as React from "react"
-
 import { cn } from "@/lib/utils"
 
 const Card = React.forwardRef<
   HTMLDivElement,
   React.HTMLAttributes<HTMLDivElement>
->(({ className, ...props }, ref) => (
-  <div
-    ref={ref}
-    className={cn(
-      "rounded-lg border bg-card text-card-foreground shadow-sm",
-      className
-    )}
-    {...props}
-  />
-))
+>(({ className, onMouseMove, children, ...props }, ref) => {
+  const internalRef = React.useRef<HTMLDivElement>(null)
+
+  const mergedRef = React.useCallback(
+    (node: HTMLDivElement | null) => {
+      (internalRef as React.MutableRefObject<HTMLDivElement | null>).current = node
+      if (typeof ref === "function") ref(node)
+      else if (ref) (ref as React.MutableRefObject<HTMLDivElement | null>).current = node
+    },
+    [ref]
+  )
+
+  const handleMouseMove = React.useCallback(
+    (e: React.MouseEvent<HTMLDivElement>) => {
+      if (internalRef.current) {
+        const rect = internalRef.current.getBoundingClientRect()
+        internalRef.current.style.setProperty("--mouse-x", `${e.clientX - rect.left}px`)
+        internalRef.current.style.setProperty("--mouse-y", `${e.clientY - rect.top}px`)
+      }
+      onMouseMove?.(e)
+    },
+    [onMouseMove]
+  )
+
+  return (
+    <div
+      ref={mergedRef}
+      onMouseMove={handleMouseMove}
+      className={cn(
+        "group relative overflow-hidden rounded-lg border bg-card text-card-foreground shadow-sm",
+        className
+      )}
+      {...props}
+    >
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0 z-[1] opacity-0 transition-opacity duration-300 group-hover:opacity-100"
+        style={{
+          background:
+            "radial-gradient(circle at var(--mouse-x, 50%) var(--mouse-y, 50%), rgba(255,255,255,0.06) 0%, transparent 60%)",
+        }}
+      />
+      {children}
+    </div>
+  )
+})
 Card.displayName = "Card"
 
 const CardHeader = React.forwardRef<
