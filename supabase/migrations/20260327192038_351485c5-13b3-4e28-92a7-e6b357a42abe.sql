@@ -1,0 +1,1 @@
+UPDATE public.custom_roles SET display_name = 'Analista de Performance' WHERE name = 'analista';
