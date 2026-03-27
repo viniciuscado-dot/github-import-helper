@@ -6,7 +6,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Badge } from '@/components/ui/badge'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
-import { Shield, User, ChevronDown, ChevronRight, Settings, Users, DollarSign, BarChart3, FolderCheck, Wallet, Trophy, BarChart2, ClipboardList, FileText, FolderOpen, Activity, Sparkles, Eye, PenLine, Trash, PlusCircle, UserCheck } from 'lucide-react'
+import { Shield, User, ChevronDown, ChevronRight, Settings, Users, BarChart3, Copy, CheckCircle, BarChart2, Megaphone, ClipboardList, Activity, Newspaper, Video, Lightbulb, Layout, Eye, PenLine, Trash, PlusCircle, UserCheck, Bot } from 'lucide-react'
 import { supabase } from '@/integrations/supabase/external-client'
 import { useToast } from '@/hooks/use-toast'
 
