@@ -1,121 +1,186 @@
 
 
-## Plan: Fix All Security Issues
+## Plan: Fix Missing Permission Tables in Database
 
-The screenshot shows 4 errors and 3 warnings from the security scanner. Here's the fix for each.
+### Problem
+The error "Could not find the table 'public.modules' in the schema cache" occurs because the migration that creates the permission system tables (`modules`, `custom_roles`, `role_module_permissions`, `user_module_permissions`) and the `user_has_module_permission` RPC function was never successfully applied to the database. The migration file exists but likely failed during execution due to references to non-existent functions (`get_current_user_role()`, `update_updated_at_column()`).
 
-### Issue 1: Business intelligence forms publicly readable (Error)
-**Tables affected**: `analise_bench_forms` has a SELECT policy for `{public}` role with `USING (true)` — meaning unauthenticated (anon) users can read it.
-**Fix**: Drop the public SELECT policy and ensure only `authenticated` users can read.
+### Fix
+Create a new migration that safely creates all 4 missing tables, seeds default modules (updated for the current app), creates the RPC function, and sets up proper RLS policies -- all using functions that actually exist in the database (`get_user_role()`, `handle_updated_at()`).
 
-### Issue 2: KPI metrics fully readable and writable by unauthenticated users (Error)
-**Tables affected**: `kpis`, `evaluations`, `kanban_status`, `materials`, `material_files`, `projects` — all have `FOR ALL` policies on `{public}` with `USING (true)`.
-**Fix**: Drop overly permissive policies and replace with `TO authenticated` policies.
-
-### Issue 3: Users can escalate their own role by updating their profile (Error)
-**Table**: `profiles` — the "Users can update own profile" policy allows users to update ANY column including `role`.
-**Fix**: Create a trigger that prevents non-admin users from changing their own `role`, `custom_role_id`, or `is_active` fields.
-
-### Issue 4: User profiles with emails and phone numbers are publicly readable (Error)
-**Table**: `profiles` — current SELECT policy is already `TO authenticated` with `USING (true)`, so this may be about anon access via other paths. Will ensure no anon SELECT policy exists.
-**Fix**: Verify and ensure profiles SELECT is `authenticated` only (already the case from schema, but double-check no legacy policy remains).
-
-### Issue 5: Leaked Password Protection Disabled (Warning)
-**Fix**: This is a Supabase dashboard setting — I'll instruct the user to enable it. Cannot be done via migration.
-
-### Issue 6: RLS Policy Always True (Warning)
-**Fix**: Covered by issues 1 and 2 above — replace `USING (true)` ALL-access policies with authenticated-only policies.
-
-### Issue 7: High severity vulnerabilities in application dependencies (Warning)
-**Fix**: Run `npm audit fix` to update vulnerable packages.
-
----
-
-### Database Migration (single SQL migration)
+### Database Migration
 
 ```sql
--- 1. Fix analise_bench_forms: restrict SELECT to authenticated only
-DROP POLICY IF EXISTS "Authenticated users can read analise_bench_forms" ON public.analise_bench_forms;
-CREATE POLICY "Authenticated users can read analise_bench_forms"
-  ON public.analise_bench_forms FOR SELECT TO authenticated USING (true);
+-- Create enum if not exists
+DO $$ BEGIN
+  CREATE TYPE public.app_role AS ENUM ('admin', 'sdr', 'closer', 'manager', 'custom');
+EXCEPTION WHEN duplicate_object THEN NULL;
+END $$;
 
--- 2. Fix projects: restrict to authenticated
-DROP POLICY IF EXISTS "Allow all access to projects" ON public.projects;
-CREATE POLICY "Authenticated can select projects" ON public.projects FOR SELECT TO authenticated USING (true);
-CREATE POLICY "Authenticated can insert projects" ON public.projects FOR INSERT TO authenticated WITH CHECK (true);
-CREATE POLICY "Authenticated can update projects" ON public.projects FOR UPDATE TO authenticated USING (true) WITH CHECK (true);
-CREATE POLICY "Authenticated can delete projects" ON public.projects FOR DELETE TO authenticated USING (true);
+-- Modules table
+CREATE TABLE IF NOT EXISTS public.modules (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  name TEXT NOT NULL UNIQUE,
+  display_name TEXT NOT NULL,
+  description TEXT,
+  icon TEXT,
+  is_active BOOLEAN NOT NULL DEFAULT true,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
 
--- 3. Fix materials
-DROP POLICY IF EXISTS "Allow all access to materials" ON public.materials;
-CREATE POLICY "Authenticated can select materials" ON public.materials FOR SELECT TO authenticated USING (true);
-CREATE POLICY "Authenticated can insert materials" ON public.materials FOR INSERT TO authenticated WITH CHECK (true);
-CREATE POLICY "Authenticated can update materials" ON public.materials FOR UPDATE TO authenticated USING (true) WITH CHECK (true);
-CREATE POLICY "Authenticated can delete materials" ON public.materials FOR DELETE TO authenticated USING (true);
+-- Custom roles table
+CREATE TABLE IF NOT EXISTS public.custom_roles (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  name TEXT NOT NULL UNIQUE,
+  display_name TEXT NOT NULL,
+  description TEXT,
+  base_role app_role NOT NULL DEFAULT 'custom',
+  is_active BOOLEAN NOT NULL DEFAULT true,
+  created_by UUID NOT NULL,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
 
--- 4. Fix material_files
-DROP POLICY IF EXISTS "Allow all access to material_files" ON public.material_files;
-CREATE POLICY "Authenticated can select material_files" ON public.material_files FOR SELECT TO authenticated USING (true);
-CREATE POLICY "Authenticated can insert material_files" ON public.material_files FOR INSERT TO authenticated WITH CHECK (true);
-CREATE POLICY "Authenticated can update material_files" ON public.material_files FOR UPDATE TO authenticated USING (true) WITH CHECK (true);
-CREATE POLICY "Authenticated can delete material_files" ON public.material_files FOR DELETE TO authenticated USING (true);
+-- Role module permissions
+CREATE TABLE IF NOT EXISTS public.role_module_permissions (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  role_id UUID NOT NULL REFERENCES public.custom_roles(id) ON DELETE CASCADE,
+  module_id UUID NOT NULL REFERENCES public.modules(id) ON DELETE CASCADE,
+  can_view BOOLEAN NOT NULL DEFAULT false,
+  can_create BOOLEAN NOT NULL DEFAULT false,
+  can_edit BOOLEAN NOT NULL DEFAULT false,
+  can_delete BOOLEAN NOT NULL DEFAULT false,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  UNIQUE(role_id, module_id)
+);
 
--- 5. Fix evaluations
-DROP POLICY IF EXISTS "Allow all access to evaluations" ON public.evaluations;
-CREATE POLICY "Authenticated can select evaluations" ON public.evaluations FOR SELECT TO authenticated USING (true);
-CREATE POLICY "Authenticated can insert evaluations" ON public.evaluations FOR INSERT TO authenticated WITH CHECK (true);
-CREATE POLICY "Authenticated can update evaluations" ON public.evaluations FOR UPDATE TO authenticated USING (true) WITH CHECK (true);
-CREATE POLICY "Authenticated can delete evaluations" ON public.evaluations FOR DELETE TO authenticated USING (true);
+-- User module permissions (overrides)
+CREATE TABLE IF NOT EXISTS public.user_module_permissions (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID NOT NULL,
+  module_id UUID NOT NULL REFERENCES public.modules(id) ON DELETE CASCADE,
+  can_view BOOLEAN NOT NULL DEFAULT false,
+  can_create BOOLEAN NOT NULL DEFAULT false,
+  can_edit BOOLEAN NOT NULL DEFAULT false,
+  can_delete BOOLEAN NOT NULL DEFAULT false,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  updated_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+  UNIQUE(user_id, module_id)
+);
 
--- 6. Fix kanban_status
-DROP POLICY IF EXISTS "Allow all access to kanban_status" ON public.kanban_status;
-CREATE POLICY "Authenticated can select kanban_status" ON public.kanban_status FOR SELECT TO authenticated USING (true);
-CREATE POLICY "Authenticated can insert kanban_status" ON public.kanban_status FOR INSERT TO authenticated WITH CHECK (true);
-CREATE POLICY "Authenticated can update kanban_status" ON public.kanban_status FOR UPDATE TO authenticated USING (true) WITH CHECK (true);
-CREATE POLICY "Authenticated can delete kanban_status" ON public.kanban_status FOR DELETE TO authenticated USING (true);
+-- RLS
+ALTER TABLE public.modules ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.custom_roles ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.role_module_permissions ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.user_module_permissions ENABLE ROW LEVEL SECURITY;
 
--- 7. Fix kpis
-DROP POLICY IF EXISTS "Allow all access to kpis" ON public.kpis;
-CREATE POLICY "Authenticated can select kpis" ON public.kpis FOR SELECT TO authenticated USING (true);
-CREATE POLICY "Authenticated can insert kpis" ON public.kpis FOR INSERT TO authenticated WITH CHECK (true);
-CREATE POLICY "Authenticated can update kpis" ON public.kpis FOR UPDATE TO authenticated USING (true) WITH CHECK (true);
-CREATE POLICY "Authenticated can delete kpis" ON public.kpis FOR DELETE TO authenticated USING (true);
+-- Policies for modules
+CREATE POLICY "Authenticated can view modules"
+  ON public.modules FOR SELECT TO authenticated USING (true);
+CREATE POLICY "Admins can manage modules"
+  ON public.modules FOR ALL TO authenticated
+  USING (get_user_role(auth.uid()) IN ('admin','workspace_admin'))
+  WITH CHECK (get_user_role(auth.uid()) IN ('admin','workspace_admin'));
 
--- 8. Fix role escalation: prevent users from changing their own role
-CREATE OR REPLACE FUNCTION public.prevent_role_escalation()
-RETURNS TRIGGER
+-- Policies for custom_roles
+CREATE POLICY "Authenticated can view active roles"
+  ON public.custom_roles FOR SELECT TO authenticated USING (is_active = true);
+CREATE POLICY "Admins can manage roles"
+  ON public.custom_roles FOR ALL TO authenticated
+  USING (get_user_role(auth.uid()) IN ('admin','workspace_admin'))
+  WITH CHECK (get_user_role(auth.uid()) IN ('admin','workspace_admin'));
+
+-- Policies for role_module_permissions
+CREATE POLICY "Authenticated can view role perms"
+  ON public.role_module_permissions FOR SELECT TO authenticated USING (true);
+CREATE POLICY "Admins can manage role perms"
+  ON public.role_module_permissions FOR ALL TO authenticated
+  USING (get_user_role(auth.uid()) IN ('admin','workspace_admin'))
+  WITH CHECK (get_user_role(auth.uid()) IN ('admin','workspace_admin'));
+
+-- Policies for user_module_permissions
+CREATE POLICY "Users can view own or admins all"
+  ON public.user_module_permissions FOR SELECT TO authenticated
+  USING (user_id = auth.uid() OR get_user_role(auth.uid()) IN ('admin','workspace_admin'));
+CREATE POLICY "Admins can manage user perms"
+  ON public.user_module_permissions FOR ALL TO authenticated
+  USING (get_user_role(auth.uid()) IN ('admin','workspace_admin'))
+  WITH CHECK (get_user_role(auth.uid()) IN ('admin','workspace_admin'));
+
+-- Seed current modules
+INSERT INTO public.modules (name, display_name, description) VALUES
+  ('users', 'Usuários', 'Gerenciamento de usuários'),
+  ('profile', 'Meu Perfil', 'Configurações do perfil'),
+  ('copy', 'Copy e Estratégia', 'Geração de copies'),
+  ('analise-bench', 'Análise e Bench', 'Análise de benchmarking'),
+  ('aprovacao', 'Aprovação', 'Fluxo de aprovação de materiais'),
+  ('data-driven', 'Data-Driven', 'Gestão e produtividade'),
+  ('anuncios', 'Anúncios', 'Performance de anúncios'),
+  ('planejamento-conteudo', 'Planejamento', 'Planejamento de conteúdo'),
+  ('varredura', 'Varredura', 'Varredura de redes sociais'),
+  ('central-posts', 'Central de Posts', 'Central de posts'),
+  ('noticias', 'Notícias', 'Notícias e conteúdos'),
+  ('laboratorio', 'Laboratório', 'Ferramentas experimentais'),
+  ('preferencias-interface', 'Preferências', 'Preferências de interface')
+ON CONFLICT (name) DO NOTHING;
+
+-- Recreate the RPC function using correct column (id, not user_id)
+CREATE OR REPLACE FUNCTION public.user_has_module_permission(
+  _user_id UUID,
+  _module_name TEXT,
+  _permission_type TEXT DEFAULT 'view'
+)
+RETURNS BOOLEAN
 LANGUAGE plpgsql
 SECURITY DEFINER
 SET search_path = public
 AS $$
+DECLARE
+  has_perm BOOLEAN;
+  user_role_id UUID;
 BEGIN
-  -- If the user is updating their own profile
-  IF NEW.id = auth.uid() THEN
-    -- Prevent changing sensitive fields unless user is admin/workspace_admin
-    IF (OLD.role IS DISTINCT FROM NEW.role) OR
-       (OLD.custom_role_id IS DISTINCT FROM NEW.custom_role_id) OR
-       (OLD.is_active IS DISTINCT FROM NEW.is_active) THEN
-      -- Check if caller is admin
-      IF get_user_role(auth.uid()) NOT IN ('admin', 'workspace_admin') THEN
-        NEW.role := OLD.role;
-        NEW.custom_role_id := OLD.custom_role_id;
-        NEW.is_active := OLD.is_active;
-      END IF;
-    END IF;
+  -- Admin = full access
+  IF EXISTS (SELECT 1 FROM public.profiles WHERE id = _user_id AND role IN ('admin','workspace_admin')) THEN
+    RETURN true;
   END IF;
-  RETURN NEW;
+
+  -- Get custom role
+  SELECT custom_role_id INTO user_role_id FROM public.profiles WHERE id = _user_id;
+
+  -- Check user-level override first
+  SELECT CASE
+    WHEN _permission_type = 'view' THEN can_view
+    WHEN _permission_type = 'create' THEN can_create
+    WHEN _permission_type = 'edit' THEN can_edit
+    WHEN _permission_type = 'delete' THEN can_delete
+    ELSE false
+  END INTO has_perm
+  FROM public.user_module_permissions ump
+  JOIN public.modules m ON m.id = ump.module_id
+  WHERE ump.user_id = _user_id AND m.name = _module_name;
+
+  IF has_perm IS NOT NULL THEN RETURN has_perm; END IF;
+
+  -- Check role-level
+  IF user_role_id IS NOT NULL THEN
+    SELECT CASE
+      WHEN _permission_type = 'view' THEN can_view
+      WHEN _permission_type = 'create' THEN can_create
+      WHEN _permission_type = 'edit' THEN can_edit
+      WHEN _permission_type = 'delete' THEN can_delete
+      ELSE false
+    END INTO has_perm
+    FROM public.role_module_permissions rmp
+    JOIN public.modules m ON m.id = rmp.module_id
+    WHERE rmp.role_id = user_role_id AND m.name = _module_name;
+  END IF;
+
+  RETURN COALESCE(has_perm, false);
 END;
 $$;
-
-CREATE TRIGGER tr_prevent_role_escalation
-  BEFORE UPDATE ON public.profiles
-  FOR EACH ROW
-  EXECUTE FUNCTION public.prevent_role_escalation();
 ```
 
-### Manual Step (user action required)
-- **Leaked Password Protection**: Go to Supabase Dashboard → Authentication → Providers → Email → enable "Leaked Password Protection (HIBP)". I'll provide the link.
-
 ### No Code Changes Needed
-The frontend already uses authenticated Supabase calls, so restricting policies to `authenticated` won't break anything. The trigger silently prevents role escalation without changing any UI.
+The frontend code already references these tables and the RPC function correctly. Once the tables exist, the error will be resolved.
 
