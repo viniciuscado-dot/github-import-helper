@@ -1,5 +1,5 @@
 import { cn } from "@/lib/utils";
-import { ReactNode } from "react";
+import { ReactNode, useRef, useCallback } from "react";
 
 interface KPICardProps {
   label: string;
