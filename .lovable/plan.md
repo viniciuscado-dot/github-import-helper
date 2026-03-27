@@ -1,33 +1,43 @@
 
 
-## Plan: Add Mouse-Follow Specular Effect to All Cards
+## Plan: Add Google Login (restricted to @dotconceito.com)
 
-### Approach
-Modify the `Card` component in `src/components/ui/card.tsx` to include the mouse-follow specular shine effect. Since every card in the app uses this component, the effect will be applied globally with a single change.
+### How it works
+- Add a "Entrar com Google" button on the Auth page
+- After Google OAuth callback, check if the email ends with `@dotconceito.com`
+- If not, sign the user out immediately and show an error toast
+- The `handle_new_user` trigger already creates a profile automatically with role `equipe`
 
-### Changes — `src/components/ui/card.tsx` only
+### Prerequisites (user action required)
+You need to configure Google OAuth in two places:
 
-**1. Add mouse tracking to the Card component**
-- Add an internal ref (merged with forwarded ref) and an `onMouseMove` handler that sets `--mouse-x` and `--mouse-y` CSS variables on the card element.
-- Inject a specular overlay `<div>` as the first child inside every Card, absolutely positioned, with `pointer-events: none` so it doesn't interfere with content.
-- Add `position: relative` and `overflow: hidden` to the card base classes.
+**1. Google Cloud Console**
+- Create OAuth Client ID (Web Application)
+- Add `https://cesohdhspysooaowtvsu.supabase.co` to Authorized redirect URIs as: `https://cesohdhspysooaowtvsu.supabase.co/auth/v1/callback`
+- Add your site URL to Authorized JavaScript origins
 
-**2. Specular overlay styling (inline or scoped)**
-- `radial-gradient(circle at var(--mouse-x, 50%) var(--mouse-y, 50%), rgba(255,255,255,0.06) 0%, transparent 60%)`
-- `opacity: 0` by default, `opacity: 1` on card hover via group-hover
-- Smooth `transition: opacity 0.3s ease`
-- `z-index: 1` with `pointer-events: none`
+**2. Supabase Dashboard**
+- Go to Authentication → Providers → Google
+- Enable it and paste Client ID + Client Secret
 
-**3. Card children get `relative z-[2]`** — not needed since specular has `pointer-events: none` and low opacity. The overlay is purely decorative.
+### Code Changes
 
-### Visual result
-Every card across the entire app (dashboards, KPIs, forms, approval cards, etc.) will show a subtle light spot following the mouse cursor on hover, matching the login page effect.
+**1. `src/pages/Auth.tsx`**
+- Add a "Entrar com Google" button below the existing login form
+- On click: `supabase.auth.signInWithOAuth({ provider: 'google', options: { redirectTo: window.location.origin + '/auth' } })`
+- Add a `useEffect` that listens to auth state changes — if a new Google user's email doesn't end with `@dotconceito.com`, call `signOut()` and show error toast "Apenas emails @dotconceito.com podem acessar"
 
-### What stays unchanged
-- All card content, layout, logic, and responsiveness
-- No changes to `index.css` or any other component files
-- CardHeader, CardTitle, CardContent, CardFooter, CardDescription unchanged
+**2. `src/contexts/AuthContext.tsx`**
+- In the `onAuthStateChange` handler, add a domain check: if the user's email doesn't end with `@dotconceito.com`, sign them out and clear state
+
+### Security note
+The domain restriction is enforced both client-side (UX) and via the profile system (admins control permissions). For stronger server-side enforcement, a Supabase auth hook could be added later, but the client-side check + existing permission system is sufficient for this use case.
 
 ### Files Modified
-- `src/components/ui/card.tsx`
+- `src/pages/Auth.tsx` — add Google button + domain validation
+- `src/contexts/AuthContext.tsx` — add domain check on auth state change
+
+### Unchanged
+- Database, RLS, edge functions, permissions system
+- Existing email/password login flow
 
