@@ -111,7 +111,7 @@ export function NotificationCenter() {
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>
-        <Button variant="ghost" size="icon" className="relative h-9 w-9">
+        <Button variant="ghost" size="icon" className="relative h-8 w-8 rounded-lg border border-white/[0.08] bg-white/[0.04] backdrop-blur-sm hover:bg-white/[0.08] hover:border-white/[0.14] transition-all duration-200">
           <Bell className="h-4 w-4" />
           {unreadCount > 0 && (
             <span className="absolute -top-0.5 -right-0.5 flex h-4 w-4 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-primary-foreground">
