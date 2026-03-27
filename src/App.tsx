@@ -12,6 +12,7 @@ import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { DotLogo } from "@/components/DotLogo";
 const Index = lazy(() => import("./pages/Index"));
 const Auth = lazy(() => import("./pages/Auth"));
+const Intro = lazy(() => import("./pages/Intro"));
 
 import NotFound from "./pages/NotFound";
 const Aprovacao = lazy(() => import("./pages/Aprovacao"));
@@ -211,7 +212,11 @@ const App = () => (
               } />
 
               {/* ── Auth ── */}
-              <Route path="/" element={<Navigate to="/dashboard" replace />} />
+              <Route path="/" element={
+                <Suspense fallback={<DashboardFallback />}>
+                  <Intro />
+                </Suspense>
+              } />
               <Route path="/auth" element={
                 <Suspense fallback={<DashboardFallback />}>
                   <Auth />
