@@ -102,22 +102,6 @@ const menuStructure: MenuSection[] = [
       { name: 'noticias', displayName: 'Notícias e Conteúdos', icon: Newspaper },
     ]
   },
-  {
-    title: 'Data-Driven',
-    color: '#ec4a55',
-    icon: BarChart3,
-    modules: [
-      { name: 'data-driven', displayName: 'Data-Driven', icon: BarChart3 },
-    ]
-  },
-  {
-    title: 'Configurações',
-    color: '#ec4a55',
-    icon: Settings,
-    modules: [
-      { name: 'users', displayName: 'Usuários', icon: Users },
-    ]
-  },
 ];
 
 export const UserPermissions = ({ 

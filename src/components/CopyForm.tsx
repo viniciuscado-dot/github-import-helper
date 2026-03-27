@@ -282,9 +282,9 @@ const [isLoading, setIsLoading] = useState(false)
   const isAdmin = profile?.effectiveRole === 'admin'
   
   // Regras de negócio das permissões:
-  // - Acesso aos prompts: requer permissões de editar E excluir
+  // - Acesso aos prompts: apenas administradores
   // - Excluir histórico: requer permissão de excluir
-  const canAccessPrompts = (canEditCopy && canDeleteCopies) || isAdmin
+  const canAccessPrompts = isAdmin
 
   // Função para filtrar o histórico de briefings
   const filteredBriefingHistory = briefingHistory.filter((briefing) => {
