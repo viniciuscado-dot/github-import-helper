@@ -84,6 +84,16 @@ All colors MUST be HSL.
     --shadow-card: 0 4px 20px -4px hsl(220 13% 80% / 0.4);
     --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 
+    /* Glass tokens — light mode */
+    --glass-bg: rgba(255, 255, 255, 0.6);
+    --glass-bg-hover: rgba(255, 255, 255, 0.8);
+    --glass-border: rgba(0, 0, 0, 0.06);
+    --glass-border-hover: rgba(0, 0, 0, 0.1);
+    --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+    --glass-shadow-hover: 0 12px 40px rgba(0, 0, 0, 0.12);
+    --glass-inset: inset 0 1px 0 rgba(255, 255, 255, 0.8);
+    --glass-blur: 10px;
+
     --radius: 0.5rem;
 
     /* Sidebar tema claro */
