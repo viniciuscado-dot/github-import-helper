@@ -172,50 +172,23 @@ export default function Auth() {
           to { transform: rotate(360deg); }
         }
 
-        .auth-bubble {
-          position: absolute;
-          border-radius: 50%;
-          pointer-events: none;
-          z-index: 2;
-        }
-
-        .auth-bubble-1 {
-          width: 140px;
-          height: 140px;
-          top: -30px;
-          right: -20px;
-          background: radial-gradient(130% 130% at 30% 30%, rgba(255,255,255,0.06) 10%, rgba(255,255,255,0.01) 100%);
-          box-shadow: inset 2px 2px 5px rgba(255,255,255,0.03);
-          animation: auth-float-1 12s infinite ease-in-out;
-        }
-
-        .auth-bubble-2 {
-          width: 100px;
-          height: 100px;
-          bottom: 10px;
-          left: -25px;
-          background: radial-gradient(130% 130% at 70% 70%, rgba(56,100,220,0.06) 0%, transparent 100%);
-          box-shadow: inset 2px 2px 5px rgba(255,255,255,0.03);
-          animation: auth-float-2 9s infinite ease-in-out reverse;
-        }
-
-        @keyframes auth-float-1 {
-          0%, 100% { transform: translate(0, 0) scale(1); }
-          50% { transform: translate(-15px, 20px) scale(1.04); }
-        }
-
-        @keyframes auth-float-2 {
-          0%, 100% { transform: translate(0, 0) scale(1); }
-          50% { transform: translate(20px, -15px) scale(0.96); }
-        }
-
         .auth-specular {
           position: absolute;
           inset: 0;
           border-radius: 2rem;
-          background: linear-gradient(135deg, rgba(255,255,255,0.06) 0%, transparent 40%, transparent 100%);
+          background: radial-gradient(
+            circle at var(--mouse-x, 50%) var(--mouse-y, 50%),
+            rgba(255, 255, 255, 0.08) 0%,
+            transparent 60%
+          );
           pointer-events: none;
           z-index: 3;
+          opacity: 0;
+          transition: opacity 0.3s ease;
+        }
+
+        .auth-glass-card:hover .auth-specular {
+          opacity: 1;
         }
       `}</style>
     </div>
