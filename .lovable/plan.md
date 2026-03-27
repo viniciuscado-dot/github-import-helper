@@ -1,59 +1,25 @@
 
 
-## Plan: Redesign Auth Login Page with Glassmorphism
+## Plan: Replace Bubbles with Mouse-Follow Specular Effect on Auth Page
 
 ### Changes — `src/pages/Auth.tsx` only
 
-**1. Remove "Módulo de Criação" title** — delete the brand/h1 section entirely.
+**1. Remove bubble elements**
+Delete the two `auth-bubble` divs (lines 59-60) and all their CSS (`.auth-bubble`, `.auth-bubble-1`, `.auth-bubble-2`, `@keyframes auth-float-1`, `@keyframes auth-float-2`).
 
-**2. Shrink logo** — reduce `DotLogo size` from 64 to 36, remove the large card wrapper around it.
+**2. Add mouse-follow specular shine**
+- Add a `useRef` for the card and an `onMouseMove` handler that sets `--mouse-x` and `--mouse-y` CSS variables on the card element (same pattern as the reference HTML's `GlassCard`).
+- Update `.auth-specular` CSS to use `radial-gradient(circle at var(--mouse-x, 50%) var(--mouse-y, 50%), rgba(255,255,255,0.08) 0%, transparent 60%)` instead of the static linear gradient.
+- Add `opacity: 0` by default and `opacity: 1` on `.auth-glass-card:hover .auth-specular` with a smooth transition.
 
-**3. Unify into a single glass card** — wrap logo + form into one glassmorphism container:
-- `background: rgba(255, 255, 255, 0.04)`
-- `backdrop-filter: blur(16px)`
-- `border: 1px solid rgba(255, 255, 255, 0.08)`
-- `border-radius: 2rem`
-- Subtle inner glow shadow
+**3. Keep rotating border effect** — unchanged, it stays as-is.
 
-**4. Add decorative elements from reference HTML** — inside the glass card:
-- Two floating "bubble" divs (translucent circles with subtle animation, like the reference `float-bubble-1/2`)
-- A specular shine layer that follows a subtle CSS animation
-- A faint conic-gradient rotating border effect (the `::before` pseudo-element from the reference), but very subtle/slow for a professional SaaS feel
-
-**5. Background enhancements** — the page background gets:
-- Dark base matching existing dark theme
-- Subtle radial gradient glows (blue/purple tones, consistent with existing glass system)
-
-**6. Keep all logic untouched** — `handleLogin`, auth state, navigation, loading state remain identical.
-
-### Visual structure
-```text
-┌─────────────────────────────────┐
-│  (dark bg + radial glows)       │
-│                                 │
-│   ┌───────────────────────┐     │
-│   │  [DOT logo small]    │     │  ← glass card with rotating border
-│   │                       │     │
-│   │  Faça login...        │     │
-│   │  ┌─────────────────┐  │     │
-│   │  │ E-mail           │  │     │
-│   │  └─────────────────┘  │     │
-│   │  ┌─────────────────┐  │     │
-│   │  │ Senha            │  │     │
-│   │  └─────────────────┘  │     │
-│   │  [ Entrar ]           │     │
-│   │   (bubbles floating)  │     │
-│   └───────────────────────┘     │
-│                                 │
-│   Powered by DOT Conceito       │
-└─────────────────────────────────┘
-```
+### What stays unchanged
+- All auth logic, state, navigation
+- Glass card structure, logo, form
+- Background radial glows
+- No `index.css` changes
 
 ### Files Modified
-- `src/pages/Auth.tsx` — visual-only changes, scoped `<style>` tag for animations
-
-### Unchanged
-- All auth logic, state, navigation
-- No backend/database changes
-- No changes to `index.css`
+- `src/pages/Auth.tsx`
 
