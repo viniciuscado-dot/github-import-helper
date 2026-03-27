@@ -61,7 +61,7 @@ export function AppSidebar({ activeView, onViewChange }: AppSidebarProps) {
 
   // Shared menu button classes
   const menuBtnBase = "w-full transition-all duration-150 ease-in-out rounded-lg"
-  const menuBtnExpanded = `${menuBtnBase} justify-start py-2.5 px-3 gap-3`
+  const menuBtnExpanded = `${menuBtnBase} justify-start py-2.5 px-3 gap-3 sidebar-menu-item`
   const menuBtnCollapsed = `${menuBtnBase} justify-center py-2.5`
 
   const activeClass = "bg-[#ec4a55]/15 text-[#ec4a55] font-medium"
@@ -76,6 +76,10 @@ export function AppSidebar({ activeView, onViewChange }: AppSidebarProps) {
     const btnClass = isActive
       ? `${shouldShowText ? menuBtnExpanded : menuBtnCollapsed} ${activeClass}`
       : `${shouldShowText ? menuBtnExpanded : menuBtnCollapsed} text-muted-foreground hover:text-foreground hover:bg-muted/50`;
+
+    const iconEl = shouldShowText
+      ? <span className="sidebar-icon"><Icon className="h-4 w-4 flex-shrink-0" /></span>
+      : <Icon className="h-4 w-4 flex-shrink-0" />;
 
     if (!shouldShowText) {
       return (
@@ -99,7 +103,7 @@ export function AppSidebar({ activeView, onViewChange }: AppSidebarProps) {
       return (
         <SidebarMenuButton asChild isActive={isActive} className={btnClass}>
           <Link to={item.route}>
-            <Icon className="h-4 w-4 flex-shrink-0" />
+            {iconEl}
             <span className="text-[13px]">{item.title}</span>
           </Link>
         </SidebarMenuButton>
@@ -107,7 +111,7 @@ export function AppSidebar({ activeView, onViewChange }: AppSidebarProps) {
     }
     return (
       <SidebarMenuButton onClick={onClick} isActive={isActive} className={btnClass}>
-        <Icon className="h-4 w-4 flex-shrink-0" />
+        {iconEl}
         <span className="text-[13px]">{item.title}</span>
       </SidebarMenuButton>
     );
@@ -136,6 +140,59 @@ export function AppSidebar({ activeView, onViewChange }: AppSidebarProps) {
 
   return (
     <TooltipProvider delayDuration={100}>
+      <style>{`
+        .sidebar-menu-item {
+          position: relative;
+          overflow: hidden;
+        }
+        .sidebar-menu-item::before {
+          content: "";
+          position: absolute;
+          inset: -1px;
+          border-radius: inherit;
+          padding: 1px;
+          background: linear-gradient(90deg,
+            transparent 0%,
+            rgba(236, 74, 85, 0.15) 25%,
+            rgba(255, 255, 255, 0.6) 50%,
+            rgba(236, 74, 85, 0.15) 75%,
+            transparent 100%);
+          background-size: 200% 100%;
+          -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+          mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+          -webkit-mask-composite: xor;
+          mask-composite: exclude;
+          pointer-events: none;
+          opacity: 0;
+          z-index: 5;
+          transition: opacity 0.3s;
+        }
+        .sidebar-menu-item:hover::before {
+          opacity: 1;
+          animation: sidebarShimmer 2s infinite ease-in-out;
+        }
+        @keyframes sidebarShimmer {
+          0% { background-position: 150% 0; }
+          100% { background-position: -150% 0; }
+        }
+        .sidebar-menu-item .sidebar-icon {
+          opacity: 0;
+          width: 0;
+          transform: scale(0.2);
+          transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          overflow: hidden;
+          flex-shrink: 0;
+        }
+        .sidebar-menu-item:hover .sidebar-icon {
+          opacity: 1;
+          width: 20px;
+          transform: scale(1.05);
+          margin-right: 4px;
+        }
+      `}</style>
       <Sidebar side="left" collapsible="icon" className="border-r border-border/30 transition-all duration-300 ease-in-out">
 
       {/* ══════════ BLOCO SUPERIOR FIXO ══════════ */}
@@ -300,7 +357,7 @@ export function AppSidebar({ activeView, onViewChange }: AppSidebarProps) {
                   </Tooltip>
                 ) : (
                   <SidebarMenuButton className={`${menuBtnExpanded} text-muted-foreground hover:text-foreground hover:bg-muted/50`}>
-                    <Settings className="h-4 w-4 flex-shrink-0 text-[#ec4a55]" />
+                    <span className="sidebar-icon"><Settings className="h-4 w-4 flex-shrink-0 text-[#ec4a55]" /></span>
                     <span className="text-[13px]">Voltar para módulos</span>
                   </SidebarMenuButton>
                 )}
@@ -378,7 +435,7 @@ export function AppSidebar({ activeView, onViewChange }: AppSidebarProps) {
                 onClick={handleLogout}
                 className={`${menuBtnExpanded} text-muted-foreground hover:bg-destructive/10 hover:text-destructive`}
               >
-                <LogOut className="h-4 w-4 flex-shrink-0" />
+                <span className="sidebar-icon"><LogOut className="h-4 w-4 flex-shrink-0" /></span>
                 <span className="text-[13px]">Sair</span>
               </SidebarMenuButton>
             )}
