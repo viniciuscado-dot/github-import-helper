@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { DotLogo } from '@/components/DotLogo';
 import { Loader2, Mail } from 'lucide-react';
@@ -13,7 +13,17 @@ export default function Auth() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [isLoggingIn, setIsLoggingIn] = useState(false);
+  const cardRef = useRef<HTMLDivElement>(null);
   const navigate = useNavigate();
+
+  const handleMouseMove = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
+    if (!cardRef.current) return;
+    const rect = cardRef.current.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    cardRef.current.style.setProperty('--mouse-x', `${x}px`);
+    cardRef.current.style.setProperty('--mouse-y', `${y}px`);
+  }, []);
 
   if (!loading && isAuthenticated) {
     navigate('/dashboard', { replace: true });
@@ -51,15 +61,15 @@ export default function Auth() {
       }} />
 
       {/* Glass login card */}
-      <div className="auth-glass-card relative z-10 w-full max-w-sm px-8 py-10 flex flex-col items-center gap-6">
+      <div
+        ref={cardRef}
+        onMouseMove={handleMouseMove}
+        className="auth-glass-card relative z-10 w-full max-w-sm px-8 py-10 flex flex-col items-center gap-6"
+      >
         {/* Rotating border effect */}
         <div className="auth-glass-card-border" aria-hidden />
 
-        {/* Bubble decorations */}
-        <div className="auth-bubble auth-bubble-1" aria-hidden />
-        <div className="auth-bubble auth-bubble-2" aria-hidden />
-
-        {/* Specular shine */}
+        {/* Mouse-follow specular shine */}
         <div className="auth-specular" aria-hidden />
 
         {/* Content */}
@@ -162,50 +172,23 @@ export default function Auth() {
           to { transform: rotate(360deg); }
         }
 
-        .auth-bubble {
-          position: absolute;
-          border-radius: 50%;
-          pointer-events: none;
-          z-index: 2;
-        }
-
-        .auth-bubble-1 {
-          width: 140px;
-          height: 140px;
-          top: -30px;
-          right: -20px;
-          background: radial-gradient(130% 130% at 30% 30%, rgba(255,255,255,0.06) 10%, rgba(255,255,255,0.01) 100%);
-          box-shadow: inset 2px 2px 5px rgba(255,255,255,0.03);
-          animation: auth-float-1 12s infinite ease-in-out;
-        }
-
-        .auth-bubble-2 {
-          width: 100px;
-          height: 100px;
-          bottom: 10px;
-          left: -25px;
-          background: radial-gradient(130% 130% at 70% 70%, rgba(56,100,220,0.06) 0%, transparent 100%);
-          box-shadow: inset 2px 2px 5px rgba(255,255,255,0.03);
-          animation: auth-float-2 9s infinite ease-in-out reverse;
-        }
-
-        @keyframes auth-float-1 {
-          0%, 100% { transform: translate(0, 0) scale(1); }
-          50% { transform: translate(-15px, 20px) scale(1.04); }
-        }
-
-        @keyframes auth-float-2 {
-          0%, 100% { transform: translate(0, 0) scale(1); }
-          50% { transform: translate(20px, -15px) scale(0.96); }
-        }
-
         .auth-specular {
           position: absolute;
           inset: 0;
           border-radius: 2rem;
-          background: linear-gradient(135deg, rgba(255,255,255,0.06) 0%, transparent 40%, transparent 100%);
+          background: radial-gradient(
+            circle at var(--mouse-x, 50%) var(--mouse-y, 50%),
+            rgba(255, 255, 255, 0.08) 0%,
+            transparent 60%
+          );
           pointer-events: none;
           z-index: 3;
+          opacity: 0;
+          transition: opacity 0.3s ease;
+        }
+
+        .auth-glass-card:hover .auth-specular {
+          opacity: 1;
         }
       `}</style>
     </div>
