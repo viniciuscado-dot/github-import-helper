@@ -142,26 +142,30 @@ export function AppSidebar({ activeView, onViewChange }: AppSidebarProps) {
       <SidebarHeader className={`flex-shrink-0 ${shouldShowText ? "p-4 pb-1" : "py-4 pb-1"}`}>
         {shouldShowText ? (
           <div className="flex items-center justify-between w-full px-4">
-            <img 
-              src="/lovable-uploads/7c396b9b-c7c8-460d-9683-1d9c1a265bd8.png"
-              alt="DOT Logo"
-              className="h-6 w-auto transition-all duration-500 ease-in-out"
-              key="logo-expanded"
-            />
+            <Link to="/dashboard" className="hover:opacity-80 transition-opacity">
+              <img 
+                src="/lovable-uploads/7c396b9b-c7c8-460d-9683-1d9c1a265bd8.png"
+                alt="DOT Logo"
+                className="h-6 w-auto transition-all duration-500 ease-in-out"
+                key="logo-expanded"
+              />
+            </Link>
             <SidebarTrigger className="touch-target" />
           </div>
         ) : (
           <div className="flex flex-col w-full gap-2">
             <SidebarMenu>
               <SidebarMenuItem>
-                <SidebarMenuButton className="w-full justify-center h-8 hover:bg-transparent cursor-default p-2">
-                  <img 
-                    src="/dot-o-icon.png"
-                    alt="DOT"
-                    className="h-5 w-5 transition-all duration-500 ease-in-out"
-                    key="logo-collapsed"
-                    style={{ animation: 'spin 0.5s ease-in-out' }}
-                  />
+                <SidebarMenuButton asChild className="w-full justify-center h-8 hover:bg-transparent p-2">
+                  <Link to="/dashboard">
+                    <img 
+                      src="/dot-o-icon.png"
+                      alt="DOT"
+                      className="h-5 w-5 transition-all duration-500 ease-in-out"
+                      key="logo-collapsed"
+                      style={{ animation: 'spin 0.5s ease-in-out' }}
+                    />
+                  </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
               <SidebarMenuItem>
@@ -175,18 +179,6 @@ export function AppSidebar({ activeView, onViewChange }: AppSidebarProps) {
 
       </SidebarHeader>
 
-      {/* ══════════ HOME FIXO ══════════ */}
-      <div className="flex-shrink-0 px-2 pt-2 pb-0">
-        <SidebarMenu>
-          <SidebarMenuItem>
-            {renderMenuItem(
-              { id: 'home', title: 'Home', icon: Home },
-              activeView === 'home-criacao',
-              () => onViewChange('home-criacao')
-            )}
-          </SidebarMenuItem>
-        </SidebarMenu>
-      </div>
 
       {/* ══════════ BLOCO CENTRAL ROLÁVEL ══════════ */}
       <SidebarContent className="flex-1 overflow-y-auto pb-10 mb-8 mt-6 space-y-1">
