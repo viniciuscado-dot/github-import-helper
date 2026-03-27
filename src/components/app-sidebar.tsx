@@ -140,6 +140,59 @@ export function AppSidebar({ activeView, onViewChange }: AppSidebarProps) {
 
   return (
     <TooltipProvider delayDuration={100}>
+      <style>{`
+        .sidebar-menu-item {
+          position: relative;
+          overflow: hidden;
+        }
+        .sidebar-menu-item::before {
+          content: "";
+          position: absolute;
+          inset: -1px;
+          border-radius: inherit;
+          padding: 1px;
+          background: linear-gradient(90deg,
+            transparent 0%,
+            rgba(236, 74, 85, 0.15) 25%,
+            rgba(255, 255, 255, 0.6) 50%,
+            rgba(236, 74, 85, 0.15) 75%,
+            transparent 100%);
+          background-size: 200% 100%;
+          -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+          mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+          -webkit-mask-composite: xor;
+          mask-composite: exclude;
+          pointer-events: none;
+          opacity: 0;
+          z-index: 5;
+          transition: opacity 0.3s;
+        }
+        .sidebar-menu-item:hover::before {
+          opacity: 1;
+          animation: sidebarShimmer 2s infinite ease-in-out;
+        }
+        @keyframes sidebarShimmer {
+          0% { background-position: 150% 0; }
+          100% { background-position: -150% 0; }
+        }
+        .sidebar-menu-item .sidebar-icon {
+          opacity: 0;
+          width: 0;
+          transform: scale(0.2);
+          transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          overflow: hidden;
+          flex-shrink: 0;
+        }
+        .sidebar-menu-item:hover .sidebar-icon {
+          opacity: 1;
+          width: 20px;
+          transform: scale(1.05);
+          margin-right: 4px;
+        }
+      `}</style>
       <Sidebar side="left" collapsible="icon" className="border-r border-border/30 transition-all duration-300 ease-in-out">
 
       {/* ══════════ BLOCO SUPERIOR FIXO ══════════ */}
