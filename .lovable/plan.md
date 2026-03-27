@@ -1,58 +1,59 @@
 
 
-## Plan: Create Premium Intro Screen ("Módulo de Criação")
+## Plan: Redesign Auth Login Page with Glassmorphism
 
-### Overview
-Create a new landing/intro page at `/` that displays before the login screen. It features a cinematic dark background, GSAP-powered zoom+blur transition, and a "Criar" CTA button that navigates to `/auth`.
+### Changes — `src/pages/Auth.tsx` only
 
-### What Changes
+**1. Remove "Módulo de Criação" title** — delete the brand/h1 section entirely.
 
-**1. New page: `src/pages/Intro.tsx`**
-- Full-screen dark background (`#0f0505`) with subtle radial glow (blue/cyan tones matching existing glass system)
-- Title: "Módulo de Criação" — large, bold, white with slight transparency
-- Subtitle: "Crie, organize e execute projetos com velocidade e clareza" — muted opacity
-- CTA button "Criar" with the red gradient from the HTML reference, shine animation, reflection effect, hover lift
-- On click: GSAP animation (zoom scale ~6x + blur ~20px on the intro section over ~1.5s), then navigate to `/auth`
-- Second section (destiny) fades in during transition as visual backdrop
-- All CSS is scoped inside the component (inline styles or a dedicated CSS module) — no changes to `index.css`
-- GSAP loaded via CDN script tag or `gsap` npm package
+**2. Shrink logo** — reduce `DotLogo size` from 64 to 36, remove the large card wrapper around it.
 
-**2. Update routing in `src/App.tsx`**
-- Change `"/"` from `<Navigate to="/dashboard">` to render the new `<Intro />` page
-- Add lazy import for Intro
-- Keep `/auth` and `/dashboard` routes unchanged
+**3. Unify into a single glass card** — wrap logo + form into one glassmorphism container:
+- `background: rgba(255, 255, 255, 0.04)`
+- `backdrop-filter: blur(16px)`
+- `border: 1px solid rgba(255, 255, 255, 0.08)`
+- `border-radius: 2rem`
+- Subtle inner glow shadow
 
-**3. Install GSAP**
-- Add `gsap` as npm dependency for the zoom+blur transition animation
+**4. Add decorative elements from reference HTML** — inside the glass card:
+- Two floating "bubble" divs (translucent circles with subtle animation, like the reference `float-bubble-1/2`)
+- A specular shine layer that follows a subtle CSS animation
+- A faint conic-gradient rotating border effect (the `::before` pseudo-element from the reference), but very subtle/slow for a professional SaaS feel
 
-### Layout structure (Intro page)
+**5. Background enhancements** — the page background gets:
+- Dark base matching existing dark theme
+- Subtle radial gradient glows (blue/purple tones, consistent with existing glass system)
+
+**6. Keep all logic untouched** — `handleLogin`, auth state, navigation, loading state remain identical.
+
+### Visual structure
 ```text
-┌──────────────────────────────────┐
-│  (dark bg + radial glow)         │
-│                                  │
-│      Módulo de Criação           │  ← text-5xl bold white/90
-│  Crie, organize e execute...     │  ← text-lg white/50
-│                                  │
-│         [ Criar ]                │  ← red gradient button + shine
-│                                  │
-└──────────────────────────────────┘
+┌─────────────────────────────────┐
+│  (dark bg + radial glows)       │
+│                                 │
+│   ┌───────────────────────┐     │
+│   │  [DOT logo small]    │     │  ← glass card with rotating border
+│   │                       │     │
+│   │  Faça login...        │     │
+│   │  ┌─────────────────┐  │     │
+│   │  │ E-mail           │  │     │
+│   │  └─────────────────┘  │     │
+│   │  ┌─────────────────┐  │     │
+│   │  │ Senha            │  │     │
+│   │  └─────────────────┘  │     │
+│   │  [ Entrar ]           │     │
+│   │   (bubbles floating)  │     │
+│   └───────────────────────┘     │
+│                                 │
+│   Powered by DOT Conceito       │
+└─────────────────────────────────┘
 ```
 
-### Button styling
-- Replicates the HTML reference: red radial gradient, white border, box-shadow, shine sweep animation (`@keyframes brilho`), hover brightness+lift, active scale
-- Reflection effect via CSS `-webkit-box-reflect`
+### Files Modified
+- `src/pages/Auth.tsx` — visual-only changes, scoped `<style>` tag for animations
 
-### Transition on click
-1. GSAP `gsap.to()` on intro container: `scale: 6, filter: "blur(20px)", opacity: 0` over 1.5s with `power2.inOut` easing
-2. After animation completes → `navigate('/auth')`
-
-### Files
-- **Create**: `src/pages/Intro.tsx`
-- **Modify**: `src/App.tsx` (route change + lazy import)
-- **Install**: `gsap` package
-
-### What stays unchanged
-- Auth page, dashboard, sidebar, all existing logic
-- `index.css` global styles
-- No new backend or database changes
+### Unchanged
+- All auth logic, state, navigation
+- No backend/database changes
+- No changes to `index.css`
 
