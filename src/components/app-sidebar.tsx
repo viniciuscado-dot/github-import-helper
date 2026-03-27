@@ -77,6 +77,10 @@ export function AppSidebar({ activeView, onViewChange }: AppSidebarProps) {
       ? `${shouldShowText ? menuBtnExpanded : menuBtnCollapsed} ${activeClass}`
       : `${shouldShowText ? menuBtnExpanded : menuBtnCollapsed} text-muted-foreground hover:text-foreground hover:bg-muted/50`;
 
+    const iconEl = shouldShowText
+      ? <span className="sidebar-icon"><Icon className="h-4 w-4 flex-shrink-0" /></span>
+      : <Icon className="h-4 w-4 flex-shrink-0" />;
+
     if (!shouldShowText) {
       return (
         <Tooltip>
@@ -99,7 +103,7 @@ export function AppSidebar({ activeView, onViewChange }: AppSidebarProps) {
       return (
         <SidebarMenuButton asChild isActive={isActive} className={btnClass}>
           <Link to={item.route}>
-            <Icon className="h-4 w-4 flex-shrink-0" />
+            {iconEl}
             <span className="text-[13px]">{item.title}</span>
           </Link>
         </SidebarMenuButton>
@@ -107,7 +111,7 @@ export function AppSidebar({ activeView, onViewChange }: AppSidebarProps) {
     }
     return (
       <SidebarMenuButton onClick={onClick} isActive={isActive} className={btnClass}>
-        <Icon className="h-4 w-4 flex-shrink-0" />
+        {iconEl}
         <span className="text-[13px]">{item.title}</span>
       </SidebarMenuButton>
     );
