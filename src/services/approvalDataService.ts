@@ -274,9 +274,12 @@ export async function getAssets(filters?: { jobId?: string; type?: string }): Pr
 }
 
 export async function getUniqueClients(): Promise<string[]> {
-  const { data } = await supabase.from("projects").select("client_name");
-  const names = (data || []).map((r: any) => r.client_name).filter(Boolean) as string[];
-  return [...new Set(names)].sort();
+  const { data } = await supabase
+    .from("copy_clients")
+    .select("name")
+    .eq("is_archived", false)
+    .order("name", { ascending: true });
+  return (data || []).map((r: any) => r.name).filter(Boolean) as string[];
 }
 
 export async function getResponsibles(): Promise<{ value: string; label: string }[]> {

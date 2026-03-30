@@ -26,6 +26,7 @@ import { CopyGenerationOverlay } from '@/components/CopyGenerationOverlay'
 import { MarkdownRenderer } from '@/components/ui/markdown-renderer'
 import { AnaliseResultsRecent } from '@/components/analise/AnaliseResultsRecent'
 import { AnaliseHistoryFull } from '@/components/analise/AnaliseHistoryFull'
+import { fetchCopyClients } from '@/utils/getClients'
 
 // Schema de validação do formulário
 const analiseFormSchema = z.object({
@@ -68,7 +69,7 @@ export function AnaliseBench() {
   const { checkModulePermission, loading: permissionsLoading } = useModulePermissions()
   const [isLoading, setIsLoading] = useState(false)
   const [activeTab, setActiveTab] = useState<"formulario" | "resultados" | "prompts">("formulario")
-  const [crmClients, setCrmClients] = useState<any[]>([])
+  const [crmClients, setCrmClients] = useState<{id: string; name: string; squad: string}[]>([])
   const [competitors, setCompetitors] = useState<Competitor[]>([
     { id: '1', nome: '', tipo: 'direto', site: '', instagram_linkedin: '', porque_escolhido: '' }
   ])
@@ -140,25 +141,11 @@ export function AnaliseBench() {
     }
   }, [selectedClient])
 
-  // Buscar clientes do CRM
+  // Buscar clientes da base unificada (copy_clients)
   const fetchCRMClients = async () => {
     try {
-      const { data, error } = await supabase
-        .from('crm_cards')
-        .select('id, company_name, title')
-        .order('company_name', { ascending: true })
-      
-      if (error) throw error
-      
-      const uniqueCompanies = Array.from(
-        new Map(
-          (data || [])
-            .filter(card => card.company_name && card.company_name.trim() !== '')
-            .map(card => [card.company_name, card])
-        ).values()
-      )
-      
-      setCrmClients(uniqueCompanies)
+      const clients = await fetchCopyClients()
+      setCrmClients(clients)
     } catch (error) {
       console.error('Erro ao buscar clientes:', error)
     }
@@ -609,8 +596,8 @@ export function AnaliseBench() {
                 </SelectTrigger>
                 <SelectContent className="z-50 bg-popover">
                   {crmClients.map((client) => (
-                    <SelectItem key={client.id} value={client.id}>
-                      {client.company_name}
+                    <SelectItem key={client.id} value={client.name}>
+                      {client.name}
                     </SelectItem>
                   ))}
                 </SelectContent>
