@@ -133,6 +133,13 @@ const App = () => (
                   </Suspense>
                 </ProtectedRoute>
               } />
+              <Route path="/data-driven/entregas" element={
+                <ProtectedRoute>
+                  <Suspense fallback={<DashboardFallback />}>
+                    <DataDrivenEntregas />
+                  </Suspense>
+                </ProtectedRoute>
+              } />
 
               {/* ── Anúncios ── */}
               <Route path="/performance/anuncios" element={

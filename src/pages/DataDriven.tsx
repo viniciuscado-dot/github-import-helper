@@ -14,6 +14,13 @@ const modules = [
     icon: Activity,
     route: "/data-driven/produtividade",
   },
+  {
+    id: "entregas",
+    title: "Gestão de Entregas",
+    subtitle: "Acompanhamento de entregas, prazos e status por cliente e squad",
+    icon: Package,
+    route: "/data-driven/entregas",
+  },
 ];
 
 const DataDriven = () => {
