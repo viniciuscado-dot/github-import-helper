@@ -207,43 +207,11 @@ export function JobDialog({ open, onOpenChange, job, onSave, onClose }: JobDialo
 
     async function loadActiveClients() {
       try {
-        const { data: pipeline } = await supabase
-          .from('crm_pipelines')
-          .select('id')
-          .eq('name', 'Clientes ativos')
-          .eq('is_active', true)
-          .single();
-
-        if (!pipeline) {
-          setActiveClients(MOCK_CLIENTS);
-          return;
-        }
-
-        const { data: cards } = await supabase
-          .from('crm_cards')
-          .select('company_name')
-          .eq('pipeline_id', pipeline.id);
-
-        if (!cards || cards.length === 0) {
-          setActiveClients(MOCK_CLIENTS);
-          return;
-        }
-
-        const { data: lostClients } = await supabase
-          .from('crm_special_lists')
-          .select('company_name')
-          .eq('list_type', 'perdido');
-
-        const lostClientNames = new Set(lostClients?.map(c => c.company_name) || []);
-        const activeClientNames = (cards as any[])
-          .map((c: any) => c.company_name)
-          .filter((name: any): name is string => !!name && !lostClientNames.has(name));
-
-        const uniqueClients = Array.from(new Set(activeClientNames)).sort();
-        setActiveClients(uniqueClients.length > 0 ? uniqueClients : MOCK_CLIENTS);
+        const clients = await fetchCopyClientNames();
+        setActiveClients(clients.length > 0 ? clients : []);
       } catch (error) {
         console.error('Erro ao carregar clientes ativos:', error);
-        setActiveClients(MOCK_CLIENTS);
+        setActiveClients([]);
       }
     }
 

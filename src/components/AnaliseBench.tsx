@@ -68,7 +68,7 @@ export function AnaliseBench() {
   const { checkModulePermission, loading: permissionsLoading } = useModulePermissions()
   const [isLoading, setIsLoading] = useState(false)
   const [activeTab, setActiveTab] = useState<"formulario" | "resultados" | "prompts">("formulario")
-  const [crmClients, setCrmClients] = useState<any[]>([])
+  const [crmClients, setCrmClients] = useState<{id: string; name: string; squad: string}[]>([])
   const [competitors, setCompetitors] = useState<Competitor[]>([
     { id: '1', nome: '', tipo: 'direto', site: '', instagram_linkedin: '', porque_escolhido: '' }
   ])
