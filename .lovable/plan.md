@@ -1,47 +1,24 @@
 
 
-## Plan: Show Icons Always, Keep Shimmer Animation
+## Plan: Add "Gestão de Entregas" Card to Data-Driven Hub
 
-### Single change in `src/components/app-sidebar.tsx`
+### Changes
 
-Update the `.sidebar-icon` CSS (lines 178-194) so icons are **always visible** instead of hidden by default:
+**1. Create placeholder page `src/pages/DataDrivenEntregas.tsx`**
+- Same layout pattern as `DataDrivenProdutividade.tsx` (sidebar, TopBar, back button to `/data-driven`)
+- Title: "Gestão de Entregas", subtitle about delivery tracking
+- `PageComingSoon` component as content (module in development)
 
-**Current** (icons hidden, revealed on hover):
-```css
-.sidebar-menu-item .sidebar-icon {
-  opacity: 0;
-  width: 0;
-  transform: scale(0.2);
-  ...
-}
-.sidebar-menu-item:hover .sidebar-icon {
-  opacity: 1;
-  width: 20px;
-  transform: scale(1.05);
-  margin-right: 4px;
-}
-```
+**2. Add route in `src/App.tsx`**
+- Lazy import `DataDrivenEntregas`
+- Route: `/data-driven/entregas` inside `ProtectedRoute`
 
-**New** (icons always visible, subtle scale on hover):
-```css
-.sidebar-menu-item .sidebar-icon {
-  opacity: 1;
-  width: 20px;
-  transform: scale(1);
-  transition: all 0.3s ease;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  margin-right: 4px;
-}
-.sidebar-menu-item:hover .sidebar-icon {
-  transform: scale(1.1);
-}
-```
-
-The shimmer border `::before` animation stays exactly as-is.
+**3. Add card to `src/pages/DataDriven.tsx`**
+- New entry in the `modules` array:
+  - `id: "entregas"`, `title: "Gestão de Entregas"`, `subtitle: "Acompanhamento de entregas, prazos e status por cliente e squad"`, `icon: Package` (from lucide-react), `route: "/data-driven/entregas"`
 
 ### Files Modified
-- `src/components/app-sidebar.tsx` (CSS only, lines 178-194)
+- `src/pages/DataDriven.tsx` — add module entry + import `Package`
+- `src/pages/DataDrivenEntregas.tsx` — new page
+- `src/App.tsx` — new lazy route
 
