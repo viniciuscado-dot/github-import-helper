@@ -26,6 +26,7 @@ import { CopyGenerationOverlay } from '@/components/CopyGenerationOverlay'
 import { MarkdownRenderer } from '@/components/ui/markdown-renderer'
 import { AnaliseResultsRecent } from '@/components/analise/AnaliseResultsRecent'
 import { AnaliseHistoryFull } from '@/components/analise/AnaliseHistoryFull'
+import { fetchCopyClients } from '@/utils/getClients'
 
 // Schema de validação do formulário
 const analiseFormSchema = z.object({
