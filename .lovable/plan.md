@@ -1,60 +1,46 @@
 
-Objetivo: corrigir definitivamente o erro `column profiles.user_id does not exist` ao salvar permissões e garantir que a edição de usuários (incluindo quem entra com Google) funcione sem regressão.
 
-### Diagnóstico (causa raiz)
-- A tabela `profiles` usa **`id`** como chave do usuário.
-- Existem pontos no frontend tentando filtrar `profiles` por **`user_id`** (coluna que não existe no banco).
-- Quando você salva permissões no modal, isso quebra na atualização de `custom_role_id` em `profiles`.
+## Plan: Unify All Client Selectors to Use `copy_clients` Table
 
-### Plano de implementação
+### Problem
+Client lists come from 3 different sources:
+1. **`copy_clients` table** — used by "Copy e Estratégia" and "Análise e Bench" selection pages (the real managed list)
+2. **`MOCK_CLIENTS` hardcoded array** — used in `JobDialog.tsx` (Aprovação) as fallback
+3. **`crm_cards` / `crm_pipelines`** — used in `JobDialog.tsx` and `AnaliseBench.tsx` form
+4. **`projects.client_name`** — used by `getUniqueClients()` in `approvalDataService.ts` for the Aprovação filter
 
-1. **Corrigir o salvamento de permissões no modal (erro principal)**
-- Arquivo: `src/components/UserPermissions.tsx`
-- Ajustar:
-  - de: `.from('profiles').update(...).eq('user_id', userId)`
-  - para: `.from('profiles').update(...).eq('id', userId)`
-- Manter o restante da lógica de `user_module_permissions` como está (upsert continua igual).
+### Solution
+Make `copy_clients` the **single source of truth**. All client selectors will query `copy_clients` (active, non-archived). Remove `MOCK_CLIENTS` and CRM-based client fetching.
 
-2. **Padronizar TODOS os acessos à tabela `profiles` para `id`**
-- Arquivos:
-  - `src/components/UserProfilePopover.tsx`
-  - `src/components/UserProfile.tsx`
-  - `src/pages/AuthHandoff.tsx`
-- Trocar filtros em `profiles` que usam `.eq('user_id', ...)` por `.eq('id', ...)`.
-- Isso evita novos erros em fluxos adjacentes (perfil, avatar, handoff/login).
+### Changes
 
-3. **Hardening para evitar regressão futura**
-- Onde houver uso de `profile.user_id` (campo de compatibilidade de UI), usar esse valor apenas como variável local, mas **sempre** consultar `profiles.id` no banco.
-- Adicionar validação defensiva antes de update:
-  - se não houver `userId` válido, bloquear submit e mostrar toast claro.
-- Resultado: mesmo com ajustes futuros de UI, queries continuam corretas no banco.
+**1. Create shared utility `src/utils/getClients.ts`**
+- Export `fetchCopyClients(): Promise<{ value: string; label: string; squad: string }[]>` that queries `copy_clients` where `is_archived = false`, returns sorted list.
+- Export `fetchCopyClientNames(): Promise<string[]>` convenience wrapper returning just names.
 
-4. **Garantia para usuários Google (@dotconceito.com)**
-- Não muda a regra de domínio já aplicada.
-- Usuário Google continua sendo mapeado no `profiles` pelo mesmo UUID do auth.
-- Com a correção para `profiles.id`, admin/workspace_admin consegue editar permissões desses usuários normalmente.
+**2. `src/components/approval/JobDialog.tsx`**
+- Remove `MOCK_CLIENTS` array (lines 48-59)
+- Replace `loadActiveClients()` (lines 220-259) with call to `fetchCopyClientNames()`
+- Remove CRM pipeline/cards/lost-clients logic entirely
 
-### Validação (checklist de aceite)
-1. Logar com usuário admin/workspace_admin.
-2. Abrir **Usuários → Permissões** de um usuário Google (ex.: Elias).
-3. Alterar função/permissões e clicar **Salvar Permissões**.
-4. Confirmar:
-   - sem toast vermelho;
-   - toast de sucesso;
-   - ao reabrir modal, mudanças persistidas.
-5. Validar fluxos relacionados:
-   - edição de perfil;
-   - upload de avatar;
-   - handoff/auth sem erro de coluna `user_id`.
+**3. `src/components/AnaliseBench.tsx`**
+- Replace `fetchCRMClients()` (lines 144-165) with `fetchCopyClients()`
+- Update the client selector dropdown to use `name` instead of `company_name`/`id`
 
-### Arquivos a modificar
-- `src/components/UserPermissions.tsx`
-- `src/components/UserProfilePopover.tsx`
-- `src/components/UserProfile.tsx`
-- `src/pages/AuthHandoff.tsx`
+**4. `src/services/approvalDataService.ts`**
+- Update `getUniqueClients()` (line 276-279) to query `copy_clients` instead of `projects.client_name`
 
-### Escopo que permanece igual
-- Regras de permissão por módulo (RLS + RPC existentes)
-- Hierarquia admin/workspace_admin
-- Restrição de login Google para `@dotconceito.com`
-- Estrutura visual e navegação
+**5. `src/pages/Aprovacao.tsx`**
+- No change needed — it already calls `getUniqueClients()` which will be updated
+
+### What stays unchanged
+- `copy_clients` table schema, RLS, CRUD in CopyEstrategia and AnaliseBenchSelecao
+- All other approval logic, filters, navigation
+- No database migrations needed
+
+### Files Modified
+- `src/utils/getClients.ts` — new shared utility
+- `src/components/approval/JobDialog.tsx` — use shared utility, remove MOCK_CLIENTS
+- `src/components/AnaliseBench.tsx` — use shared utility instead of CRM
+- `src/services/approvalDataService.ts` — update `getUniqueClients()`
+
