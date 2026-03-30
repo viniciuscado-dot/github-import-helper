@@ -595,8 +595,8 @@ export function AnaliseBench() {
                 </SelectTrigger>
                 <SelectContent className="z-50 bg-popover">
                   {crmClients.map((client) => (
-                    <SelectItem key={client.id} value={client.id}>
-                      {client.company_name}
+                    <SelectItem key={client.id} value={client.name}>
+                      {client.name}
                     </SelectItem>
                   ))}
                 </SelectContent>
