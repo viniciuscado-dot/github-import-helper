@@ -140,25 +140,11 @@ export function AnaliseBench() {
     }
   }, [selectedClient])
 
-  // Buscar clientes do CRM
+  // Buscar clientes da base unificada (copy_clients)
   const fetchCRMClients = async () => {
     try {
-      const { data, error } = await supabase
-        .from('crm_cards')
-        .select('id, company_name, title')
-        .order('company_name', { ascending: true })
-      
-      if (error) throw error
-      
-      const uniqueCompanies = Array.from(
-        new Map(
-          (data || [])
-            .filter(card => card.company_name && card.company_name.trim() !== '')
-            .map(card => [card.company_name, card])
-        ).values()
-      )
-      
-      setCrmClients(uniqueCompanies)
+      const clients = await fetchCopyClients()
+      setCrmClients(clients)
     } catch (error) {
       console.error('Erro ao buscar clientes:', error)
     }
