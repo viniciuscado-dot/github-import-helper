@@ -49,7 +49,7 @@ Deno.serve(async (req) => {
     const { data: currentUserProfile, error: profileError } = await supabaseAdmin
       .from('profiles')
       .select('role')
-      .eq('user_id', currentUserId)
+      .eq('id', currentUserId)
       .single()
 
     if (profileError || !currentUserProfile) {
