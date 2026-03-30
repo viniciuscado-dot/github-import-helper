@@ -44,19 +44,7 @@ const MATERIAL_TYPES = [
 
 type MaterialType = typeof MATERIAL_TYPES[number]["value"];
 
-// Clientes conforme base atualizada
-const MOCK_CLIENTS = [
-  "8 milímetros", "Ackno", "Amantícia", "Amazônia Madeiras", "Aquiraz Investimentos",
-  "Baterias Pontocom", "BOX Car Brasil", "CA Inglês", "Café da Fazenda", "Central de Espelhos",
-  "Centrominas Irrigações", "ClorUp", "Comece hub", "Connect Tecnologia", "Construlima",
-  "Cotafácil", "Explorer Call Center", "Face Doctor", "Grupo Gemba", "Heropack",
-  "Huli", "IGet Easy Market", "INFOCUS CX", "Inshape", "Isocompositos",
-  "Itiban", "JB Log Saúde", "LB3", "Lebes", "Legal Search",
-  "Linx", "Mantas Brasil", "NEO", "Norte Gás", "Oslo Group",
-  "Paragon", "Paragon Bank", "Preditiva", "PluggTo", "Rede Conecta",
-  "Rodomavi", "Sete Vidas", "Sonora", "Style Brazil", "Sul Solar",
-  "Thiber", "Versátil Banheiras", "VisualFarm", "Vital Help", "Viva Natural",
-];
+import { fetchCopyClientNames } from "@/utils/getClients";
 
 // Designer & Copywriter lists now come from user registry
 import { getActiveDesigners, getActiveCopywriters, getUserSquadByName } from "@/utils/getActiveUsers";
