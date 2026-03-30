@@ -144,7 +144,7 @@ export const UserProfilePopover = ({ children, onLogout }: UserProfilePopoverPro
       const { error: updateError } = await supabase
         .from('profiles')
         .update({ avatar_url: publicUrl })
-        .eq('user_id', profile.user_id)
+        .eq('id', profile.id)
 
       if (updateError) throw updateError
 
@@ -207,7 +207,7 @@ export const UserProfilePopover = ({ children, onLogout }: UserProfilePopoverPro
           name: editName.trim(),
           phone: editPhone.trim() || null
         })
-        .eq('user_id', profile.user_id)
+        .eq('id', profile.id)
 
       if (error) throw error
 

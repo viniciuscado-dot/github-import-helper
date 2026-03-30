@@ -49,7 +49,7 @@ Deno.serve(async (req) => {
     const { data: currentUserProfile, error: profileError } = await supabaseAdmin
       .from('profiles')
       .select('role')
-      .eq('user_id', currentUserId)
+      .eq('id', currentUserId)
       .single()
 
     if (profileError || !currentUserProfile) {
@@ -98,7 +98,7 @@ Deno.serve(async (req) => {
     const { data: targetUserProfile } = await supabaseAdmin
       .from('profiles')
       .select('role')
-      .eq('user_id', targetUserId)
+      .eq('id', targetUserId)
       .single()
 
     // Permission checks based on hierarchy
@@ -119,7 +119,7 @@ Deno.serve(async (req) => {
     const { error: updateError } = await supabaseAdmin
       .from('profiles')
       .update({ role: newRole })
-      .eq('user_id', targetUserId)
+      .eq('id', targetUserId)
 
     if (updateError) {
       console.error('Error updating role:', updateError)
