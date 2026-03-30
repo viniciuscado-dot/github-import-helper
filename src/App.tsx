@@ -34,6 +34,7 @@ const CopyEstrategia = lazy(() => import("./pages/CopyEstrategia"));
 const AnaliseBenchSelecao = lazy(() => import("./pages/AnaliseBenchSelecao"));
 const DataDriven = lazy(() => import("./pages/DataDriven"));
 const DataDrivenProdutividade = lazy(() => import("./pages/DataDrivenProdutividade"));
+const DataDrivenEntregas = lazy(() => import("./pages/DataDrivenEntregas"));
 
 const queryClient = new QueryClient({
   defaultOptions: {
