@@ -323,7 +323,7 @@ export const UserPermissions = ({
         const { error: profileError } = await supabase
           .from('profiles')
           .update({ custom_role_id: roleValue })
-          .eq('user_id', userId)
+          .eq('id', userId)
 
         if (profileError) throw profileError
       }

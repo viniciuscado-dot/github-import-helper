@@ -66,7 +66,7 @@ export default function AuthHandoff() {
             const { data: profileData } = await supabase
               .from('profiles')
               .select('preferred_module')
-              .eq('user_id', sessionData.session.user.id)
+              .eq('id', sessionData.session.user.id)
               .single();
 
             // Redireciona direto para o dashboard de Operação

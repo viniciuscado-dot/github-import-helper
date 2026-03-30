@@ -119,7 +119,7 @@ Deno.serve(async (req) => {
     const { error: updateError } = await supabaseAdmin
       .from('profiles')
       .update({ role: newRole })
-      .eq('user_id', targetUserId)
+      .eq('id', targetUserId)
 
     if (updateError) {
       console.error('Error updating role:', updateError)
