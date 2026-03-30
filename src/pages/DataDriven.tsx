@@ -3,7 +3,7 @@ import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
 import { MobileSidebarTrigger } from "@/components/MobileSidebarTrigger";
 import { TopBar } from "@/components/TopBar";
 import { Card, CardContent } from "@/components/ui/card";
-import { Activity } from "lucide-react";
+import { Activity, Package } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 const modules = [
@@ -13,6 +13,13 @@ const modules = [
     subtitle: "Dashboards, produtividade do time e leitura estratégica de dados operacionais",
     icon: Activity,
     route: "/data-driven/produtividade",
+  },
+  {
+    id: "entregas",
+    title: "Gestão de Entregas",
+    subtitle: "Acompanhamento de entregas, prazos e status por cliente e squad",
+    icon: Package,
+    route: "/data-driven/entregas",
   },
 ];
 
