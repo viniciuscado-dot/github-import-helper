@@ -3,7 +3,7 @@ import { SidebarProvider, SidebarInset } from "@/components/ui/sidebar";
 import { MobileSidebarTrigger } from "@/components/MobileSidebarTrigger";
 import { TopBar } from "@/components/TopBar";
 import { Card, CardContent } from "@/components/ui/card";
-import { Activity } from "lucide-react";
+import { Activity, Package } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 
 const modules = [
