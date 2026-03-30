@@ -176,21 +176,18 @@ export function AppSidebar({ activeView, onViewChange }: AppSidebarProps) {
           100% { background-position: -150% 0; }
         }
         .sidebar-menu-item .sidebar-icon {
-          opacity: 0;
-          width: 0;
-          transform: scale(0.2);
-          transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+          opacity: 1;
+          width: 20px;
+          transform: scale(1);
+          transition: all 0.3s ease;
           display: inline-flex;
           align-items: center;
           justify-content: center;
-          overflow: hidden;
           flex-shrink: 0;
+          margin-right: 4px;
         }
         .sidebar-menu-item:hover .sidebar-icon {
-          opacity: 1;
-          width: 20px;
-          transform: scale(1.05);
-          margin-right: 4px;
+          transform: scale(1.1);
         }
       `}</style>
       <Sidebar side="left" collapsible="icon" className="border-r border-border/30 transition-all duration-300 ease-in-out">
