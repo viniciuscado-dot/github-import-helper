@@ -98,7 +98,7 @@ Deno.serve(async (req) => {
     const { data: targetUserProfile } = await supabaseAdmin
       .from('profiles')
       .select('role')
-      .eq('user_id', targetUserId)
+      .eq('id', targetUserId)
       .single()
 
     // Permission checks based on hierarchy
