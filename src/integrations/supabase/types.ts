@@ -227,6 +227,7 @@ export type Database = {
           reuniao_brainstorm: string | null
           reuniao_kick_off: string | null
           servicos_produtos: string | null
+          site: string | null
           status: string
           tamanho_lp: string | null
           updated_at: string
@@ -258,6 +259,7 @@ export type Database = {
           reuniao_brainstorm?: string | null
           reuniao_kick_off?: string | null
           servicos_produtos?: string | null
+          site?: string | null
           status?: string
           tamanho_lp?: string | null
           updated_at?: string
@@ -289,6 +291,7 @@ export type Database = {
           reuniao_brainstorm?: string | null
           reuniao_kick_off?: string | null
           servicos_produtos?: string | null
+          site?: string | null
           status?: string
           tamanho_lp?: string | null
           updated_at?: string
