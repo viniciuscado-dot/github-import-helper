@@ -388,6 +388,7 @@ const [isLoading, setIsLoading] = useState(false)
       // Filtrar apenas colunas existentes na tabela copy_forms (evita erro de coluna inexistente)
       const allowedFields = [
         'reuniao_boas_vindas','reuniao_kick_off','reuniao_brainstorm',
+        'tamanho_lp','site',
         'servicos_produtos','diferencial_competitivo','publico_alvo','principal_inimigo',
         'avatar_principal','momento_jornada','maior_objecao','cases_impressionantes',
         'nomes_empresas','investimento_medio','pergunta_qualificatoria','informacao_extra',

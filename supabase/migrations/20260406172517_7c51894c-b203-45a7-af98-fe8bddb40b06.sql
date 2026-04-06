@@ -1,0 +1,1 @@
+ALTER TABLE public.copy_forms ADD COLUMN site text;
