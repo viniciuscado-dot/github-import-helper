@@ -201,6 +201,7 @@ ${formData.reuniao_brainstorm ? `Reunião de Brainstorm: ${formData.reuniao_brai
 DADOS DO NEGÓCIO:
 - Empresa: ${formData.nome_empresa || 'Não informado'}
 - Nicho: ${formData.nicho_empresa || 'Não informado'}
+- Site: ${formData.site || 'Não informado'}
 - Serviços/Produtos: ${formData.servicos_produtos || 'Não informado'}
 - Diferencial: ${formData.diferencial_competitivo || 'Não informado'}
 - Público-alvo: ${formData.publico_alvo || 'Não informado'}
