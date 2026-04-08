@@ -1,49 +1,76 @@
 
 
-## Plan: Persist Form Data After Copy Generation
+## Plan: Duplicate "Copy e Estratégia" as "Teste Copy"
 
-### Problem
-After generating a copy, `form.reset()` (line 443) wipes all form fields. The draft system (`copy_form_drafts`) also has incomplete data for some clients. When the user returns to the form, only reunion fields appear because the draft was either never fully saved or was overwritten by the reset.
+### Overview
+Create an independent copy of the entire Copy e Estratégia flow (client list page + copy form) under a new route, with its own database tables so changes don't affect the original.
 
-### Root causes
-1. **`form.reset()` on line 443** clears the form after successful generation
-2. The reset triggers the auto-save watcher, which saves empty/partial data to `copy_form_drafts`, overwriting the complete draft
-3. No mechanism loads the last submitted `copy_forms` data back into the form
+### Database migrations
 
-### Solution
-
-**Single file: `src/components/CopyForm.tsx`**
-
-1. **Remove `form.reset()` after generation** (line 443) — keep the form populated so the user can edit and regenerate
-2. **Remove `lastFormDataRef.current = null`** (line 445) — preserve the reference
-3. **On initial load, if no draft exists, load the most recent `copy_forms` entry** for the current client — this ensures that even if the draft was lost, the last submitted briefing populates the form
-4. **Keep `setUploadedDocuments([])`** — uploaded docs are already saved to the DB, clearing the upload list is fine
-
-### Detail on change #3 (fallback load from `copy_forms`)
-In the draft loading `useEffect` (lines 590-622), when `data` is null (no draft found), add a fallback query:
-```ts
-// If no draft, try loading from most recent copy_forms submission
-const { data: lastSubmission } = await supabase
-  .from('copy_forms')
-  .select('*')
-  .eq('nome_empresa', clientName)
-  .eq('copy_type', mainTab)
-  .order('created_at', { ascending: false })
-  .limit(1)
-  .maybeSingle()
-
-if (lastSubmission) {
-  const formFields = { /* map all allowedFields from lastSubmission */ }
-  form.reset(formFields)
-}
+**1. `test_copy_clients` table** — clone of `copy_clients`
+```sql
+CREATE TABLE public.test_copy_clients (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  name text NOT NULL,
+  squad text NOT NULL DEFAULT 'Apollo',
+  created_at timestamptz DEFAULT now(),
+  is_archived boolean DEFAULT false,
+  created_by uuid REFERENCES auth.users(id)
+);
+ALTER TABLE public.test_copy_clients ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Authenticated users can manage test_copy_clients"
+  ON public.test_copy_clients FOR ALL TO authenticated USING (true) WITH CHECK (true);
 ```
 
-### What stays unchanged
-- Draft auto-save logic (debounced upsert)
-- Form schema and validation
-- Generation flow and edge function calls
-- History/results tabs
+**2. `test_copy_forms` table** — clone of `copy_forms` structure
+```sql
+CREATE TABLE public.test_copy_forms (LIKE public.copy_forms INCLUDING ALL);
+ALTER TABLE public.test_copy_forms ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Authenticated users can manage test_copy_forms"
+  ON public.test_copy_forms FOR ALL TO authenticated USING (true) WITH CHECK (true);
+```
 
-### Files Modified
-- `src/components/CopyForm.tsx`
+**3. `test_copy_form_drafts` table** — clone of `copy_form_drafts`
+```sql
+CREATE TABLE public.test_copy_form_drafts (LIKE public.copy_form_drafts INCLUDING ALL);
+ALTER TABLE public.test_copy_form_drafts ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "Authenticated users can manage test_copy_form_drafts"
+  ON public.test_copy_form_drafts FOR ALL TO authenticated USING (true) WITH CHECK (true);
+```
+
+### New files
+
+**`src/pages/TestCopyEstrategia.tsx`**
+- Full copy of `CopyEstrategia.tsx`, replacing:
+  - Table references: `copy_clients` → `test_copy_clients`
+  - Navigation: `/copy-estrategia` → `/teste-copy`
+  - Client click route: `/dashboard?view=copy` → `/dashboard?view=teste-copy`
+  - Sidebar `activeView`: `'copy'` → `'teste-copy'`
+
+**`src/components/TestCopyForm.tsx`**
+- Full copy of `CopyForm.tsx`, replacing:
+  - Table references: `copy_forms` → `test_copy_forms`, `copy_form_drafts` → `test_copy_form_drafts`
+  - Edge function call stays the same initially (or can be pointed to a test variant later)
+
+### Modified files
+
+**`src/components/app-sidebar.tsx`**
+- Add entry above "Copy e Estratégia" in `criacaoSubmenu`:
+```ts
+{ id: 'teste-copy', title: 'Teste Copy', icon: FlaskConical, route: '/teste-copy' },
+```
+
+**`src/App.tsx`**
+- Add lazy import for `TestCopyEstrategia`
+- Add route `/teste-copy` inside `ProtectedRoute`
+
+**`src/pages/Index.tsx`**
+- Add `'teste-copy'` to `VALID_VIEWS` and `ActiveViewType`
+- Add case in `renderContent()` to render `<TestCopyForm />`
+- Add module mapping for permission check
+
+### What stays unchanged
+- Original `copy_clients`, `copy_forms`, `copy_form_drafts` tables and all their data
+- Original `CopyEstrategia.tsx` and `CopyForm.tsx` — completely untouched
+- Edge functions, RLS on original tables, all other pages
 
