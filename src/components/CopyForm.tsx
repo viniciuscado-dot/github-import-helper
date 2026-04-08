@@ -106,6 +106,8 @@ interface CopyFormProps {
   onBack?: () => void
   clientName?: string
   tableConfig?: CopyFormTableConfig
+  /** When set, hides header/tabs and renders only that tab's content */
+  visibleTab?: 'form' | 'history' | 'prompts'
 }
 
 type EditableField = 'label_text' | 'description_text' | 'section_title' | 'section_description'
@@ -217,7 +219,7 @@ const EditableText = React.memo(({
   )
 })
 
-export function CopyForm({ onBack, clientName, tableConfig }: CopyFormProps = {}) {
+export function CopyForm({ onBack, clientName, tableConfig, visibleTab }: CopyFormProps = {}) {
   const tables = tableConfig || DEFAULT_TABLE_CONFIG
   const { profile } = useAuth()
   const { checkModulePermission } = useModulePermissions()
@@ -1170,6 +1172,7 @@ const [isLoading, setIsLoading] = useState(false)
     <EditableTextContext.Provider value={editableTextContextValue}>
       <div>
       {/* Static header — never moves */}
+      {!visibleTab && (
       <div className="space-y-4 mb-6">
         {/* 1) Botão Voltar */}
         <Button variant="ghost" size="sm" onClick={() => window.location.href = '/copy-estrategia'} className="gap-1.5 text-muted-foreground hover:text-foreground -ml-2">
@@ -1237,9 +1240,11 @@ const [isLoading, setIsLoading] = useState(false)
         {/* 3) Menu de fases (timeline clicável) */}
         <StrategyTimeline currentStage={currentPhase} onStageClick={setCurrentPhase} />
       </div>
+      )}
 
       {/* 4) Abas + seletor de materiais na mesma linha */}
-      <Tabs value={activeTab} onValueChange={setActiveTab}>
+      <Tabs value={visibleTab || activeTab} onValueChange={visibleTab ? undefined : setActiveTab}>
+        {!visibleTab && (
         <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
           <TabsList>
             <TabsTrigger value="form" className="flex items-center gap-2">
@@ -1294,6 +1299,7 @@ const [isLoading, setIsLoading] = useState(false)
             })}
           </div>
         </div>
+        )}
 
         <TabsContent value="form" className="space-y-6">
           <Form {...form}>
