@@ -327,16 +327,21 @@ export function TestCopyBriefingForm({ onBack, clientName }: TestCopyBriefingFor
   // ── File drag/drop ──
   const handleDragOver = (e: React.DragEvent) => { e.preventDefault(); setIsDragging(true) }
   const handleDragLeave = () => setIsDragging(false)
+  const isAcceptedFile = (file: File) => {
+    const validTypes = ['application/pdf', 'text/html']
+    const validExts = /\.(pdf|html?)$/i
+    return validTypes.includes(file.type) || validExts.test(file.name)
+  }
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault(); setIsDragging(false)
     const file = e.dataTransfer.files[0]
-    if (file && file.type === 'application/pdf') { setBriefingFile(file); toast.success(`PDF "${file.name}" adicionado`) }
-    else toast.error("Apenas arquivos PDF são aceitos")
+    if (file && isAcceptedFile(file)) { setBriefingFile(file); toast.success(`Arquivo "${file.name}" adicionado`) }
+    else toast.error("Apenas arquivos PDF ou HTML são aceitos")
   }
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
-    if (file && file.type === 'application/pdf') { setBriefingFile(file); toast.success(`PDF "${file.name}" adicionado`) }
-    else if (file) toast.error("Apenas arquivos PDF são aceitos")
+    if (file && isAcceptedFile(file)) { setBriefingFile(file); toast.success(`Arquivo "${file.name}" adicionado`) }
+    else if (file) toast.error("Apenas arquivos PDF ou HTML são aceitos")
   }
 
   // ── Submit (upload PDF + generate) ──
@@ -541,7 +546,7 @@ export function TestCopyBriefingForm({ onBack, clientName }: TestCopyBriefingFor
                 </div>
               </div>
               <CardDescription>
-                Adicione o PDF do briefing. A inteligência artificial irá analisar o documento e gerar os materiais com base nas orientações dos prompts configurados.
+                Adicione o PDF ou HTML do briefing. A inteligência artificial irá analisar o documento e gerar os materiais com base nas orientações dos prompts configurados.
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
@@ -563,7 +568,7 @@ export function TestCopyBriefingForm({ onBack, clientName }: TestCopyBriefingFor
                 <input
                   ref={fileInputRef}
                   type="file"
-                  accept=".pdf"
+                  accept=".pdf,.html,.htm"
                   onChange={handleFileSelect}
                   className="hidden"
                 />
@@ -591,10 +596,10 @@ export function TestCopyBriefingForm({ onBack, clientName }: TestCopyBriefingFor
                   <div className="flex flex-col items-center gap-3">
                     <Upload className="h-10 w-10 text-muted-foreground" />
                     <div>
-                      <p className="font-medium text-foreground">Arraste o PDF do briefing aqui</p>
+                      <p className="font-medium text-foreground">Arraste o arquivo do briefing aqui</p>
                       <p className="text-sm text-muted-foreground mt-1">ou clique para selecionar o arquivo</p>
                     </div>
-                    <Badge variant="secondary" className="mt-1">Apenas PDF</Badge>
+                    <Badge variant="secondary" className="mt-1">PDF ou HTML</Badge>
                   </div>
                 )}
               </div>

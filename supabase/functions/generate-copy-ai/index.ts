@@ -508,10 +508,36 @@ serve(async (req) => {
           const fileName = filePath.split('/').pop() || 'arquivo';
           const isTextLike = /\.(txt|md|csv|json)$/i.test(fileName);
           const isPdf = /\.pdf$/i.test(fileName);
+          const isHtml = /\.html?$/i.test(fileName);
 
           if (isTextLike) {
             const text = await fileData.text();
             return `=== DOCUMENTO: ${fileName} ===\n${text}\n`;
+          }
+
+          if (isHtml) {
+            try {
+              console.log(`🌐 Extraindo texto do HTML: ${fileName}`);
+              const rawHtml = await fileData.text();
+              // Strip HTML tags to get clean text content
+              const cleanText = rawHtml
+                .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, '')
+                .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '')
+                .replace(/<[^>]+>/g, ' ')
+                .replace(/&nbsp;/gi, ' ')
+                .replace(/&amp;/gi, '&')
+                .replace(/&lt;/gi, '<')
+                .replace(/&gt;/gi, '>')
+                .replace(/&quot;/gi, '"')
+                .replace(/&#39;/gi, "'")
+                .replace(/\s+/g, ' ')
+                .trim();
+              console.log(`✅ HTML ${fileName}: ${cleanText.length} caracteres extraídos`);
+              return `=== DOCUMENTO HTML: ${fileName} ===\n${cleanText}\n`;
+            } catch (htmlError) {
+              console.error(`❌ Erro ao extrair HTML ${fileName}:`, htmlError);
+              return `=== DOCUMENTO: ${fileName} ===\n[Erro ao extrair texto do HTML]\n`;
+            }
           }
 
           if (isPdf) {
