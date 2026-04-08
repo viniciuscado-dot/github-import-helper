@@ -541,6 +541,16 @@ serve(async (req) => {
       }
     }
 
+    const apiKey = Deno.env.get('ANTHROPIC_API_KEY');
+    const provider = 'anthropic';
+
+    console.log('🔑 Verificando chave da API...');
+    if (!apiKey) {
+      console.error('❌ Chave da API Claude não encontrada');
+      throw new Error('Chave da API Claude não configurada no Supabase');
+    }
+    console.log('✅ Chave da API encontrada');
+
     const analysisRequested = isBriefingAnalysisRequested(materialTypes);
     let aiResponse = '';
 
