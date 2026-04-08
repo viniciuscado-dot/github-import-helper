@@ -14,6 +14,7 @@ const CANDIDATE_MODELS = [
   'claude-3-haiku-20240307',
 ] as const;
 
+const ANALYSIS_BRIEFING_TYPE = 'analise_briefing' as const;
 const MATERIAL_ORDER = ['criativos', 'roteiro_video', 'landing_page'] as const;
 
 type MaterialType = (typeof MATERIAL_ORDER)[number];
@@ -29,9 +30,16 @@ function isMaterialType(value: unknown): value is MaterialType {
   return MATERIAL_ORDER.some((type) => type === value);
 }
 
+function isBriefingAnalysisRequested(materialTypes: unknown): boolean {
+  return Array.isArray(materialTypes) && materialTypes.includes(ANALYSIS_BRIEFING_TYPE);
+}
+
 function normalizeMaterialTypes(materialTypes: unknown): MaterialType[] {
-  const requested = Array.isArray(materialTypes) ? materialTypes.filter(isMaterialType) : [];
-  return MATERIAL_ORDER.filter((type) => requested.length === 0 || requested.includes(type));
+  if (!Array.isArray(materialTypes) || materialTypes.length === 0) {
+    return [...MATERIAL_ORDER];
+  }
+
+  return materialTypes.filter(isMaterialType);
 }
 
 function getCompanyName(companyName: string | null | undefined): string {
@@ -135,6 +143,62 @@ ${documentsContent}
 IMPORTANTE: Use as informações dos documentos acima para enriquecer a análise e personalizar o material final com dados e diferenciais concretos.
 
 ===========================` : ''}`;
+}
+
+function buildBriefingAnalysisSystemPrompt(): string {
+  return `Você é um analista sênior de briefing da DOT, especializado em avaliar a completude e a qualidade estratégica de documentos de briefing.
+
+=== FORMATO OBRIGATÓRIO DE RESPOSTA ===
+- A PRIMEIRA LINHA deve ser exatamente: SCORE: XX/100
+- XX deve ser um número inteiro entre 0 e 100.
+- Depois do score, responda em Markdown puro com as seções abaixo, nesta ordem:
+  ## Diagnóstico Geral
+  ## Pontos Fortes
+  ## Lacunas Críticas
+  ## Informações Faltantes
+  ## Recomendações Práticas
+  ## Veredito Final
+
+=== REGRAS FIXAS ===
+- Não gere criativos, roteiros, landing page ou qualquer material de campanha.
+- Use o conteúdo do PDF como base principal.
+- Leve em consideração todas as instruções, modelos ideais e observações adicionais enviados no contexto.
+- A nota deve refletir o quanto o briefing está completo, claro, acionável e pronto para geração de materiais.
+- Seja específico sobre o que foi encontrado, o que está ausente e o que precisa ser complementado.
+- Nunca responda com HTML, CSS ou JavaScript.`;
+}
+
+function buildBriefingAnalysisUserMessage(formData: any, documentsContent: string): string {
+  return `=== OBJETIVO ===
+Avalie o briefing anexado e retorne uma nota visual de completude junto com feedback detalhado.
+
+=== CONTEXTO DO CLIENTE ===
+- Empresa: ${formData.nome_empresa || 'Não informado'}
+- Fase/Copy type: ${formData.copy_type || 'Não informado'}
+
+=== INSTRUÇÕES, CRITÉRIOS E MODELOS CONFIGURADOS PELO USUÁRIO ===
+${formData.informacao_extra || 'Nenhuma instrução adicional foi fornecida.'}
+
+=== CONTEÚDO EXTRAÍDO DO PDF ===
+${documentsContent || 'Nenhum conteúdo textual pôde ser extraído do PDF.'}
+
+Agora faça a análise completa do briefing seguindo exatamente o formato obrigatório.`;
+}
+
+function isBriefingAnalysisOutputValid(text: string): boolean {
+  const scoreMatch = text.match(/SCORE:\s*(\d{1,3})\s*\/\s*100/i);
+  if (!scoreMatch) return false;
+
+  const score = Number(scoreMatch[1]);
+  if (!Number.isInteger(score) || score < 0 || score > 100) return false;
+
+  return /##\s*Diagn[oó]stico\s*Geral/i.test(text)
+    && /##\s*Pontos\s*Fortes/i.test(text)
+    && /##\s*Lacunas\s*Cr[ií]ticas/i.test(text)
+    && /##\s*Informa[cç][õo]es\s*Faltantes/i.test(text)
+    && /##\s*Recomenda[cç][õo]es\s*Pr[aá]ticas/i.test(text)
+    && /##\s*Veredito\s*Final/i.test(text)
+    && text.trim().length >= 400;
 }
 
 function buildClientContext(formData: any, newCopyContext?: string): string {
@@ -325,6 +389,42 @@ async function generateMaterialBlock(params: {
   throw lastError instanceof Error
     ? lastError
     : new Error(`Não foi possível gerar o bloco completo de ${MATERIAL_LABELS[materialType]}.`);
+}
+
+async function generateBriefingAnalysis(params: {
+  apiKey: string;
+  formData: any;
+  documentsContent: string;
+}): Promise<string> {
+  const { apiKey, formData, documentsContent } = params;
+  let lastError: unknown = null;
+
+  for (let attempt = 0; attempt < 3; attempt++) {
+    try {
+      const { text, model, stopReason } = await callAnthropicWithFallback(
+        apiKey,
+        buildBriefingAnalysisSystemPrompt(),
+        buildBriefingAnalysisUserMessage(formData, documentsContent),
+        4096,
+      );
+
+      console.log(`🧠 análise_briefing gerado com ${text.length} caracteres via ${model}`);
+
+      if (stopReason !== 'max_tokens' && isBriefingAnalysisOutputValid(text)) {
+        return text.trim();
+      }
+
+      console.warn(`⚠️ análise_briefing retornou potencialmente incompleto. stop_reason=${stopReason || 'n/a'} tamanho=${text.length} tentativa=${attempt + 1}`);
+      lastError = new Error('Saída potencialmente incompleta para analise_briefing');
+    } catch (error) {
+      lastError = error;
+      console.error(`❌ Erro ao gerar analise_briefing na tentativa ${attempt + 1}:`, error);
+    }
+  }
+
+  throw lastError instanceof Error
+    ? lastError
+    : new Error('Não foi possível gerar a análise completa do briefing.');
 }
 
 serve(async (req) => {
