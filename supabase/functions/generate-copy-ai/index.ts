@@ -333,6 +333,7 @@ serve(async (req) => {
   }
 
   let copyFormIdVar: string | null = null;
+  let tableNameVar = 'copy_forms';
 
   try {
     console.log('🚀 Edge function generate-copy-ai iniciada');
