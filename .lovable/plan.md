@@ -1,57 +1,82 @@
 
-## Plan: Add "Configurações" and "Analisar Informações" Buttons to Briefing Card
 
-### Fix runtime error first
-`Index.tsx` already imports `TestCopyBriefingForm` correctly (line 20), but there's likely a stale reference to `TestCopyForm` somewhere in `renderContent`. This will be fixed as part of the implementation.
+## Plan: Inline Analysis Results with Visual Score
 
-### Changes
+### What changes
 
 **Single file: `src/components/TestCopyBriefingForm.tsx`**
 
-1. **Add state for the config modal**
-   - `showConfigModal` boolean state
-   - `analysisInstructions` and `idealResults` text states for the instruction/model content
-   - `isAnalyzing` boolean for the analyze button loading state
-   - `analysisResult` string to hold the analysis output
+### 1. Move analysis results inline (between PDF upload and "Informações adicionais")
 
-2. **Add two buttons to the CardHeader** (top-right of "Analisador de Briefing" box)
-   - **"Analisar Informações"** button (with `Eye` or `Search` icon) — triggers PDF analysis against the configured prompts/instructions. Sends the uploaded PDF to the edge function for analysis (or displays a toast if no PDF is uploaded). Shows results in a dialog.
-   - **"Configurações"** (gear icon button) — opens a dialog/sheet with:
-     - "Instruções de Análise" textarea — instructions for how the AI should evaluate the briefing
-     - "Modelo de Resultados Ideais" textarea — example of what a complete briefing should contain
-     - Save button (persists to localStorage keyed by client)
+Currently `handleAnalyze` shows results in a separate `Dialog`. Instead:
+- Remove the `showAnalysisResult` dialog
+- Display the analysis result directly below the PDF drop zone and above the "Informações adicionais" textarea
+- When `analysisResult` has content, render a new results card in that position
 
-3. **Config dialog UI**
-   - Uses existing `Dialog` component
-   - Two large textareas for instructions and ideal results
-   - Save button that stores to localStorage (`test-copy-analysis-config`)
+### 2. Visual Score Display
 
-4. **"Analisar Informações" flow**
-   - Uploads the PDF to Supabase storage (same bucket `briefing-documents`)
-   - Calls `generate-copy-ai` edge function (or a lightweight Anthropic call) with a system prompt built from the config instructions, asking to evaluate briefing completeness
-   - Shows results in a dialog with the markdown renderer
+Parse the AI response for a score value (e.g. "Score: 85/100" or "Nota: 7/10"). Display it as:
+- A circular progress indicator or a colored progress bar at the top of the results section
+- Color-coded: red (0-40%), yellow (41-70%), green (71-100%)
+- Large score number with label (e.g. "85/100 — Briefing Completo")
 
-### CardHeader layout change
-```tsx
-<CardHeader>
-  <div className="flex items-center justify-between">
-    <CardTitle className="flex items-center gap-2 text-xl">
-      <FileUp className="h-5 w-5" />
-      Analisador de Briefing
-    </CardTitle>
-    <div className="flex items-center gap-2">
-      <Button variant="outline" size="sm" onClick={handleAnalyze} disabled={!briefingFile || isAnalyzing}>
-        {isAnalyzing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Eye className="h-4 w-4" />}
-        Analisar Informações
-      </Button>
-      <Button variant="ghost" size="icon" onClick={() => setShowConfigModal(true)}>
-        <Settings className="h-4 w-4" />
-      </Button>
-    </div>
-  </div>
-  <CardDescription>...</CardDescription>
-</CardHeader>
+The score will be extracted via regex from the AI response. The system prompt sent to Anthropic will be updated to always include a structured score line.
+
+### 3. Update the analysis system prompt
+
+Modify `handleAnalyze` to call the Anthropic API directly (via the existing `generate-copy-ai` edge function or a direct call) with a system prompt that instructs:
+- Evaluate the briefing PDF against the configured instructions and ideal result models
+- Return a score line in format `SCORE: XX/100` at the beginning
+- Then provide detailed feedback in Markdown
+
+### 4. Technical details
+
+**Score extraction:**
+```typescript
+function extractScore(text: string): number | null {
+  const match = text.match(/SCORE:\s*(\d+)\s*\/\s*100/i)
+  return match ? parseInt(match[1]) : null
+}
 ```
 
+**Inline results UI (between PDF zone and textarea):**
+```tsx
+{analysisResult && (
+  <Card className="border-primary/30 bg-primary/5">
+    <CardHeader className="pb-3">
+      <div className="flex items-center justify-between">
+        <CardTitle className="text-lg">Resultado da Análise</CardTitle>
+        <Button variant="ghost" size="sm" onClick={() => setAnalysisResult('')}>
+          <X className="h-4 w-4" />
+        </Button>
+      </div>
+    </CardHeader>
+    <CardContent>
+      {/* Visual score gauge */}
+      <div className="flex items-center gap-4 mb-4">
+        <div className="relative h-20 w-20">
+          {/* Circular SVG progress */}
+        </div>
+        <div>
+          <p className="text-2xl font-bold">{score}/100</p>
+          <p className="text-sm text-muted-foreground">Completude do Briefing</p>
+        </div>
+      </div>
+      {/* Markdown feedback */}
+      <MarkdownRenderer content={analysisResultWithoutScore} />
+    </CardContent>
+  </Card>
+)}
+```
+
+**System prompt update in `handleAnalyze`:** Instead of saving to DB and calling `generate-copy-ai` with `materialTypes: ['analise_briefing']`, the analysis will include the config instructions and ideal models directly in `informacao_extra`, and the edge function will use these to build a proper analysis prompt. The system prompt will instruct the AI to output `SCORE: XX/100` as the first line.
+
+### Layout order inside CardContent
+1. PDF drop zone
+2. **Analysis results card** (score + feedback) — visible only after analysis
+3. "Informações adicionais" textarea
+4. "Gerar Materiais" button
+
 ### Files Modified
-- `src/components/TestCopyBriefingForm.tsx` — add buttons, config dialog, analysis flow
+- `src/components/TestCopyBriefingForm.tsx`
+
