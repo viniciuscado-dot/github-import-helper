@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback } from "react"
+import { motion } from "framer-motion"
 import { toast } from "sonner"
 import { Textarea } from "@/components/ui/textarea"
 import { Input } from "@/components/ui/input"
