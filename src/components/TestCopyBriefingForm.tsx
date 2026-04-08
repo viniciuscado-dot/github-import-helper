@@ -16,6 +16,7 @@ import { supabase } from "@/integrations/supabase/external-client"
 import { useModulePermissions } from "@/hooks/useModulePermissions"
 import { cn } from "@/lib/utils"
 import { CopyGenerationOverlay } from '@/components/CopyGenerationOverlay'
+import { DotLogo } from '@/components/DotLogo'
 import { CopyResultsRecent } from '@/components/copy/CopyResultsRecent'
 import { CopyDetailDialog } from '@/components/copy/CopyDetailDialog'
 import { CopyHistoryFull } from '@/components/copy/CopyHistoryFull'
