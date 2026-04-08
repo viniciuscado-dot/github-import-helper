@@ -21,6 +21,7 @@ import { CopyResultsRecent } from '@/components/copy/CopyResultsRecent'
 import { CopyDetailDialog } from '@/components/copy/CopyDetailDialog'
 import { CopyHistoryFull } from '@/components/copy/CopyHistoryFull'
 import { MarkdownRenderer } from '@/components/ui/markdown-renderer'
+import { CopyForm } from '@/components/CopyForm'
 import { StrategyTimeline, STRATEGY_STAGES } from '@/components/copy/StrategyTimeline'
 
 const PLATFORM_OPTIONS = [
