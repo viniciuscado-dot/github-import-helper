@@ -17,7 +17,7 @@ import { CopyForm } from "@/components/CopyForm";
 import { AnaliseBench } from "@/components/AnaliseBench";
 import { HomeCriacao } from "@/components/HomeCriacao";
 import { InterfacePreferences } from "@/components/InterfacePreferences";
-import { TestCopyForm } from "@/components/TestCopyForm";
+import { TestCopyBriefingForm } from "@/components/TestCopyBriefingForm";
 
 type ActiveViewType = 'home-criacao' | 'users' | 'profile' | 'copy' | 'aprovacao' | 'analise-bench' | 'preferencias-interface' | 'teste-copy';
 
@@ -167,7 +167,7 @@ const Index = () => {
         return <CopyForm clientName={clientParam} />
       case 'teste-copy':
         const testClientParam = searchParams.get('client') || undefined;
-        return <TestCopyForm clientName={testClientParam} />
+        return <TestCopyBriefingForm clientName={testClientParam} />
       case 'analise-bench':
         return <AnaliseBench />
       case 'users':
