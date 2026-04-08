@@ -1,49 +1,57 @@
 
+## Plan: Add "Configurações" and "Analisar Informações" Buttons to Briefing Card
 
-## Plan: Transform "Teste Copy" Form into Briefing PDF Analyzer
-
-### Overview
-Replace the entire form tab in the Teste Copy module with a simplified briefing analyzer: a PDF upload area, a text field for additional info, and a generate button. Keep everything else (objective, platforms, timeline, material type selector, Resultados, Prompts tabs) untouched.
+### Fix runtime error first
+`Index.tsx` already imports `TestCopyBriefingForm` correctly (line 20), but there's likely a stale reference to `TestCopyForm` somewhere in `renderContent`. This will be fixed as part of the implementation.
 
 ### Changes
 
-**1. Create `src/components/TestCopyBriefingForm.tsx` (new file)**
-A standalone component that replaces `TestCopyForm`. It will:
-- Reuse the same header structure from `CopyForm` (objective, platforms, timeline, material type selector)
-- Rename the first tab from "Formulário" to "Briefing"
-- Replace all form fields with:
-  - **PDF upload area** — drag-and-drop or click-to-upload zone for a single PDF document (with file name display and remove button)
-  - **"Informações adicionais" textarea** — free text field below the upload
-  - **"Gerar Materiais" button** — triggers generation using the same edge function flow
-- Keep Resultados and Prompts tabs intact (reuse `CopyResultsRecent`, `CopyDetailDialog`, `CopyHistoryFull`, and prompts logic from `CopyForm`)
-- Use `test_copy_forms` and `test_copy_form_drafts` tables for persistence
-- On submit: upload PDF to `briefing-documents` bucket, save reference + additional text to `test_copy_forms`, invoke `generate-copy-ai` edge function
+**Single file: `src/components/TestCopyBriefingForm.tsx`**
 
-**2. Update `src/pages/Index.tsx`**
-- Change the `teste-copy` view case to render `<TestCopyBriefingForm>` instead of `<TestCopyForm>`
+1. **Add state for the config modal**
+   - `showConfigModal` boolean state
+   - `analysisInstructions` and `idealResults` text states for the instruction/model content
+   - `isAnalyzing` boolean for the analyze button loading state
+   - `analysisResult` string to hold the analysis output
 
-**3. Update `src/components/app-sidebar.tsx`**
-- No changes needed (already shows "Teste Copy")
+2. **Add two buttons to the CardHeader** (top-right of "Analisador de Briefing" box)
+   - **"Analisar Informações"** button (with `Eye` or `Search` icon) — triggers PDF analysis against the configured prompts/instructions. Sends the uploaded PDF to the edge function for analysis (or displays a toast if no PDF is uploaded). Shows results in a dialog.
+   - **"Configurações"** (gear icon button) — opens a dialog/sheet with:
+     - "Instruções de Análise" textarea — instructions for how the AI should evaluate the briefing
+     - "Modelo de Resultados Ideais" textarea — example of what a complete briefing should contain
+     - Save button (persists to localStorage keyed by client)
 
-**4. Remove `src/components/TestCopyForm.tsx`**
-- No longer needed since the new component replaces it entirely
+3. **Config dialog UI**
+   - Uses existing `Dialog` component
+   - Two large textareas for instructions and ideal results
+   - Save button that stores to localStorage (`test-copy-analysis-config`)
 
-### What stays unchanged
-- Original `CopyForm.tsx` — completely untouched
-- `TestCopyEstrategia.tsx` (client list page)
-- All database tables, edge functions, RLS
-- Timeline (Onboarding → Expansão), objective field, platform selector
-- Material type selector (Criativos, Roteiros de Vídeo, Landing Page)
-- Resultados and Prompts tabs functionality
+4. **"Analisar Informações" flow**
+   - Uploads the PDF to Supabase storage (same bucket `briefing-documents`)
+   - Calls `generate-copy-ai` edge function (or a lightweight Anthropic call) with a system prompt built from the config instructions, asking to evaluate briefing completeness
+   - Shows results in a dialog with the markdown renderer
 
-### Technical details
-- The new component will be ~600-800 lines (much smaller than `CopyForm`'s 2800) since most form fields are removed
-- PDF upload uses the existing `briefing-documents` Supabase Storage bucket
-- The `informacao_extra` field maps to the existing column in `test_copy_forms`
-- The edge function receives `copyFormId` and `materialTypes` as before — the PDF content is extracted server-side by the existing `generate-copy-ai` logic
+### CardHeader layout change
+```tsx
+<CardHeader>
+  <div className="flex items-center justify-between">
+    <CardTitle className="flex items-center gap-2 text-xl">
+      <FileUp className="h-5 w-5" />
+      Analisador de Briefing
+    </CardTitle>
+    <div className="flex items-center gap-2">
+      <Button variant="outline" size="sm" onClick={handleAnalyze} disabled={!briefingFile || isAnalyzing}>
+        {isAnalyzing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Eye className="h-4 w-4" />}
+        Analisar Informações
+      </Button>
+      <Button variant="ghost" size="icon" onClick={() => setShowConfigModal(true)}>
+        <Settings className="h-4 w-4" />
+      </Button>
+    </div>
+  </div>
+  <CardDescription>...</CardDescription>
+</CardHeader>
+```
 
-### Files
-- **New**: `src/components/TestCopyBriefingForm.tsx`
-- **Modified**: `src/pages/Index.tsx`
-- **Removed**: `src/components/TestCopyForm.tsx`
-
+### Files Modified
+- `src/components/TestCopyBriefingForm.tsx` — add buttons, config dialog, analysis flow
