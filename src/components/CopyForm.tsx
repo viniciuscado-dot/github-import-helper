@@ -219,7 +219,7 @@ const EditableText = React.memo(({
   )
 })
 
-export function CopyForm({ onBack, clientName, tableConfig }: CopyFormProps = {}) {
+export function CopyForm({ onBack, clientName, tableConfig, visibleTab }: CopyFormProps = {}) {
   const tables = tableConfig || DEFAULT_TABLE_CONFIG
   const { profile } = useAuth()
   const { checkModulePermission } = useModulePermissions()
