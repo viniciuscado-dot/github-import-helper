@@ -541,62 +541,68 @@ serve(async (req) => {
       }
     }
 
-    const rawCopyType = formData.copy_type || 'onboarding';
-    const copyType = rawCopyType === 'onboarding' ? 'onboarding' : 'ongoing';
+    const analysisRequested = isBriefingAnalysisRequested(materialTypes);
+    let aiResponse = '';
 
-    console.log('📋 Buscando prompts do tipo:', copyType, '(fase original:', rawCopyType, ')');
-    const { data: prompts } = await supabase
-      .from('default_prompts')
-      .select('*')
-      .eq('is_active', true)
-      .eq('copy_type', copyType)
-      .order('position', { ascending: true });
-
-    console.log('📝 Preparando system prompt completo...');
-    console.log(`📊 Total de prompts ativos encontrados: ${prompts?.length || 0}`);
-
-    if (prompts && prompts.length > 0) {
-      console.log('📋 Títulos dos prompts carregados:');
-      prompts.forEach((p, idx) => {
-        console.log(`  ${idx + 1}. ${p.title} (${p.content?.length || 0} caracteres)`);
-        if (p.title?.toLowerCase().includes('criativo') || p.content?.toLowerCase().includes('criativo estático')) {
-          console.log('   ✅ Prompt de criativos estáticos ENCONTRADO!');
-        }
-      });
-    }
-
-    const apiKey = Deno.env.get('ANTHROPIC_API_KEY');
-    const provider = 'anthropic';
-
-    console.log('🔑 Verificando chave da API...');
-    if (!apiKey) {
-      console.error('❌ Chave da API Claude não encontrada');
-      throw new Error('Chave da API Claude não configurada no Supabase');
-    }
-    console.log('✅ Chave da API encontrada');
-
-    const fullSystemPrompt = buildSystemPrompt((prompts || []) as PromptRow[], documentsContent);
-    const activeMaterialTypes = normalizeMaterialTypes(materialTypes);
-    const materialLabels = activeMaterialTypes.map((type) => MATERIAL_LABELS[type]);
-
-    console.log('📦 Tipos de material solicitados:', materialLabels);
-
-    const clientContext = buildClientContext(formData, newCopyContext);
-    const generatedBlocks: string[] = [];
-
-    for (const materialType of activeMaterialTypes) {
-      console.log(`🧱 Gerando bloco de material: ${materialType}`);
-      const generatedBlock = await generateMaterialBlock({
+    if (analysisRequested) {
+      console.log('🧠 Modo de análise de briefing ativado');
+      aiResponse = await generateBriefingAnalysis({
         apiKey,
         formData,
-        clientContext,
-        fullSystemPrompt,
-        materialType,
+        documentsContent,
       });
-      generatedBlocks.push(generatedBlock);
+    } else {
+      const rawCopyType = formData.copy_type || 'onboarding';
+      const copyType = rawCopyType === 'onboarding' ? 'onboarding' : 'ongoing';
+
+      console.log('📋 Buscando prompts do tipo:', copyType, '(fase original:', rawCopyType, ')');
+      const { data: prompts } = await supabase
+        .from('default_prompts')
+        .select('*')
+        .eq('is_active', true)
+        .eq('copy_type', copyType)
+        .order('position', { ascending: true });
+
+      console.log('📝 Preparando system prompt completo...');
+      console.log(`📊 Total de prompts ativos encontrados: ${prompts?.length || 0}`);
+
+      if (prompts && prompts.length > 0) {
+        console.log('📋 Títulos dos prompts carregados:');
+        prompts.forEach((p, idx) => {
+          console.log(`  ${idx + 1}. ${p.title} (${p.content?.length || 0} caracteres)`);
+          if (p.title?.toLowerCase().includes('criativo') || p.content?.toLowerCase().includes('criativo estático')) {
+            console.log('   ✅ Prompt de criativos estáticos ENCONTRADO!');
+          }
+        });
+      }
+
+      const fullSystemPrompt = buildSystemPrompt((prompts || []) as PromptRow[], documentsContent);
+      const activeMaterialTypes = normalizeMaterialTypes(materialTypes);
+      if (activeMaterialTypes.length === 0) {
+        throw new Error('Nenhum tipo de material válido foi solicitado.');
+      }
+
+      const materialLabels = activeMaterialTypes.map((type) => MATERIAL_LABELS[type]);
+      console.log('📦 Tipos de material solicitados:', materialLabels);
+
+      const clientContext = buildClientContext(formData, newCopyContext);
+      const generatedBlocks: string[] = [];
+
+      for (const materialType of activeMaterialTypes) {
+        console.log(`🧱 Gerando bloco de material: ${materialType}`);
+        const generatedBlock = await generateMaterialBlock({
+          apiKey,
+          formData,
+          clientContext,
+          fullSystemPrompt,
+          materialType,
+        });
+        generatedBlocks.push(generatedBlock);
+      }
+
+      aiResponse = generatedBlocks.join('\n\n---\n\n');
     }
 
-    const aiResponse = generatedBlocks.join('\n\n---\n\n');
     console.log('📝 Resposta gerada, tamanho:', aiResponse.length, 'caracteres');
 
     console.log('💾 Salvando resposta no banco...');
