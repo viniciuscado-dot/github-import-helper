@@ -597,6 +597,50 @@ export function TestCopyBriefingForm({ onBack, clientName }: TestCopyBriefingFor
                 )}
               </div>
 
+              {/* Analysis Loading State */}
+              {isAnalyzing && (
+                <motion.div
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="relative overflow-hidden rounded-lg border border-primary/30 bg-gradient-to-br from-primary/5 via-background to-primary/10 p-8"
+                >
+                  <div
+                    className="absolute inset-0 opacity-20"
+                    style={{
+                      background: 'radial-gradient(circle at 30% 50%, hsl(var(--primary) / 0.15) 0%, transparent 60%)',
+                    }}
+                  />
+                  <div className="relative z-10 flex flex-col items-center gap-5">
+                    <div className="relative">
+                      <div
+                        className="absolute inset-0 blur-2xl opacity-40 rounded-full scale-150"
+                        style={{ background: 'hsl(var(--primary) / 0.3)' }}
+                      />
+                      <DotLogo size={48} animate />
+                    </div>
+                    <div className="text-center space-y-1">
+                      <p className="text-lg font-semibold text-foreground">Analisando briefing…</p>
+                      <p className="text-sm text-muted-foreground">A IA está avaliando a completude do documento</p>
+                    </div>
+                    <div className="w-full max-w-xs space-y-2">
+                      <div className="relative w-full h-2.5 rounded-full bg-muted/50 overflow-hidden border border-border/30">
+                        <motion.div
+                          className="absolute inset-y-0 left-0 rounded-full"
+                          style={{
+                            background: 'linear-gradient(90deg, hsl(var(--primary)), hsl(var(--primary) / 0.7))',
+                            boxShadow: '0 0 12px hsl(var(--primary) / 0.4)',
+                          }}
+                          initial={{ width: '0%' }}
+                          animate={{ width: '85%' }}
+                          transition={{ duration: 8, ease: 'easeOut' }}
+                        />
+                      </div>
+                      <p className="text-xs text-muted-foreground text-center">Lendo documento e comparando com as instruções…</p>
+                    </div>
+                  </div>
+                </motion.div>
+              )}
+
               {/* Inline Analysis Result */}
               {analysisResult && (() => {
                 const scoreMatch = analysisResult.match(/SCORE:\s*(\d+)\s*\/\s*100/i)
