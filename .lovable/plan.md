@@ -1,37 +1,49 @@
 
 
-## Plan: Fix Missing Form Fields Not Being Saved
+## Plan: Persist Form Data After Copy Generation
 
 ### Problem
-Two form fields are not being persisted:
-1. **`tamanho_lp`** — exists in the DB but is missing from the `allowedFields` whitelist in the insert logic (line 389-395), so it gets silently dropped.
-2. **`site`** — defined in the form schema and rendered in the UI, but the column does **not exist** in the `copy_forms` table at all.
+After generating a copy, `form.reset()` (line 443) wipes all form fields. The draft system (`copy_form_drafts`) also has incomplete data for some clients. When the user returns to the form, only reunion fields appear because the draft was either never fully saved or was overwritten by the reset.
 
-### Changes
+### Root causes
+1. **`form.reset()` on line 443** clears the form after successful generation
+2. The reset triggers the auto-save watcher, which saves empty/partial data to `copy_form_drafts`, overwriting the complete draft
+3. No mechanism loads the last submitted `copy_forms` data back into the form
 
-**1. Database migration — add `site` column**
-```sql
-ALTER TABLE public.copy_forms ADD COLUMN site text;
-```
+### Solution
 
-**2. `src/components/CopyForm.tsx` — add missing fields to `allowedFields`**
-Update the `allowedFields` array (line 389-395) to include `'tamanho_lp'` and `'site'`:
+**Single file: `src/components/CopyForm.tsx`**
+
+1. **Remove `form.reset()` after generation** (line 443) — keep the form populated so the user can edit and regenerate
+2. **Remove `lastFormDataRef.current = null`** (line 445) — preserve the reference
+3. **On initial load, if no draft exists, load the most recent `copy_forms` entry** for the current client — this ensures that even if the draft was lost, the last submitted briefing populates the form
+4. **Keep `setUploadedDocuments([])`** — uploaded docs are already saved to the DB, clearing the upload list is fine
+
+### Detail on change #3 (fallback load from `copy_forms`)
+In the draft loading `useEffect` (lines 590-622), when `data` is null (no draft found), add a fallback query:
 ```ts
-const allowedFields = [
-  'reuniao_boas_vindas','reuniao_kick_off','reuniao_brainstorm',
-  'tamanho_lp','site',
-  'servicos_produtos','diferencial_competitivo','publico_alvo','principal_inimigo',
-  'avatar_principal','momento_jornada','maior_objecao','cases_impressionantes',
-  'nomes_empresas','investimento_medio','pergunta_qualificatoria','informacao_extra',
-  'numeros_certificados','nome_empresa','nicho_empresa'
-] as const
+// If no draft, try loading from most recent copy_forms submission
+const { data: lastSubmission } = await supabase
+  .from('copy_forms')
+  .select('*')
+  .eq('nome_empresa', clientName)
+  .eq('copy_type', mainTab)
+  .order('created_at', { ascending: false })
+  .limit(1)
+  .maybeSingle()
+
+if (lastSubmission) {
+  const formFields = { /* map all allowedFields from lastSubmission */ }
+  form.reset(formFields)
+}
 ```
 
 ### What stays unchanged
-- Form UI, validation schema, draft system, AI generation logic
-- All other tables and RLS policies
+- Draft auto-save logic (debounced upsert)
+- Form schema and validation
+- Generation flow and edge function calls
+- History/results tabs
 
 ### Files Modified
-- Database migration (add `site` column to `copy_forms`)
-- `src/components/CopyForm.tsx` (add 2 fields to `allowedFields`)
+- `src/components/CopyForm.tsx`
 
