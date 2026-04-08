@@ -117,7 +117,7 @@ export function TestCopyBriefingForm({ onBack, clientName }: TestCopyBriefingFor
   // Analysis
   const [isAnalyzing, setIsAnalyzing] = useState(false)
   const [analysisResult, setAnalysisResult] = useState('')
-  const [showAnalysisResult, setShowAnalysisResult] = useState(false)
+  // showAnalysisResult dialog removed — results are inline now
 
   // Permissions
   const canViewHistory = checkModulePermission('copy', 'view')
@@ -178,6 +178,7 @@ export function TestCopyBriefingForm({ onBack, clientName }: TestCopyBriefingFor
           copy_type: 'analysis',
           document_files: [filePath],
           informacao_extra: [
+            '=== FORMATO OBRIGATÓRIO DE RESPOSTA ===\nComece SEMPRE a resposta com a linha: SCORE: XX/100\nOnde XX é a nota de completude do briefing (0 a 100). Depois do score, forneça o feedback detalhado em Markdown.',
             analysisInstructions ? `=== INSTRUÇÕES DE ANÁLISE ===\n${analysisInstructions}` : '',
             idealResults.some(r => r.trim()) ? `=== MODELO DE RESULTADOS IDEAIS ===\n${idealResults.filter(r => r.trim()).map((r, i) => `--- Modelo ${i + 1} ---\n${r}`).join('\n\n')}` : '',
             additionalInfo ? `=== INFORMAÇÕES ADICIONAIS ===\n${additionalInfo}` : '',
@@ -204,7 +205,6 @@ export function TestCopyBriefingForm({ onBack, clientName }: TestCopyBriefingFor
         .single()
 
       setAnalysisResult(result?.ai_response || 'Sem resultado disponível.')
-      setShowAnalysisResult(true)
     } catch (err: any) {
       console.error('Erro na análise:', err)
       toast.error(err?.message || 'Erro ao analisar briefing')
@@ -597,6 +597,65 @@ export function TestCopyBriefingForm({ onBack, clientName }: TestCopyBriefingFor
                 )}
               </div>
 
+              {/* Inline Analysis Result */}
+              {analysisResult && (() => {
+                const scoreMatch = analysisResult.match(/SCORE:\s*(\d+)\s*\/\s*100/i)
+                const score = scoreMatch ? parseInt(scoreMatch[1]) : null
+                const feedbackText = analysisResult.replace(/SCORE:\s*\d+\s*\/\s*100\s*/i, '').trim()
+                const scoreColor = score !== null
+                  ? score >= 70 ? 'hsl(var(--primary))' : score >= 40 ? 'hsl(45, 93%, 47%)' : 'hsl(0, 84%, 60%)'
+                  : 'hsl(var(--muted-foreground))'
+                const scoreLabel = score !== null
+                  ? score >= 70 ? 'Briefing Completo' : score >= 40 ? 'Briefing Parcial' : 'Briefing Incompleto'
+                  : ''
+                const circumference = 2 * Math.PI * 36
+                const offset = score !== null ? circumference - (score / 100) * circumference : circumference
+
+                return (
+                  <Card className="border-primary/30 bg-primary/5">
+                    <CardHeader className="pb-3">
+                      <div className="flex items-center justify-between">
+                        <CardTitle className="text-lg flex items-center gap-2">
+                          <Eye className="h-5 w-5" />
+                          Resultado da Análise
+                        </CardTitle>
+                        <Button variant="ghost" size="sm" onClick={() => setAnalysisResult('')}>
+                          <X className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      {score !== null && (
+                        <div className="flex items-center gap-5">
+                          <div className="relative h-20 w-20 flex-shrink-0">
+                            <svg className="h-20 w-20 -rotate-90" viewBox="0 0 80 80">
+                              <circle cx="40" cy="40" r="36" fill="none" stroke="hsl(var(--border))" strokeWidth="6" />
+                              <circle
+                                cx="40" cy="40" r="36" fill="none"
+                                stroke={scoreColor}
+                                strokeWidth="6"
+                                strokeLinecap="round"
+                                strokeDasharray={circumference}
+                                strokeDashoffset={offset}
+                                className="transition-all duration-700"
+                              />
+                            </svg>
+                            <div className="absolute inset-0 flex items-center justify-center">
+                              <span className="text-lg font-bold" style={{ color: scoreColor }}>{score}</span>
+                            </div>
+                          </div>
+                          <div>
+                            <p className="text-2xl font-bold text-foreground">{score}/100</p>
+                            <p className="text-sm text-muted-foreground">{scoreLabel}</p>
+                          </div>
+                        </div>
+                      )}
+                      <MarkdownRenderer content={feedbackText} className="prose-sm" />
+                    </CardContent>
+                  </Card>
+                )
+              })()}
+
               {/* Additional info */}
               <div className="space-y-1.5">
                 <label className="text-sm font-medium text-foreground">Informações adicionais</label>
@@ -909,20 +968,6 @@ export function TestCopyBriefingForm({ onBack, clientName }: TestCopyBriefingFor
         </DialogContent>
       </Dialog>
 
-      {/* Analysis Result Modal */}
-      <Dialog open={showAnalysisResult} onOpenChange={setShowAnalysisResult}>
-        <DialogContent className="max-w-3xl max-h-[85vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <Eye className="h-5 w-5" />
-              Resultado da Análise
-            </DialogTitle>
-          </DialogHeader>
-          <div className="pt-2">
-            <MarkdownRenderer content={analysisResult} className="prose-sm" />
-          </div>
-        </DialogContent>
-      </Dialog>
     </div>
   )
 }
