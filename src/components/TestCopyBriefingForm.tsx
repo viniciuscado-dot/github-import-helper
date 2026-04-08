@@ -845,6 +845,61 @@ export function TestCopyBriefingForm({ onBack, clientName }: TestCopyBriefingFor
           )}
         </DialogContent>
       </Dialog>
+
+      {/* Config Modal */}
+      <Dialog open={showConfigModal} onOpenChange={setShowConfigModal}>
+        <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Settings className="h-5 w-5" />
+              Configurações de Análise
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-6 pt-2">
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-foreground">Instruções de Análise</label>
+              <p className="text-xs text-muted-foreground">Defina como a IA deve avaliar o briefing. Essas instruções serão usadas ao clicar em "Analisar Informações".</p>
+              <Textarea
+                placeholder="Ex: Avalie se o briefing contém informações completas sobre público-alvo, objetivos, tom de voz, diferenciais competitivos..."
+                value={analysisInstructions}
+                onChange={(e) => setAnalysisInstructions(e.target.value)}
+                className="min-h-[180px] resize-y bg-muted/30 border-border/50"
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-foreground">Modelo de Resultados Ideais</label>
+              <p className="text-xs text-muted-foreground">Descreva o que um briefing completo deve conter. A IA usará isso como referência para avaliar a completude.</p>
+              <Textarea
+                placeholder="Ex: Um briefing completo deve conter: 1) Nome da empresa e nicho. 2) Público-alvo detalhado. 3) Produtos/serviços..."
+                value={idealResults}
+                onChange={(e) => setIdealResults(e.target.value)}
+                className="min-h-[180px] resize-y bg-muted/30 border-border/50"
+              />
+            </div>
+            <div className="flex justify-end">
+              <Button onClick={handleSaveConfig} className="gap-2">
+                <Save className="h-4 w-4" />
+                Salvar Configurações
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Analysis Result Modal */}
+      <Dialog open={showAnalysisResult} onOpenChange={setShowAnalysisResult}>
+        <DialogContent className="max-w-3xl max-h-[85vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Eye className="h-5 w-5" />
+              Resultado da Análise
+            </DialogTitle>
+          </DialogHeader>
+          <div className="pt-2">
+            <MarkdownRenderer content={analysisResult} className="prose-sm" />
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   )
 }
