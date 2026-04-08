@@ -440,9 +440,7 @@ const [isLoading, setIsLoading] = useState(false)
       // Wait a moment to show success, then redirect to Resultados tab
       setTimeout(async () => {
         toast.success(`✅ Briefing salvo e copy gerada${totalDocs > 0 ? ` com ${totalDocs} documento(s)` : ''}!`)
-        form.reset()
         setUploadedDocuments([])
-        lastFormDataRef.current = null
         if (canViewHistory) await fetchBriefingHistory()
         setCurrentView('form')
         setIsLoading(false)
@@ -608,7 +606,36 @@ const [isLoading, setIsLoading] = useState(false)
             setSelectedPlatforms(d.selected_platforms)
           }
         } else {
-          form.reset({ nome_empresa: clientName })
+          // No draft found — try loading from most recent copy_forms submission
+          try {
+            const { data: lastSubmission } = await supabase
+              .from('copy_forms' as any)
+              .select('*')
+              .eq('nome_empresa', clientName)
+              .eq('copy_type', mainTab)
+              .order('created_at', { ascending: false })
+              .limit(1)
+              .maybeSingle()
+            if (lastSubmission) {
+              const allowedFields = [
+                'reuniao_boas_vindas','reuniao_kick_off','reuniao_brainstorm',
+                'tamanho_lp','site',
+                'servicos_produtos','diferencial_competitivo','publico_alvo','principal_inimigo',
+                'avatar_principal','momento_jornada','maior_objecao','cases_impressionantes',
+                'nomes_empresas','investimento_medio','pergunta_qualificatoria','informacao_extra',
+                'numeros_certificados','nome_empresa','nicho_empresa'
+              ] as const
+              const formFields: Record<string, any> = { nome_empresa: clientName }
+              for (const key of allowedFields) {
+                if ((lastSubmission as any)[key]) formFields[key] = (lastSubmission as any)[key]
+              }
+              form.reset(formFields)
+            } else {
+              form.reset({ nome_empresa: clientName })
+            }
+          } catch {
+            form.reset({ nome_empresa: clientName })
+          }
           setProjectObjective('')
           setSelectedPlatforms([])
         }
