@@ -17,10 +17,11 @@ import { CopyForm } from "@/components/CopyForm";
 import { AnaliseBench } from "@/components/AnaliseBench";
 import { HomeCriacao } from "@/components/HomeCriacao";
 import { InterfacePreferences } from "@/components/InterfacePreferences";
+import { TestCopyForm } from "@/components/TestCopyForm";
 
-type ActiveViewType = 'home-criacao' | 'users' | 'profile' | 'copy' | 'aprovacao' | 'analise-bench' | 'preferencias-interface';
+type ActiveViewType = 'home-criacao' | 'users' | 'profile' | 'copy' | 'aprovacao' | 'analise-bench' | 'preferencias-interface' | 'teste-copy';
 
-const VALID_VIEWS: ActiveViewType[] = ['home-criacao', 'users', 'profile', 'copy', 'aprovacao', 'analise-bench', 'preferencias-interface'];
+const VALID_VIEWS: ActiveViewType[] = ['home-criacao', 'users', 'profile', 'copy', 'aprovacao', 'analise-bench', 'preferencias-interface', 'teste-copy'];
 
 const Index = () => {
   const { profile, signOut } = useAuth();
@@ -100,6 +101,7 @@ const Index = () => {
       'aprovacao': 'aprovacao',
       'analise-bench': 'analise_bench',
       'preferencias-interface': 'profile',
+      'teste-copy': 'copy',
     } as const;
     
     const moduleName = moduleMap[newView as keyof typeof moduleMap];
@@ -125,6 +127,7 @@ const Index = () => {
       'aprovacao': 'aprovacao',
       'analise-bench': 'analise_bench',
       'preferencias-interface': 'preferencias-interface',
+      'teste-copy': 'copy',
     };
     
     const currentModule = moduleMap[activeView as keyof typeof moduleMap];
@@ -162,6 +165,9 @@ const Index = () => {
       case 'copy':
         const clientParam = searchParams.get('client') || undefined;
         return <CopyForm clientName={clientParam} />
+      case 'teste-copy':
+        const testClientParam = searchParams.get('client') || undefined;
+        return <TestCopyForm clientName={testClientParam} />
       case 'analise-bench':
         return <AnaliseBench />
       case 'users':

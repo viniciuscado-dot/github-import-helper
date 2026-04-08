@@ -92,9 +92,20 @@ interface CopyFormRecord {
   profiles?: { name: string; email: string }
 }
 
+export interface CopyFormTableConfig {
+  formsTable: string
+  draftsTable: string
+}
+
+const DEFAULT_TABLE_CONFIG: CopyFormTableConfig = {
+  formsTable: 'copy_forms',
+  draftsTable: 'copy_form_drafts',
+}
+
 interface CopyFormProps {
   onBack?: () => void
   clientName?: string
+  tableConfig?: CopyFormTableConfig
 }
 
 type EditableField = 'label_text' | 'description_text' | 'section_title' | 'section_description'
@@ -206,7 +217,8 @@ const EditableText = React.memo(({
   )
 })
 
-export function CopyForm({ onBack, clientName }: CopyFormProps = {}) {
+export function CopyForm({ onBack, clientName, tableConfig }: CopyFormProps = {}) {
+  const tables = tableConfig || DEFAULT_TABLE_CONFIG
   const { profile } = useAuth()
   const { checkModulePermission } = useModulePermissions()
 const [isLoading, setIsLoading] = useState(false)
@@ -401,7 +413,7 @@ const [isLoading, setIsLoading] = useState(false)
 
       // Salvar dados do formulário no banco (somente colunas válidas)
       const { data: savedForm, error: saveError } = await supabase
-        .from('copy_forms')
+        .from(tables.formsTable as any)
         .insert({
           ...filtered,
           ...(clientName ? { nome_empresa: clientName } : {}),
@@ -426,7 +438,7 @@ const [isLoading, setIsLoading] = useState(false)
       if (copyError) {
         console.error('❌ Erro na edge function:', copyError)
         await supabase
-          .from('copy_forms')
+          .from(tables.formsTable as any)
           .update({ status: 'failed' })
           .eq('id', savedForm.id)
         throw copyError
@@ -449,7 +461,7 @@ const [isLoading, setIsLoading] = useState(false)
         setActiveTab('history')
         // Fetch the freshly saved record to auto-open it
         const { data: freshRecord } = await supabase
-          .from('copy_forms')
+          .from(tables.formsTable as any)
           .select('id, created_at, created_by, status, nome_empresa, nomes_empresas, document_files, ai_response, ai_provider, response_generated_at, copy_type')
           .eq('id', savedForm.id)
           .single()
@@ -483,7 +495,7 @@ const [isLoading, setIsLoading] = useState(false)
   const handleDeleteCopy = async (copyId: string) => {
     try {
       const { error } = await supabase
-        .from('copy_forms')
+        .from(tables.formsTable as any)
         .delete()
         .eq('id', copyId)
 
@@ -507,7 +519,7 @@ const [isLoading, setIsLoading] = useState(false)
 
     try {
       let query = supabase
-        .from('copy_forms')
+        .from(tables.formsTable as any)
         .select(`
           id,
           created_at,
@@ -591,7 +603,7 @@ const [isLoading, setIsLoading] = useState(false)
     const loadDraft = async () => {
       try {
         const { data } = await supabase
-          .from('copy_form_drafts' as any)
+          .from(tables.draftsTable as any)
           .select('form_data, project_objective, selected_platforms')
           .eq('client_name', clientName)
           .eq('copy_type', mainTab)
@@ -609,7 +621,7 @@ const [isLoading, setIsLoading] = useState(false)
           // No draft found — try loading from most recent copy_forms submission
           try {
             const { data: lastSubmission } = await supabase
-              .from('copy_forms' as any)
+              .from(tables.formsTable as any)
               .select('*')
               .eq('nome_empresa', clientName)
               .eq('copy_type', mainTab)
@@ -656,7 +668,7 @@ const [isLoading, setIsLoading] = useState(false)
       if (draftSaveTimer.current) clearTimeout(draftSaveTimer.current)
       draftSaveTimer.current = setTimeout(async () => {
         try {
-          await (supabase.from('copy_form_drafts' as any) as any).upsert({
+          await (supabase.from(tables.draftsTable as any) as any).upsert({
             client_name: clientName,
             copy_type: mainTab,
             form_data: values,
@@ -682,7 +694,7 @@ const [isLoading, setIsLoading] = useState(false)
     const timer = setTimeout(async () => {
       try {
         const currentValues = form.getValues()
-        await (supabase.from('copy_form_drafts' as any) as any).upsert({
+        await (supabase.from(tables.draftsTable as any) as any).upsert({
           client_name: clientName,
           copy_type: mainTab,
           form_data: currentValues,
@@ -1099,7 +1111,7 @@ const [isLoading, setIsLoading] = useState(false)
     try {
       // Buscar briefing completo do banco de dados
       const { data: fullBriefing, error: fetchError } = await supabase
-        .from('copy_forms')
+        .from(tables.formsTable as any)
         .select('*')
         .eq('id', selectedBriefingForNewCopy.id)
         .single()
@@ -2358,7 +2370,7 @@ EX: Mais de 1.000 projetos de placas solares instalados em todo o Rio Grande do 
                 onView={(b) => setViewingCopy(b)}
                 onViewBriefing={async (b) => {
                   const { data, error } = await supabase
-                    .from('copy_forms')
+                    .from(tables.formsTable as any)
                     .select('*')
                     .eq('id', b.id)
                     .single()
@@ -2586,7 +2598,7 @@ EX: Mais de 1.000 projetos de placas solares instalados em todo o Rio Grande do 
 
             // Refresh the viewing copy with updated data
             const { data: updated } = await supabase
-              .from('copy_forms')
+              .from(tables.formsTable as any)
               .select('*')
               .eq('id', copyId)
               .single();

@@ -912,6 +912,165 @@ export type Database = {
           },
         ]
       }
+      test_copy_clients: {
+        Row: {
+          created_at: string | null
+          created_by: string | null
+          id: string
+          is_archived: boolean | null
+          name: string
+          squad: string
+        }
+        Insert: {
+          created_at?: string | null
+          created_by?: string | null
+          id?: string
+          is_archived?: boolean | null
+          name: string
+          squad?: string
+        }
+        Update: {
+          created_at?: string | null
+          created_by?: string | null
+          id?: string
+          is_archived?: boolean | null
+          name?: string
+          squad?: string
+        }
+        Relationships: []
+      }
+      test_copy_form_drafts: {
+        Row: {
+          client_name: string
+          copy_type: string
+          form_data: Json
+          id: string
+          project_objective: string | null
+          selected_platforms: string[] | null
+          updated_at: string | null
+          updated_by: string | null
+        }
+        Insert: {
+          client_name: string
+          copy_type: string
+          form_data?: Json
+          id?: string
+          project_objective?: string | null
+          selected_platforms?: string[] | null
+          updated_at?: string | null
+          updated_by?: string | null
+        }
+        Update: {
+          client_name?: string
+          copy_type?: string
+          form_data?: Json
+          id?: string
+          project_objective?: string | null
+          selected_platforms?: string[] | null
+          updated_at?: string | null
+          updated_by?: string | null
+        }
+        Relationships: []
+      }
+      test_copy_forms: {
+        Row: {
+          ai_provider: string | null
+          ai_response: string | null
+          avatar_principal: string | null
+          cases_impressionantes: string | null
+          copy_type: string
+          created_at: string
+          created_by: string
+          diferencial_competitivo: string | null
+          document_files: Json | null
+          id: string
+          informacao_extra: string | null
+          investimento_medio: string | null
+          maior_objecao: string | null
+          momento_jornada: string | null
+          nicho_empresa: string | null
+          nome_empresa: string | null
+          nomes_empresas: string | null
+          numeros_certificados: string | null
+          pergunta_qualificatoria: string | null
+          principal_inimigo: string | null
+          publico_alvo: string | null
+          response_generated_at: string | null
+          reuniao_boas_vindas: string | null
+          reuniao_brainstorm: string | null
+          reuniao_kick_off: string | null
+          servicos_produtos: string | null
+          site: string | null
+          status: string
+          tamanho_lp: string | null
+          updated_at: string
+        }
+        Insert: {
+          ai_provider?: string | null
+          ai_response?: string | null
+          avatar_principal?: string | null
+          cases_impressionantes?: string | null
+          copy_type?: string
+          created_at?: string
+          created_by: string
+          diferencial_competitivo?: string | null
+          document_files?: Json | null
+          id?: string
+          informacao_extra?: string | null
+          investimento_medio?: string | null
+          maior_objecao?: string | null
+          momento_jornada?: string | null
+          nicho_empresa?: string | null
+          nome_empresa?: string | null
+          nomes_empresas?: string | null
+          numeros_certificados?: string | null
+          pergunta_qualificatoria?: string | null
+          principal_inimigo?: string | null
+          publico_alvo?: string | null
+          response_generated_at?: string | null
+          reuniao_boas_vindas?: string | null
+          reuniao_brainstorm?: string | null
+          reuniao_kick_off?: string | null
+          servicos_produtos?: string | null
+          site?: string | null
+          status?: string
+          tamanho_lp?: string | null
+          updated_at?: string
+        }
+        Update: {
+          ai_provider?: string | null
+          ai_response?: string | null
+          avatar_principal?: string | null
+          cases_impressionantes?: string | null
+          copy_type?: string
+          created_at?: string
+          created_by?: string
+          diferencial_competitivo?: string | null
+          document_files?: Json | null
+          id?: string
+          informacao_extra?: string | null
+          investimento_medio?: string | null
+          maior_objecao?: string | null
+          momento_jornada?: string | null
+          nicho_empresa?: string | null
+          nome_empresa?: string | null
+          nomes_empresas?: string | null
+          numeros_certificados?: string | null
+          pergunta_qualificatoria?: string | null
+          principal_inimigo?: string | null
+          publico_alvo?: string | null
+          response_generated_at?: string | null
+          reuniao_boas_vindas?: string | null
+          reuniao_brainstorm?: string | null
+          reuniao_kick_off?: string | null
+          servicos_produtos?: string | null
+          site?: string | null
+          status?: string
+          tamanho_lp?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       user_module_permissions: {
         Row: {
           can_create: boolean
