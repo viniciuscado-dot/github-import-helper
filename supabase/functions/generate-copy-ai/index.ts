@@ -14,6 +14,7 @@ const CANDIDATE_MODELS = [
   'claude-3-haiku-20240307',
 ] as const;
 
+const ANALYSIS_BRIEFING_TYPE = 'analise_briefing' as const;
 const MATERIAL_ORDER = ['criativos', 'roteiro_video', 'landing_page'] as const;
 
 type MaterialType = (typeof MATERIAL_ORDER)[number];
@@ -29,9 +30,16 @@ function isMaterialType(value: unknown): value is MaterialType {
   return MATERIAL_ORDER.some((type) => type === value);
 }
 
+function isBriefingAnalysisRequested(materialTypes: unknown): boolean {
+  return Array.isArray(materialTypes) && materialTypes.includes(ANALYSIS_BRIEFING_TYPE);
+}
+
 function normalizeMaterialTypes(materialTypes: unknown): MaterialType[] {
-  const requested = Array.isArray(materialTypes) ? materialTypes.filter(isMaterialType) : [];
-  return MATERIAL_ORDER.filter((type) => requested.length === 0 || requested.includes(type));
+  if (!Array.isArray(materialTypes) || materialTypes.length === 0) {
+    return [...MATERIAL_ORDER];
+  }
+
+  return materialTypes.filter(isMaterialType);
 }
 
 function getCompanyName(companyName: string | null | undefined): string {
@@ -135,6 +143,62 @@ ${documentsContent}
 IMPORTANTE: Use as informações dos documentos acima para enriquecer a análise e personalizar o material final com dados e diferenciais concretos.
 
 ===========================` : ''}`;
+}
+
+function buildBriefingAnalysisSystemPrompt(): string {
+  return `Você é um analista sênior de briefing da DOT, especializado em avaliar a completude e a qualidade estratégica de documentos de briefing.
+
+=== FORMATO OBRIGATÓRIO DE RESPOSTA ===
+- A PRIMEIRA LINHA deve ser exatamente: SCORE: XX/100
+- XX deve ser um número inteiro entre 0 e 100.
+- Depois do score, responda em Markdown puro com as seções abaixo, nesta ordem:
+  ## Diagnóstico Geral
+  ## Pontos Fortes
+  ## Lacunas Críticas
+  ## Informações Faltantes
+  ## Recomendações Práticas
+  ## Veredito Final
+
+=== REGRAS FIXAS ===
+- Não gere criativos, roteiros, landing page ou qualquer material de campanha.
+- Use o conteúdo do PDF como base principal.
+- Leve em consideração todas as instruções, modelos ideais e observações adicionais enviados no contexto.
+- A nota deve refletir o quanto o briefing está completo, claro, acionável e pronto para geração de materiais.
+- Seja específico sobre o que foi encontrado, o que está ausente e o que precisa ser complementado.
+- Nunca responda com HTML, CSS ou JavaScript.`;
+}
+
+function buildBriefingAnalysisUserMessage(formData: any, documentsContent: string): string {
+  return `=== OBJETIVO ===
+Avalie o briefing anexado e retorne uma nota visual de completude junto com feedback detalhado.
+
+=== CONTEXTO DO CLIENTE ===
+- Empresa: ${formData.nome_empresa || 'Não informado'}
+- Fase/Copy type: ${formData.copy_type || 'Não informado'}
+
+=== INSTRUÇÕES, CRITÉRIOS E MODELOS CONFIGURADOS PELO USUÁRIO ===
+${formData.informacao_extra || 'Nenhuma instrução adicional foi fornecida.'}
+
+=== CONTEÚDO EXTRAÍDO DO PDF ===
+${documentsContent || 'Nenhum conteúdo textual pôde ser extraído do PDF.'}
+
+Agora faça a análise completa do briefing seguindo exatamente o formato obrigatório.`;
+}
+
+function isBriefingAnalysisOutputValid(text: string): boolean {
+  const scoreMatch = text.match(/SCORE:\s*(\d{1,3})\s*\/\s*100/i);
+  if (!scoreMatch) return false;
+
+  const score = Number(scoreMatch[1]);
+  if (!Number.isInteger(score) || score < 0 || score > 100) return false;
+
+  return /##\s*Diagn[oó]stico\s*Geral/i.test(text)
+    && /##\s*Pontos\s*Fortes/i.test(text)
+    && /##\s*Lacunas\s*Cr[ií]ticas/i.test(text)
+    && /##\s*Informa[cç][õo]es\s*Faltantes/i.test(text)
+    && /##\s*Recomenda[cç][õo]es\s*Pr[aá]ticas/i.test(text)
+    && /##\s*Veredito\s*Final/i.test(text)
+    && text.trim().length >= 400;
 }
 
 function buildClientContext(formData: any, newCopyContext?: string): string {
@@ -327,6 +391,42 @@ async function generateMaterialBlock(params: {
     : new Error(`Não foi possível gerar o bloco completo de ${MATERIAL_LABELS[materialType]}.`);
 }
 
+async function generateBriefingAnalysis(params: {
+  apiKey: string;
+  formData: any;
+  documentsContent: string;
+}): Promise<string> {
+  const { apiKey, formData, documentsContent } = params;
+  let lastError: unknown = null;
+
+  for (let attempt = 0; attempt < 3; attempt++) {
+    try {
+      const { text, model, stopReason } = await callAnthropicWithFallback(
+        apiKey,
+        buildBriefingAnalysisSystemPrompt(),
+        buildBriefingAnalysisUserMessage(formData, documentsContent),
+        4096,
+      );
+
+      console.log(`🧠 análise_briefing gerado com ${text.length} caracteres via ${model}`);
+
+      if (stopReason !== 'max_tokens' && isBriefingAnalysisOutputValid(text)) {
+        return text.trim();
+      }
+
+      console.warn(`⚠️ análise_briefing retornou potencialmente incompleto. stop_reason=${stopReason || 'n/a'} tamanho=${text.length} tentativa=${attempt + 1}`);
+      lastError = new Error('Saída potencialmente incompleta para analise_briefing');
+    } catch (error) {
+      lastError = error;
+      console.error(`❌ Erro ao gerar analise_briefing na tentativa ${attempt + 1}:`, error);
+    }
+  }
+
+  throw lastError instanceof Error
+    ? lastError
+    : new Error('Não foi possível gerar a análise completa do briefing.');
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -441,30 +541,6 @@ serve(async (req) => {
       }
     }
 
-    const rawCopyType = formData.copy_type || 'onboarding';
-    const copyType = rawCopyType === 'onboarding' ? 'onboarding' : 'ongoing';
-
-    console.log('📋 Buscando prompts do tipo:', copyType, '(fase original:', rawCopyType, ')');
-    const { data: prompts } = await supabase
-      .from('default_prompts')
-      .select('*')
-      .eq('is_active', true)
-      .eq('copy_type', copyType)
-      .order('position', { ascending: true });
-
-    console.log('📝 Preparando system prompt completo...');
-    console.log(`📊 Total de prompts ativos encontrados: ${prompts?.length || 0}`);
-
-    if (prompts && prompts.length > 0) {
-      console.log('📋 Títulos dos prompts carregados:');
-      prompts.forEach((p, idx) => {
-        console.log(`  ${idx + 1}. ${p.title} (${p.content?.length || 0} caracteres)`);
-        if (p.title?.toLowerCase().includes('criativo') || p.content?.toLowerCase().includes('criativo estático')) {
-          console.log('   ✅ Prompt de criativos estáticos ENCONTRADO!');
-        }
-      });
-    }
-
     const apiKey = Deno.env.get('ANTHROPIC_API_KEY');
     const provider = 'anthropic';
 
@@ -475,28 +551,68 @@ serve(async (req) => {
     }
     console.log('✅ Chave da API encontrada');
 
-    const fullSystemPrompt = buildSystemPrompt((prompts || []) as PromptRow[], documentsContent);
-    const activeMaterialTypes = normalizeMaterialTypes(materialTypes);
-    const materialLabels = activeMaterialTypes.map((type) => MATERIAL_LABELS[type]);
+    const analysisRequested = isBriefingAnalysisRequested(materialTypes);
+    let aiResponse = '';
 
-    console.log('📦 Tipos de material solicitados:', materialLabels);
-
-    const clientContext = buildClientContext(formData, newCopyContext);
-    const generatedBlocks: string[] = [];
-
-    for (const materialType of activeMaterialTypes) {
-      console.log(`🧱 Gerando bloco de material: ${materialType}`);
-      const generatedBlock = await generateMaterialBlock({
+    if (analysisRequested) {
+      console.log('🧠 Modo de análise de briefing ativado');
+      aiResponse = await generateBriefingAnalysis({
         apiKey,
         formData,
-        clientContext,
-        fullSystemPrompt,
-        materialType,
+        documentsContent,
       });
-      generatedBlocks.push(generatedBlock);
+    } else {
+      const rawCopyType = formData.copy_type || 'onboarding';
+      const copyType = rawCopyType === 'onboarding' ? 'onboarding' : 'ongoing';
+
+      console.log('📋 Buscando prompts do tipo:', copyType, '(fase original:', rawCopyType, ')');
+      const { data: prompts } = await supabase
+        .from('default_prompts')
+        .select('*')
+        .eq('is_active', true)
+        .eq('copy_type', copyType)
+        .order('position', { ascending: true });
+
+      console.log('📝 Preparando system prompt completo...');
+      console.log(`📊 Total de prompts ativos encontrados: ${prompts?.length || 0}`);
+
+      if (prompts && prompts.length > 0) {
+        console.log('📋 Títulos dos prompts carregados:');
+        prompts.forEach((p, idx) => {
+          console.log(`  ${idx + 1}. ${p.title} (${p.content?.length || 0} caracteres)`);
+          if (p.title?.toLowerCase().includes('criativo') || p.content?.toLowerCase().includes('criativo estático')) {
+            console.log('   ✅ Prompt de criativos estáticos ENCONTRADO!');
+          }
+        });
+      }
+
+      const fullSystemPrompt = buildSystemPrompt((prompts || []) as PromptRow[], documentsContent);
+      const activeMaterialTypes = normalizeMaterialTypes(materialTypes);
+      if (activeMaterialTypes.length === 0) {
+        throw new Error('Nenhum tipo de material válido foi solicitado.');
+      }
+
+      const materialLabels = activeMaterialTypes.map((type) => MATERIAL_LABELS[type]);
+      console.log('📦 Tipos de material solicitados:', materialLabels);
+
+      const clientContext = buildClientContext(formData, newCopyContext);
+      const generatedBlocks: string[] = [];
+
+      for (const materialType of activeMaterialTypes) {
+        console.log(`🧱 Gerando bloco de material: ${materialType}`);
+        const generatedBlock = await generateMaterialBlock({
+          apiKey,
+          formData,
+          clientContext,
+          fullSystemPrompt,
+          materialType,
+        });
+        generatedBlocks.push(generatedBlock);
+      }
+
+      aiResponse = generatedBlocks.join('\n\n---\n\n');
     }
 
-    const aiResponse = generatedBlocks.join('\n\n---\n\n');
     console.log('📝 Resposta gerada, tamanho:', aiResponse.length, 'caracteres');
 
     console.log('💾 Salvando resposta no banco...');
