@@ -644,10 +644,19 @@ serve(async (req) => {
     console.log('💾 Salvando resposta no banco...');
 
     let finalResponse = aiResponse;
-    if (appendToExisting && formData.ai_response) {
-      console.log('📎 Concatenando nova copy à resposta existente...');
-      finalResponse = `${formData.ai_response}\n\n=== NOVA COPY ===\n\n${aiResponse}`;
-      console.log('📝 Resposta final, tamanho:', finalResponse.length, 'caracteres');
+    if (appendToExisting) {
+      // Re-read current ai_response from DB (may have been updated by a prior call)
+      const { data: freshData } = await supabase
+        .from(tableName)
+        .select('ai_response')
+        .eq('id', copyFormId)
+        .single();
+      const existing = freshData?.ai_response;
+      if (existing) {
+        console.log('📎 Concatenando nova copy à resposta existente...');
+        finalResponse = `${existing}\n\n---\n\n${aiResponse}`;
+        console.log('📝 Resposta final, tamanho:', finalResponse.length, 'caracteres');
+      }
     }
 
     const { error: updateError } = await supabase
