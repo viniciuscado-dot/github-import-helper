@@ -108,11 +108,103 @@ export function TestCopyBriefingForm({ onBack, clientName }: TestCopyBriefingFor
   const [collapsedPrompts, setCollapsedPrompts] = useState<Set<string>>(new Set())
   const [showCreatePrompt, setShowCreatePrompt] = useState(false)
 
+  // Config modal
+  const [showConfigModal, setShowConfigModal] = useState(false)
+  const [analysisInstructions, setAnalysisInstructions] = useState('')
+  const [idealResults, setIdealResults] = useState('')
+
+  // Analysis
+  const [isAnalyzing, setIsAnalyzing] = useState(false)
+  const [analysisResult, setAnalysisResult] = useState('')
+  const [showAnalysisResult, setShowAnalysisResult] = useState(false)
+
   // Permissions
   const canViewHistory = checkModulePermission('copy', 'view')
   const canDeleteCopies = checkModulePermission('copy', 'delete')
   const isAdmin = profile?.effectiveRole === 'admin'
   const canAccessPrompts = isAdmin
+
+  // Load config from localStorage
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem('test-copy-analysis-config')
+      if (stored) {
+        const parsed = JSON.parse(stored)
+        setAnalysisInstructions(parsed.instructions || '')
+        setIdealResults(parsed.idealResults || '')
+      }
+    } catch {}
+  }, [])
+
+  const handleSaveConfig = () => {
+    localStorage.setItem('test-copy-analysis-config', JSON.stringify({
+      instructions: analysisInstructions,
+      idealResults: idealResults,
+    }))
+    toast.success('Configurações salvas!')
+    setShowConfigModal(false)
+  }
+
+  // ── Analyze briefing ──
+  const handleAnalyze = async () => {
+    if (!briefingFile) { toast.error('Adicione um PDF antes de analisar'); return }
+    setIsAnalyzing(true)
+    try {
+      const { data: authUser } = await supabase.auth.getUser()
+      const userId = profile?.user_id ?? authUser?.user?.id
+      if (!userId) throw new Error('Usuário não autenticado')
+
+      // Upload PDF temporarily
+      const ext = briefingFile.name.split('.').pop()
+      const fileName = `analysis_${Math.random().toString(36).substring(2)}_${Date.now()}.${ext}`
+      const filePath = `${userId}/${fileName}`
+      const { error: uploadError } = await supabase.storage.from('briefing-documents').upload(filePath, briefingFile)
+      if (uploadError) throw uploadError
+
+      // Insert a temp record for analysis
+      const { data: savedForm, error: saveError } = await supabase
+        .from(TABLES.formsTable as any)
+        .insert({
+          nome_empresa: clientName || 'Análise de Briefing',
+          created_by: userId,
+          status: 'processing',
+          copy_type: 'analysis',
+          document_files: [filePath],
+          informacao_extra: [
+            analysisInstructions ? `=== INSTRUÇÕES DE ANÁLISE ===\n${analysisInstructions}` : '',
+            idealResults ? `=== MODELO DE RESULTADOS IDEAIS ===\n${idealResults}` : '',
+            additionalInfo ? `=== INFORMAÇÕES ADICIONAIS ===\n${additionalInfo}` : '',
+          ].filter(Boolean).join('\n\n') || null,
+        })
+        .select()
+        .single()
+      if (saveError) throw saveError
+
+      // Call edge function with analysis-only material type
+      const { error: fnError } = await supabase.functions.invoke('generate-copy-ai', {
+        body: { copyFormId: savedForm.id, materialTypes: ['analise_briefing'] }
+      })
+      if (fnError) {
+        await supabase.from(TABLES.formsTable as any).update({ status: 'failed' }).eq('id', savedForm.id)
+        throw fnError
+      }
+
+      // Fetch result
+      const { data: result } = await supabase
+        .from(TABLES.formsTable as any)
+        .select('ai_response')
+        .eq('id', savedForm.id)
+        .single()
+
+      setAnalysisResult(result?.ai_response || 'Sem resultado disponível.')
+      setShowAnalysisResult(true)
+    } catch (err: any) {
+      console.error('Erro na análise:', err)
+      toast.error(err?.message || 'Erro ao analisar briefing')
+    } finally {
+      setIsAnalyzing(false)
+    }
+  }
 
   // ── Fetch history ──
   const fetchBriefingHistory = useCallback(async () => {
@@ -424,10 +516,21 @@ export function TestCopyBriefingForm({ onBack, clientName }: TestCopyBriefingFor
           {/* PDF Upload Area */}
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-xl">
-                <FileUp className="h-5 w-5" />
-                Analisador de Briefing
-              </CardTitle>
+              <div className="flex items-center justify-between">
+                <CardTitle className="flex items-center gap-2 text-xl">
+                  <FileUp className="h-5 w-5" />
+                  Analisador de Briefing
+                </CardTitle>
+                <div className="flex items-center gap-2">
+                  <Button variant="outline" size="sm" onClick={handleAnalyze} disabled={!briefingFile || isAnalyzing}>
+                    {isAnalyzing ? <Loader2 className="h-4 w-4 animate-spin mr-1.5" /> : <Eye className="h-4 w-4 mr-1.5" />}
+                    Analisar Informações
+                  </Button>
+                  <Button variant="ghost" size="icon" onClick={() => setShowConfigModal(true)} className="h-8 w-8">
+                    <Settings className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
               <CardDescription>
                 Adicione o PDF do briefing. A inteligência artificial irá analisar o documento e gerar os materiais com base nas orientações dos prompts configurados.
               </CardDescription>
@@ -740,6 +843,61 @@ export function TestCopyBriefingForm({ onBack, clientName }: TestCopyBriefingFor
               )}
             </div>
           )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Config Modal */}
+      <Dialog open={showConfigModal} onOpenChange={setShowConfigModal}>
+        <DialogContent className="max-w-2xl max-h-[85vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Settings className="h-5 w-5" />
+              Configurações de Análise
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-6 pt-2">
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-foreground">Instruções de Análise</label>
+              <p className="text-xs text-muted-foreground">Defina como a IA deve avaliar o briefing. Essas instruções serão usadas ao clicar em "Analisar Informações".</p>
+              <Textarea
+                placeholder="Ex: Avalie se o briefing contém informações completas sobre público-alvo, objetivos, tom de voz, diferenciais competitivos..."
+                value={analysisInstructions}
+                onChange={(e) => setAnalysisInstructions(e.target.value)}
+                className="min-h-[180px] resize-y bg-muted/30 border-border/50"
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium text-foreground">Modelo de Resultados Ideais</label>
+              <p className="text-xs text-muted-foreground">Descreva o que um briefing completo deve conter. A IA usará isso como referência para avaliar a completude.</p>
+              <Textarea
+                placeholder="Ex: Um briefing completo deve conter: 1) Nome da empresa e nicho. 2) Público-alvo detalhado. 3) Produtos/serviços..."
+                value={idealResults}
+                onChange={(e) => setIdealResults(e.target.value)}
+                className="min-h-[180px] resize-y bg-muted/30 border-border/50"
+              />
+            </div>
+            <div className="flex justify-end">
+              <Button onClick={handleSaveConfig} className="gap-2">
+                <Save className="h-4 w-4" />
+                Salvar Configurações
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Analysis Result Modal */}
+      <Dialog open={showAnalysisResult} onOpenChange={setShowAnalysisResult}>
+        <DialogContent className="max-w-3xl max-h-[85vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Eye className="h-5 w-5" />
+              Resultado da Análise
+            </DialogTitle>
+          </DialogHeader>
+          <div className="pt-2">
+            <MarkdownRenderer content={analysisResult} className="prose-sm" />
+          </div>
         </DialogContent>
       </Dialog>
     </div>
