@@ -1168,86 +1168,13 @@ const [isLoading, setIsLoading] = useState(false)
     )
   }
 
-  return (
-    <EditableTextContext.Provider value={editableTextContextValue}>
-      <div>
-      {/* Static header — never moves */}
-      <div className="space-y-4 mb-6">
-        {/* 1) Botão Voltar */}
-        <Button variant="ghost" size="sm" onClick={() => window.location.href = '/copy-estrategia'} className="gap-1.5 text-muted-foreground hover:text-foreground -ml-2">
-          <ArrowLeft className="h-4 w-4" />
-          Voltar
-        </Button>
-
-        {/* 2) Título */}
+  // Embedded mode: render only the specified tab content without header/tabs
+  if (visibleTab) {
+    return (
+      <EditableTextContext.Provider value={editableTextContextValue}>
         <div>
-          <h1 className="text-2xl font-bold text-foreground">Gerador de Copy</h1>
-          {clientName && (
-            <p className="text-muted-foreground text-sm mt-0.5">
-              Cliente: <span className="font-medium text-foreground">{clientName}</span>
-            </p>
-          )}
-        </div>
-
-        {/* 2.5) Objetivo do projeto + Plataformas */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <div className="space-y-1.5">
-            <label htmlFor="objetivo-projeto" className="text-sm font-medium text-foreground">
-              Objetivo do projeto
-            </label>
-            <Textarea
-              id="objetivo-projeto"
-              placeholder="Ex: Gerar leads qualificados para consultoria financeira..."
-              value={projectObjective}
-              onChange={(e) => setProjectObjective(e.target.value)}
-              className="min-h-[72px] resize-none bg-muted/30 border-border/50 focus:border-primary/50"
-            />
-          </div>
-          <div className="space-y-1.5">
-            <label className="text-sm font-medium text-foreground">
-              Plataformas de anúncio
-            </label>
-            <div className="flex flex-wrap gap-2 p-3 rounded-md border border-border/50 bg-muted/30 min-h-[72px] items-start content-start">
-              {PLATFORM_OPTIONS.map((platform) => {
-                const isSelected = selectedPlatforms.includes(platform.value);
-                return (
-                  <button
-                    key={platform.value}
-                    type="button"
-                    onClick={() => {
-                      setSelectedPlatforms(prev =>
-                        isSelected
-                          ? prev.filter(p => p !== platform.value)
-                          : [...prev, platform.value]
-                      );
-                    }}
-                    className={cn(
-                      "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium transition-all duration-200 border",
-                      isSelected
-                        ? "bg-primary text-primary-foreground border-primary/50 shadow-sm"
-                        : "bg-background text-muted-foreground border-border hover:bg-accent hover:text-accent-foreground"
-                    )}
-                  >
-                    {platform.label}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-        </div>
-
-        {/* 3) Menu de fases (timeline clicável) */}
-        <StrategyTimeline currentStage={currentPhase} onStageClick={setCurrentPhase} />
-      </div>
-
-      {/* 4) Abas + seletor de materiais na mesma linha */}
-      <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
-          <TabsList>
-            <TabsTrigger value="form" className="flex items-center gap-2">
-              <FileText className="h-4 w-4" />
-              Formulário
-            </TabsTrigger>
+        <Tabs value={visibleTab}>
+        {visibleTab === 'form' && (
             
             {canViewHistory && (
               <TabsTrigger value="history" className="flex items-center gap-2">
