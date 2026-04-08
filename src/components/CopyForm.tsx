@@ -106,6 +106,8 @@ interface CopyFormProps {
   onBack?: () => void
   clientName?: string
   tableConfig?: CopyFormTableConfig
+  /** When set, hides header/tabs and renders only that tab's content */
+  visibleTab?: 'form' | 'history' | 'prompts'
 }
 
 type EditableField = 'label_text' | 'description_text' | 'section_title' | 'section_description'
