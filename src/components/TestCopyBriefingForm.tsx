@@ -108,11 +108,103 @@ export function TestCopyBriefingForm({ onBack, clientName }: TestCopyBriefingFor
   const [collapsedPrompts, setCollapsedPrompts] = useState<Set<string>>(new Set())
   const [showCreatePrompt, setShowCreatePrompt] = useState(false)
 
+  // Config modal
+  const [showConfigModal, setShowConfigModal] = useState(false)
+  const [analysisInstructions, setAnalysisInstructions] = useState('')
+  const [idealResults, setIdealResults] = useState('')
+
+  // Analysis
+  const [isAnalyzing, setIsAnalyzing] = useState(false)
+  const [analysisResult, setAnalysisResult] = useState('')
+  const [showAnalysisResult, setShowAnalysisResult] = useState(false)
+
   // Permissions
   const canViewHistory = checkModulePermission('copy', 'view')
   const canDeleteCopies = checkModulePermission('copy', 'delete')
   const isAdmin = profile?.effectiveRole === 'admin'
   const canAccessPrompts = isAdmin
+
+  // Load config from localStorage
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem('test-copy-analysis-config')
+      if (stored) {
+        const parsed = JSON.parse(stored)
+        setAnalysisInstructions(parsed.instructions || '')
+        setIdealResults(parsed.idealResults || '')
+      }
+    } catch {}
+  }, [])
+
+  const handleSaveConfig = () => {
+    localStorage.setItem('test-copy-analysis-config', JSON.stringify({
+      instructions: analysisInstructions,
+      idealResults: idealResults,
+    }))
+    toast.success('Configurações salvas!')
+    setShowConfigModal(false)
+  }
+
+  // ── Analyze briefing ──
+  const handleAnalyze = async () => {
+    if (!briefingFile) { toast.error('Adicione um PDF antes de analisar'); return }
+    setIsAnalyzing(true)
+    try {
+      const { data: authUser } = await supabase.auth.getUser()
+      const userId = profile?.user_id ?? authUser?.user?.id
+      if (!userId) throw new Error('Usuário não autenticado')
+
+      // Upload PDF temporarily
+      const ext = briefingFile.name.split('.').pop()
+      const fileName = `analysis_${Math.random().toString(36).substring(2)}_${Date.now()}.${ext}`
+      const filePath = `${userId}/${fileName}`
+      const { error: uploadError } = await supabase.storage.from('briefing-documents').upload(filePath, briefingFile)
+      if (uploadError) throw uploadError
+
+      // Insert a temp record for analysis
+      const { data: savedForm, error: saveError } = await supabase
+        .from(TABLES.formsTable as any)
+        .insert({
+          nome_empresa: clientName || 'Análise de Briefing',
+          created_by: userId,
+          status: 'processing',
+          copy_type: 'analysis',
+          document_files: [filePath],
+          informacao_extra: [
+            analysisInstructions ? `=== INSTRUÇÕES DE ANÁLISE ===\n${analysisInstructions}` : '',
+            idealResults ? `=== MODELO DE RESULTADOS IDEAIS ===\n${idealResults}` : '',
+            additionalInfo ? `=== INFORMAÇÕES ADICIONAIS ===\n${additionalInfo}` : '',
+          ].filter(Boolean).join('\n\n') || null,
+        })
+        .select()
+        .single()
+      if (saveError) throw saveError
+
+      // Call edge function with analysis-only material type
+      const { error: fnError } = await supabase.functions.invoke('generate-copy-ai', {
+        body: { copyFormId: savedForm.id, materialTypes: ['analise_briefing'] }
+      })
+      if (fnError) {
+        await supabase.from(TABLES.formsTable as any).update({ status: 'failed' }).eq('id', savedForm.id)
+        throw fnError
+      }
+
+      // Fetch result
+      const { data: result } = await supabase
+        .from(TABLES.formsTable as any)
+        .select('ai_response')
+        .eq('id', savedForm.id)
+        .single()
+
+      setAnalysisResult(result?.ai_response || 'Sem resultado disponível.')
+      setShowAnalysisResult(true)
+    } catch (err: any) {
+      console.error('Erro na análise:', err)
+      toast.error(err?.message || 'Erro ao analisar briefing')
+    } finally {
+      setIsAnalyzing(false)
+    }
+  }
 
   // ── Fetch history ──
   const fetchBriefingHistory = useCallback(async () => {
