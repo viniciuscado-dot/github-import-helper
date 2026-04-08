@@ -338,12 +338,16 @@ serve(async (req) => {
     console.log('🚀 Edge function generate-copy-ai iniciada');
 
     const body = await req.json();
-    const { copyFormId, newCopyContext, appendToExisting, materialTypes } = body as {
+    const { copyFormId, newCopyContext, appendToExisting, materialTypes, tableName: rawTableName } = body as {
       copyFormId?: string;
       newCopyContext?: string;
       appendToExisting?: boolean;
       materialTypes?: string[];
+      tableName?: string;
     };
+
+    const ALLOWED_TABLES = ['copy_forms', 'test_copy_forms'] as const;
+    const tableName = ALLOWED_TABLES.includes(rawTableName as any) ? rawTableName! : 'copy_forms';
 
     if (!copyFormId || typeof copyFormId !== 'string') {
       throw new Error('copyFormId é obrigatório');
@@ -365,9 +369,9 @@ serve(async (req) => {
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    console.log('🔍 Buscando dados do formulário...');
+    console.log('🔍 Buscando dados do formulário na tabela:', tableName);
     const { data: formData, error: formError } = await supabase
-      .from('copy_forms')
+      .from(tableName)
       .select('*')
       .eq('id', copyFormId)
       .single();
@@ -503,7 +507,7 @@ serve(async (req) => {
     }
 
     const { error: updateError } = await supabase
-      .from('copy_forms')
+      .from(tableName)
       .update({
         ai_response: finalResponse,
         ai_provider: documentsContent ? `${provider}-with-docs` : provider,
@@ -537,7 +541,7 @@ serve(async (req) => {
         );
 
         await supabase
-          .from('copy_forms')
+          .from(tableName)
           .update({ status: 'failed' })
           .eq('id', copyFormIdVar);
       }
