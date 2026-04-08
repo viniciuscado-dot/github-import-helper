@@ -654,16 +654,20 @@ export function TestCopyBriefingForm({ onBack, clientName }: TestCopyBriefingFor
                 const score = scoreMatch ? parseInt(scoreMatch[1]) : null
                 const feedbackText = analysisResult.replace(/SCORE:\s*\d+\s*\/\s*100\s*/i, '').trim()
                 const scoreColor = score !== null
-                  ? score >= 70 ? 'hsl(var(--primary))' : score >= 40 ? 'hsl(45, 93%, 47%)' : 'hsl(0, 84%, 60%)'
+                  ? score >= 71 ? 'hsl(142, 71%, 45%)' : score >= 41 ? 'hsl(45, 93%, 47%)' : 'hsl(0, 84%, 60%)'
                   : 'hsl(var(--muted-foreground))'
+                const scoreBg = score !== null
+                  ? score >= 71 ? 'hsl(142, 71%, 45%, 0.15)' : score >= 41 ? 'hsl(45, 93%, 47%, 0.15)' : 'hsl(0, 84%, 60%, 0.15)'
+                  : 'hsl(var(--muted) / 0.3)'
                 const scoreLabel = score !== null
-                  ? score >= 70 ? 'Briefing Completo' : score >= 40 ? 'Briefing Parcial' : 'Briefing Incompleto'
+                  ? score >= 71 ? 'Briefing Completo' : score >= 41 ? 'Briefing Parcial' : 'Briefing Incompleto'
                   : ''
-                const circumference = 2 * Math.PI * 36
-                const offset = score !== null ? circumference - (score / 100) * circumference : circumference
+                const scoreEmoji = score !== null
+                  ? score >= 71 ? '✅' : score >= 41 ? '⚠️' : '❌'
+                  : ''
 
                 return (
-                  <Card className="border-primary/30 bg-primary/5">
+                  <Card className="border-border/50 bg-card/80">
                     <CardHeader className="pb-3">
                       <div className="flex items-center justify-between">
                         <CardTitle className="text-lg flex items-center gap-2">
@@ -677,27 +681,25 @@ export function TestCopyBriefingForm({ onBack, clientName }: TestCopyBriefingFor
                     </CardHeader>
                     <CardContent className="space-y-4">
                       {score !== null && (
-                        <div className="flex items-center gap-5">
-                          <div className="relative h-20 w-20 flex-shrink-0">
-                            <svg className="h-20 w-20 -rotate-90" viewBox="0 0 80 80">
-                              <circle cx="40" cy="40" r="36" fill="none" stroke="hsl(var(--border))" strokeWidth="6" />
-                              <circle
-                                cx="40" cy="40" r="36" fill="none"
-                                stroke={scoreColor}
-                                strokeWidth="6"
-                                strokeLinecap="round"
-                                strokeDasharray={circumference}
-                                strokeDashoffset={offset}
-                                className="transition-all duration-700"
-                              />
-                            </svg>
-                            <div className="absolute inset-0 flex items-center justify-center">
-                              <span className="text-lg font-bold" style={{ color: scoreColor }}>{score}</span>
+                        <div className="space-y-3">
+                          <div className="flex items-center justify-between">
+                            <div className="flex items-center gap-2">
+                              <span className="text-lg">{scoreEmoji}</span>
+                              <span className="text-sm font-medium text-muted-foreground">{scoreLabel}</span>
                             </div>
+                            <span className="text-2xl font-bold" style={{ color: scoreColor }}>{score}/100</span>
                           </div>
-                          <div>
-                            <p className="text-2xl font-bold text-foreground">{score}/100</p>
-                            <p className="text-sm text-muted-foreground">{scoreLabel}</p>
+                          <div className="relative w-full h-3 rounded-full overflow-hidden" style={{ backgroundColor: scoreBg }}>
+                            <motion.div
+                              className="absolute inset-y-0 left-0 rounded-full"
+                              style={{
+                                backgroundColor: scoreColor,
+                                boxShadow: `0 0 10px ${scoreColor}`,
+                              }}
+                              initial={{ width: '0%' }}
+                              animate={{ width: `${score}%` }}
+                              transition={{ duration: 1, ease: 'easeOut' }}
+                            />
                           </div>
                         </div>
                       )}
