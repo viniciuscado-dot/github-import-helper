@@ -217,7 +217,8 @@ const EditableText = React.memo(({
   )
 })
 
-export function CopyForm({ onBack, clientName }: CopyFormProps = {}) {
+export function CopyForm({ onBack, clientName, tableConfig }: CopyFormProps = {}) {
+  const tables = tableConfig || DEFAULT_TABLE_CONFIG
   const { profile } = useAuth()
   const { checkModulePermission } = useModulePermissions()
 const [isLoading, setIsLoading] = useState(false)
