@@ -1,4 +1,4 @@
-import { Users, Settings, Copy, CheckCircle, BarChart2, BarChart3, Sparkles, LogOut, TrendingUp, Shield, Home, Video, Lightbulb, Layout, Eye, Newspaper, ClipboardList, Activity, Megaphone, Bot } from "lucide-react"
+import { Users, Settings, Copy, CheckCircle, BarChart2, BarChart3, Sparkles, LogOut, TrendingUp, Shield, Home, Video, Lightbulb, Layout, Eye, Newspaper, ClipboardList, Activity, Megaphone, Bot, FlaskConical } from "lucide-react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { UserProfilePopover } from "./UserProfilePopover"
 import { useAuth } from "@/contexts/AuthContext"
@@ -40,6 +40,7 @@ export function AppSidebar({ activeView, onViewChange }: AppSidebarProps) {
   const [openModulesDialog, setOpenModulesDialog] = useState(false)
 
   const criacaoSubmenu = useMemo(() => [
+    { id: 'teste-copy', title: 'Teste Copy', icon: FlaskConical, route: '/teste-copy' },
     { id: 'copy', title: 'Copy e Estratégia', icon: Copy, route: '/copy-estrategia' },
     { id: 'aprovacao', title: 'Aprovação', view: 'aprovacao' as const, icon: CheckCircle, route: '/aprovacao' },
     { id: 'analise-bench', title: 'Análise e Bench', icon: BarChart2, route: '/analise-bench' },
@@ -244,7 +245,7 @@ export function AppSidebar({ activeView, onViewChange }: AppSidebarProps) {
             <SidebarMenu>
               {criacaoSubmenu.map((subItem) => {
                 const isSubActive = subItem.route 
-                  ? (location.pathname === subItem.route || (subItem.id === 'copy' && activeView === 'copy'))
+                  ? (location.pathname === subItem.route || (subItem.id === 'copy' && activeView === 'copy') || (subItem.id === 'teste-copy' && activeView === ('teste-copy' as any)))
                   : activeView === subItem.view;
                 return (
                   <SidebarMenuItem key={subItem.id}>
