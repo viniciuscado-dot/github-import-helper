@@ -92,9 +92,20 @@ interface CopyFormRecord {
   profiles?: { name: string; email: string }
 }
 
+export interface CopyFormTableConfig {
+  formsTable: string
+  draftsTable: string
+}
+
+const DEFAULT_TABLE_CONFIG: CopyFormTableConfig = {
+  formsTable: 'copy_forms',
+  draftsTable: 'copy_form_drafts',
+}
+
 interface CopyFormProps {
   onBack?: () => void
   clientName?: string
+  tableConfig?: CopyFormTableConfig
 }
 
 type EditableField = 'label_text' | 'description_text' | 'section_title' | 'section_description'
