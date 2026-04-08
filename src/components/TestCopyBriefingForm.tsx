@@ -190,7 +190,7 @@ export function TestCopyBriefingForm({ onBack, clientName }: TestCopyBriefingFor
 
       // Call edge function with analysis-only material type
       const { error: fnError } = await supabase.functions.invoke('generate-copy-ai', {
-        body: { copyFormId: savedForm.id, materialTypes: ['analise_briefing'] }
+        body: { copyFormId: savedForm.id, materialTypes: ['analise_briefing'], tableName: TABLES.formsTable }
       })
       if (fnError) {
         await supabase.from(TABLES.formsTable as any).update({ status: 'failed' }).eq('id', savedForm.id)
@@ -314,7 +314,7 @@ export function TestCopyBriefingForm({ onBack, clientName }: TestCopyBriefingFor
     setIsGeneratingNewCopy(true)
     try {
       const { error } = await supabase.functions.invoke('generate-copy-ai', {
-        body: { copyFormId: selectedBriefingForNewCopy.id, newCopyContext, appendToExisting: true, materialTypes: selectedMaterialTypes }
+        body: { copyFormId: selectedBriefingForNewCopy.id, newCopyContext, appendToExisting: true, materialTypes: selectedMaterialTypes, tableName: TABLES.formsTable }
       })
       if (error) throw error
       toast.success("Nova versão criada!"); setShowNewCopyModal(false); setNewCopyContext(''); setSelectedBriefingForNewCopy(null); fetchBriefingHistory()
@@ -373,7 +373,7 @@ export function TestCopyBriefingForm({ onBack, clientName }: TestCopyBriefingFor
 
       // Call edge function
       const { error: fnError } = await supabase.functions.invoke('generate-copy-ai', {
-        body: { copyFormId: savedForm.id, materialTypes: selectedMaterialTypes }
+        body: { copyFormId: savedForm.id, materialTypes: selectedMaterialTypes, tableName: TABLES.formsTable }
       })
       if (fnError) {
         await supabase.from(TABLES.formsTable as any).update({ status: 'failed' }).eq('id', savedForm.id)
@@ -825,7 +825,7 @@ export function TestCopyBriefingForm({ onBack, clientName }: TestCopyBriefingFor
         onRegenerate={async (copyId, instruction) => {
           try {
             const { error } = await supabase.functions.invoke('generate-copy-ai', {
-              body: { copyFormId: copyId, newCopyContext: instruction, appendToExisting: true, materialTypes: selectedMaterialTypes }
+              body: { copyFormId: copyId, newCopyContext: instruction, appendToExisting: true, materialTypes: selectedMaterialTypes, tableName: TABLES.formsTable }
             })
             if (error) throw error
             toast.success("Nova versão gerada!"); fetchBriefingHistory()
