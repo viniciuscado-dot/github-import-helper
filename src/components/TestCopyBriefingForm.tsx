@@ -516,10 +516,21 @@ export function TestCopyBriefingForm({ onBack, clientName }: TestCopyBriefingFor
           {/* PDF Upload Area */}
           <Card>
             <CardHeader>
-              <CardTitle className="flex items-center gap-2 text-xl">
-                <FileUp className="h-5 w-5" />
-                Analisador de Briefing
-              </CardTitle>
+              <div className="flex items-center justify-between">
+                <CardTitle className="flex items-center gap-2 text-xl">
+                  <FileUp className="h-5 w-5" />
+                  Analisador de Briefing
+                </CardTitle>
+                <div className="flex items-center gap-2">
+                  <Button variant="outline" size="sm" onClick={handleAnalyze} disabled={!briefingFile || isAnalyzing}>
+                    {isAnalyzing ? <Loader2 className="h-4 w-4 animate-spin mr-1.5" /> : <Eye className="h-4 w-4 mr-1.5" />}
+                    Analisar Informações
+                  </Button>
+                  <Button variant="ghost" size="icon" onClick={() => setShowConfigModal(true)} className="h-8 w-8">
+                    <Settings className="h-4 w-4" />
+                  </Button>
+                </div>
+              </div>
               <CardDescription>
                 Adicione o PDF do briefing. A inteligência artificial irá analisar o documento e gerar os materiais com base nas orientações dos prompts configurados.
               </CardDescription>
