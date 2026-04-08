@@ -873,6 +873,15 @@ export function TestCopyBriefingForm({ onBack, clientName }: TestCopyBriefingFor
             </Card>
           </TabsContent>
         )}
+
+        {/* ─── Formulário Tab (embedded CopyForm) ─── */}
+        <TabsContent value="formulario">
+          <CopyForm
+            clientName={clientName}
+            tableConfig={{ formsTable: TABLES.formsTable, draftsTable: TABLES.draftsTable }}
+            visibleTab="form"
+          />
+        </TabsContent>
       </Tabs>
 
       {/* Copy detail dialog */}
