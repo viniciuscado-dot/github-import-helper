@@ -429,21 +429,30 @@ const [isLoading, setIsLoading] = useState(false)
 
       if (saveError) throw saveError
 
-      // Chamar a Edge Function para gerar a copy
-      const { data: copyResponse, error: copyError } = await supabase
-        .functions
-        .invoke('generate-copy-ai', {
-          body: { copyFormId: savedForm.id, materialTypes: selectedMaterialTypes }
-        })
-      console.info('📨 generate-copy-ai response:', { copyResponse, copyError })
+      // Call edge function once per material type to avoid WORKER_LIMIT
+      for (let i = 0; i < selectedMaterialTypes.length; i++) {
+        const materialType = selectedMaterialTypes[i]
+        const isAppend = i > 0
+        const { data: copyResponse, error: copyError } = await supabase
+          .functions
+          .invoke('generate-copy-ai', {
+            body: {
+              copyFormId: savedForm.id,
+              materialTypes: [materialType],
+              tableName: tables.formsTable,
+              appendToExisting: isAppend,
+            }
+          })
+        console.info(`📨 generate-copy-ai [${materialType}]:`, { copyResponse, copyError })
 
-      if (copyError) {
-        console.error('❌ Erro na edge function:', copyError)
-        await supabase
-          .from(tables.formsTable as any)
-          .update({ status: 'failed' })
-          .eq('id', savedForm.id)
-        throw copyError
+        if (copyError) {
+          console.error('❌ Erro na edge function:', copyError)
+          await supabase
+            .from(tables.formsTable as any)
+            .update({ status: 'failed' })
+            .eq('id', savedForm.id)
+          throw copyError
+        }
       }
 
       const totalDocs = extraDocumentPaths.length

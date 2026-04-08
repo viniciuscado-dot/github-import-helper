@@ -379,13 +379,22 @@ export function TestCopyBriefingForm({ onBack, clientName }: TestCopyBriefingFor
         .single()
       if (saveError) throw saveError
 
-      // Call edge function
-      const { error: fnError } = await supabase.functions.invoke('generate-copy-ai', {
-        body: { copyFormId: savedForm.id, materialTypes: selectedMaterialTypes, tableName: TABLES.formsTable }
-      })
-      if (fnError) {
-        await supabase.from(TABLES.formsTable as any).update({ status: 'failed' }).eq('id', savedForm.id)
-        throw fnError
+      // Call edge function once per material type to avoid WORKER_LIMIT
+      for (let i = 0; i < selectedMaterialTypes.length; i++) {
+        const materialType = selectedMaterialTypes[i]
+        const isAppend = i > 0 // append results after the first
+        const { error: fnError } = await supabase.functions.invoke('generate-copy-ai', {
+          body: {
+            copyFormId: savedForm.id,
+            materialTypes: [materialType],
+            tableName: TABLES.formsTable,
+            appendToExisting: isAppend,
+          }
+        })
+        if (fnError) {
+          await supabase.from(TABLES.formsTable as any).update({ status: 'failed' }).eq('id', savedForm.id)
+          throw fnError
+        }
       }
 
       setGenerationStatus('success')
