@@ -32,6 +32,7 @@ const AnaliseArtefato = lazy(() => import("./pages/AnaliseArtefato"));
 const AnaliseBenchResultado = lazy(() => import("./pages/AnaliseBenchResultado"));
 const CopyEstrategia = lazy(() => import("./pages/CopyEstrategia"));
 const AnaliseBenchSelecao = lazy(() => import("./pages/AnaliseBenchSelecao"));
+const TestCopyEstrategia = lazy(() => import("./pages/TestCopyEstrategia"));
 const DataDriven = lazy(() => import("./pages/DataDriven"));
 const DataDrivenProdutividade = lazy(() => import("./pages/DataDrivenProdutividade"));
 const DataDrivenEntregas = lazy(() => import("./pages/DataDrivenEntregas"));
@@ -105,6 +106,13 @@ const App = () => (
                 <ProtectedRoute>
                   <Suspense fallback={<DashboardFallback />}>
                     <CopyEstrategia />
+                  </Suspense>
+                </ProtectedRoute>
+              } />
+              <Route path="/teste-copy" element={
+                <ProtectedRoute>
+                  <Suspense fallback={<DashboardFallback />}>
+                    <TestCopyEstrategia />
                   </Suspense>
                 </ProtectedRoute>
               } />
