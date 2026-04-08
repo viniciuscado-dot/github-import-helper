@@ -178,6 +178,7 @@ export function TestCopyBriefingForm({ onBack, clientName }: TestCopyBriefingFor
           copy_type: 'analysis',
           document_files: [filePath],
           informacao_extra: [
+            '=== FORMATO OBRIGATÓRIO DE RESPOSTA ===\nComece SEMPRE a resposta com a linha: SCORE: XX/100\nOnde XX é a nota de completude do briefing (0 a 100). Depois do score, forneça o feedback detalhado em Markdown.',
             analysisInstructions ? `=== INSTRUÇÕES DE ANÁLISE ===\n${analysisInstructions}` : '',
             idealResults.some(r => r.trim()) ? `=== MODELO DE RESULTADOS IDEAIS ===\n${idealResults.filter(r => r.trim()).map((r, i) => `--- Modelo ${i + 1} ---\n${r}`).join('\n\n')}` : '',
             additionalInfo ? `=== INFORMAÇÕES ADICIONAIS ===\n${additionalInfo}` : '',
