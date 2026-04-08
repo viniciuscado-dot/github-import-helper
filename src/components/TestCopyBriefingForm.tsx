@@ -481,8 +481,12 @@ export function TestCopyBriefingForm({ onBack, clientName }: TestCopyBriefingFor
       <Tabs value={activeTab} onValueChange={setActiveTab}>
         <div className="flex items-center justify-between mb-6 flex-wrap gap-3">
           <TabsList>
-            <TabsTrigger value="form" className="flex items-center gap-2">
+            <TabsTrigger value="formulario" className="flex items-center gap-2">
               <FileText className="h-4 w-4" />
+              Formulário
+            </TabsTrigger>
+            <TabsTrigger value="form" className="flex items-center gap-2">
+              <FileUp className="h-4 w-4" />
               Briefing
             </TabsTrigger>
             {canViewHistory && (
