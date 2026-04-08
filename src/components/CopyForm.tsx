@@ -1170,11 +1170,16 @@ const [isLoading, setIsLoading] = useState(false)
 
   // Embedded mode: render only the specified tab content without header/tabs
   if (visibleTab) {
+    const embeddedActiveTab = visibleTab
     return (
       <EditableTextContext.Provider value={editableTextContextValue}>
         <div>
-        <Tabs value={visibleTab}>
-        {visibleTab === 'form' && (
+        <Tabs value={embeddedActiveTab}>
+
+        <TabsContent value="form" className="space-y-6">
+          <Form {...form}>
+            <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
             
             {canViewHistory && (
               <TabsTrigger value="history" className="flex items-center gap-2">
