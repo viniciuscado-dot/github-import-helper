@@ -167,7 +167,7 @@ const Index = () => {
         return <CopyForm clientName={clientParam} />
       case 'teste-copy':
         const testClientParam = searchParams.get('client') || undefined;
-        return <TestCopyForm clientName={testClientParam} />
+        return <TestCopyBriefingForm clientName={testClientParam} />
       case 'analise-bench':
         return <AnaliseBench />
       case 'users':
