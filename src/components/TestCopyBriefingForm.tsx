@@ -6,7 +6,8 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Badge } from "@/components/ui/badge"
-import { Settings, FileText, Loader2, ArrowLeft, Eye, Upload, RefreshCw, Send, X, Save, Trash2, Plus, Sparkles, FileUp } from "lucide-react"
+import { Settings, FileText, Loader2, ArrowLeft, Eye, Upload, RefreshCw, Send, X, Save, Trash2, Plus, Sparkles, FileUp, ChevronDown } from "lucide-react"
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog"
 import { useAuth } from "@/contexts/AuthContext"
@@ -111,7 +112,7 @@ export function TestCopyBriefingForm({ onBack, clientName }: TestCopyBriefingFor
   // Config modal
   const [showConfigModal, setShowConfigModal] = useState(false)
   const [analysisInstructions, setAnalysisInstructions] = useState('')
-  const [idealResults, setIdealResults] = useState('')
+  const [idealResults, setIdealResults] = useState<[string, string, string]>(['', '', ''])
 
   // Analysis
   const [isAnalyzing, setIsAnalyzing] = useState(false)
@@ -131,7 +132,13 @@ export function TestCopyBriefingForm({ onBack, clientName }: TestCopyBriefingFor
       if (stored) {
         const parsed = JSON.parse(stored)
         setAnalysisInstructions(parsed.instructions || '')
-        setIdealResults(parsed.idealResults || '')
+        // migrate from old string format
+        const ir = parsed.idealResults
+        if (Array.isArray(ir)) {
+          setIdealResults([ir[0] || '', ir[1] || '', ir[2] || ''])
+        } else if (typeof ir === 'string') {
+          setIdealResults([ir, '', ''])
+        }
       }
     } catch {}
   }, [])
@@ -172,7 +179,7 @@ export function TestCopyBriefingForm({ onBack, clientName }: TestCopyBriefingFor
           document_files: [filePath],
           informacao_extra: [
             analysisInstructions ? `=== INSTRUÇÕES DE ANÁLISE ===\n${analysisInstructions}` : '',
-            idealResults ? `=== MODELO DE RESULTADOS IDEAIS ===\n${idealResults}` : '',
+            idealResults.some(r => r.trim()) ? `=== MODELO DE RESULTADOS IDEAIS ===\n${idealResults.filter(r => r.trim()).map((r, i) => `--- Modelo ${i + 1} ---\n${r}`).join('\n\n')}` : '',
             additionalInfo ? `=== INFORMAÇÕES ADICIONAIS ===\n${additionalInfo}` : '',
           ].filter(Boolean).join('\n\n') || null,
         })
@@ -867,14 +874,30 @@ export function TestCopyBriefingForm({ onBack, clientName }: TestCopyBriefingFor
               />
             </div>
             <div className="space-y-2">
-              <label className="text-sm font-medium text-foreground">Modelo de Resultados Ideais</label>
+              <label className="text-sm font-medium text-foreground">Modelos de Resultados Ideais</label>
               <p className="text-xs text-muted-foreground">Descreva o que um briefing completo deve conter. A IA usará isso como referência para avaliar a completude.</p>
-              <Textarea
-                placeholder="Ex: Um briefing completo deve conter: 1) Nome da empresa e nicho. 2) Público-alvo detalhado. 3) Produtos/serviços..."
-                value={idealResults}
-                onChange={(e) => setIdealResults(e.target.value)}
-                className="min-h-[180px] resize-y bg-muted/30 border-border/50"
-              />
+              <Accordion type="multiple" className="w-full">
+                {(['Modelo 1', 'Modelo 2', 'Modelo 3'] as const).map((label, idx) => (
+                  <AccordionItem key={idx} value={`model-${idx}`} className="border-border/50">
+                    <AccordionTrigger className="text-sm font-medium py-3 hover:no-underline">
+                      {label}
+                      {idealResults[idx]?.trim() && <Badge variant="secondary" className="ml-2 text-xs">Preenchido</Badge>}
+                    </AccordionTrigger>
+                    <AccordionContent>
+                      <Textarea
+                        placeholder="Ex: Um briefing completo deve conter: 1) Nome da empresa e nicho. 2) Público-alvo detalhado. 3) Produtos/serviços..."
+                        value={idealResults[idx]}
+                        onChange={(e) => {
+                          const updated = [...idealResults] as [string, string, string]
+                          updated[idx] = e.target.value
+                          setIdealResults(updated)
+                        }}
+                        className="min-h-[150px] resize-y bg-muted/30 border-border/50"
+                      />
+                    </AccordionContent>
+                  </AccordionItem>
+                ))}
+              </Accordion>
             </div>
             <div className="flex justify-end">
               <Button onClick={handleSaveConfig} className="gap-2">
