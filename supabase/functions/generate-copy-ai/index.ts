@@ -349,6 +349,7 @@ serve(async (req) => {
 
     const ALLOWED_TABLES = ['copy_forms', 'test_copy_forms'] as const;
     const tableName = ALLOWED_TABLES.includes(rawTableName as any) ? rawTableName! : 'copy_forms';
+    tableNameVar = tableName;
 
     if (!copyFormId || typeof copyFormId !== 'string') {
       throw new Error('copyFormId é obrigatório');
@@ -542,7 +543,7 @@ serve(async (req) => {
         );
 
         await supabase
-          .from(tableName)
+          .from(tableNameVar)
           .update({ status: 'failed' })
           .eq('id', copyFormIdVar);
       }
