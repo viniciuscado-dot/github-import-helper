@@ -1,22 +1,20 @@
 
 
-## Documentation: Users Module (Usuários)
+## Plan: Generate Documentation for Notification Center and Agenda Panel
 
-I'll generate a comprehensive Markdown document covering the entire Users module — backend (database, edge functions, RLS, RPCs) and frontend (components, contexts, permission system). This will be saved to `/mnt/documents/USUARIOS_MODULE_DOCUMENTATION.md`.
+### What will be created
+A single Markdown file at `/mnt/documents/NOTIFICACOES_AGENDA_DOCUMENTATION.md` covering:
 
-### Content Structure
-
-1. **Architecture Overview** — diagram of how frontend, AuthContext, Supabase DB, and Edge Functions connect
-2. **Database Schema** — `profiles`, `custom_roles`, `modules`, `role_module_permissions`, `user_module_permissions` tables with columns, RLS policies, triggers (`handle_new_user`, `prevent_role_escalation`)
-3. **Database Functions** — `get_user_role`, `user_has_module_permission`, `handle_new_user`, `prevent_role_escalation`
-4. **Edge Functions** — `create-user` (admin creates users with service_role), `update-user-role` (promote/demote with hierarchy checks), `update-password` (admin resets passwords)
-5. **Frontend — AuthContext** — session management, `fetchProfile`/`fetchProfiles`, domain restriction (`@dotconceito.com`), CRUD methods (`addUser`, `updateUser`, `removeUser`, `activateUser`)
-6. **Frontend — UserManagement.tsx** — 3-tier collapsible sections (Workspace Admin, Admin Completo, Usuários Comuns), group (custom_roles) CRUD, role permissions editor (`RolePermissionsEditor`), user CRUD dialogs, avatar upload, squad assignment
-7. **Frontend — UserPermissions.tsx** — per-user granular permissions dialog (view/create/edit/delete per module), organized by menu sections (Performance, Social Media, Laboratório, News)
-8. **Frontend — useModulePermissions hook** — permission checking logic with hardcoded rules (public modules, banned modules, admin bypass)
-9. **Permission Hierarchy** — workspace_admin > admin > equipe, bootstrap mode, `canEditUser` logic
-10. **Security** — RLS policies, `prevent_role_escalation` trigger, edge functions using `service_role` to bypass RLS for admin operations
+1. **Architecture Overview** -- TopBar as host, NotificationCenter (Popover) and AgendaPanel (Sheet) as children
+2. **TopBar Component** -- sticky bar, glassmorphism styling, state management for agenda open/close
+3. **NotificationCenter** -- interface `AppNotification`, 4 notification types (approved, adjustment, evaluated, info), color/icon config, mock seed data, `formatRelativeTime` helper, unread badge counter, mark-read and mark-all-read actions, Popover + ScrollArea UI
+4. **AgendaPanel** -- interface `AgendaEvent`, 3 event types (meeting, task, reminder), mock events, Sheet slide-over panel, date formatting with `date-fns` pt-BR locale, event cards with time/location/online indicators, disabled Google Calendar button (planned integration)
+5. **Backend -- CSM Alerts** -- Edge Function `generate-csm-alerts` (auth check + calls `generate_csm_alerts` RPC), DB function that generates alerts for critical/low health scores from `crm_cards` into `crm_alerts` table
+6. **Current State & Roadmap** -- both frontend features use mock/seed data only (no DB persistence yet), Google Calendar integration planned, notification center not yet connected to real approval events from `projects`/`evaluations` tables
 
 ### Implementation
-Single command to write the full `.md` file to `/mnt/documents/`.
+Single `code--exec` command writing the complete `.md` file to `/mnt/documents/`.
+
+### Files
+- `/mnt/documents/NOTIFICACOES_AGENDA_DOCUMENTATION.md` (new)
 
