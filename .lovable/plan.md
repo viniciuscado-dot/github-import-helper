@@ -1,24 +1,22 @@
 
 
-## Plan: Accept PDF and HTML Files in Briefing Upload
+## Documentation: Users Module (Usuários)
 
-### Problem
-PDF text extraction via `pdf-parse` fails on scanned/image-based PDFs, resulting in 0/100 scores. HTML files contain readily extractable text and would solve this.
+I'll generate a comprehensive Markdown document covering the entire Users module — backend (database, edge functions, RLS, RPCs) and frontend (components, contexts, permission system). This will be saved to `/mnt/documents/USUARIOS_MODULE_DOCUMENTATION.md`.
 
-### Changes
+### Content Structure
 
-**1. Frontend — `src/components/TestCopyBriefingForm.tsx`**
-- Update `accept` attribute from `.pdf` to `.pdf,.html,.htm`
-- Update file type validation in `handleDrop` and `handleFileSelect` to accept `application/pdf`, `text/html`, and files ending in `.html`/`.htm`
-- Update UI text from "PDF" references to "PDF ou HTML"
-- Update upload path logic to preserve the original file extension
+1. **Architecture Overview** — diagram of how frontend, AuthContext, Supabase DB, and Edge Functions connect
+2. **Database Schema** — `profiles`, `custom_roles`, `modules`, `role_module_permissions`, `user_module_permissions` tables with columns, RLS policies, triggers (`handle_new_user`, `prevent_role_escalation`)
+3. **Database Functions** — `get_user_role`, `user_has_module_permission`, `handle_new_user`, `prevent_role_escalation`
+4. **Edge Functions** — `create-user` (admin creates users with service_role), `update-user-role` (promote/demote with hierarchy checks), `update-password` (admin resets passwords)
+5. **Frontend — AuthContext** — session management, `fetchProfile`/`fetchProfiles`, domain restriction (`@dotconceito.com`), CRUD methods (`addUser`, `updateUser`, `removeUser`, `activateUser`)
+6. **Frontend — UserManagement.tsx** — 3-tier collapsible sections (Workspace Admin, Admin Completo, Usuários Comuns), group (custom_roles) CRUD, role permissions editor (`RolePermissionsEditor`), user CRUD dialogs, avatar upload, squad assignment
+7. **Frontend — UserPermissions.tsx** — per-user granular permissions dialog (view/create/edit/delete per module), organized by menu sections (Performance, Social Media, Laboratório, News)
+8. **Frontend — useModulePermissions hook** — permission checking logic with hardcoded rules (public modules, banned modules, admin bypass)
+9. **Permission Hierarchy** — workspace_admin > admin > equipe, bootstrap mode, `canEditUser` logic
+10. **Security** — RLS policies, `prevent_role_escalation` trigger, edge functions using `service_role` to bypass RLS for admin operations
 
-**2. Backend — `supabase/functions/generate-copy-ai/index.ts`**
-- Add HTML detection: `const isHtml = /\.(html?|htm)$/i.test(fileName)`
-- For HTML files, read as text and strip HTML tags to extract clean content (using a simple regex strip since no npm packages are allowed in edge functions)
-- Place the HTML handler alongside the existing `isTextLike` and `isPdf` handlers
-
-### Files Modified
-- `src/components/TestCopyBriefingForm.tsx`
-- `supabase/functions/generate-copy-ai/index.ts` (+ redeploy)
+### Implementation
+Single command to write the full `.md` file to `/mnt/documents/`.
 
