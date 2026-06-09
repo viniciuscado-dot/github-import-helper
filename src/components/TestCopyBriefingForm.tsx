@@ -39,6 +39,32 @@ const TABLES = {
   draftsTable: 'test_copy_form_drafts',
 }
 
+async function getEdgeFunctionErrorMessage(error: any, fallback = 'Erro ao gerar copy') {
+  const genericSupabaseMessage = 'Edge Function returned a non-2xx status code'
+
+  if (error?.context && typeof error.context.clone === 'function') {
+    try {
+      const payload = await error.context.clone().json()
+      if (typeof payload?.error === 'string') return payload.error
+    } catch {
+      // Try plain text below
+    }
+
+    try {
+      const text = await error.context.clone().text()
+      if (text) return text
+    } catch {
+      // Fall back to message below
+    }
+  }
+
+  if (typeof error?.message === 'string' && error.message !== genericSupabaseMessage) {
+    return error.message
+  }
+
+  return fallback
+}
+
 interface CopyFormRecord {
   id: string
   created_at: string
@@ -197,7 +223,7 @@ export function TestCopyBriefingForm({ onBack, clientName }: TestCopyBriefingFor
       })
       if (fnError) {
         await supabase.from(TABLES.formsTable as any).update({ status: 'failed' }).eq('id', savedForm.id)
-        throw fnError
+        throw new Error(await getEdgeFunctionErrorMessage(fnError))
       }
 
       // Fetch result
@@ -210,7 +236,7 @@ export function TestCopyBriefingForm({ onBack, clientName }: TestCopyBriefingFor
       setAnalysisResult(result?.ai_response || 'Sem resultado disponível.')
     } catch (err: any) {
       console.error('Erro na análise:', err)
-      toast.error(err?.message || 'Erro ao analisar briefing')
+      toast.error(await getEdgeFunctionErrorMessage(err, err?.message || 'Erro ao analisar briefing'))
     } finally {
       setIsAnalyzing(false)
     }
@@ -319,9 +345,9 @@ export function TestCopyBriefingForm({ onBack, clientName }: TestCopyBriefingFor
       const { error } = await supabase.functions.invoke('generate-copy-ai', {
         body: { copyFormId: selectedBriefingForNewCopy.id, newCopyContext, appendToExisting: true, materialTypes: selectedMaterialTypes, tableName: TABLES.formsTable }
       })
-      if (error) throw error
+      if (error) throw new Error(await getEdgeFunctionErrorMessage(error))
       toast.success("Nova versão criada!"); setShowNewCopyModal(false); setNewCopyContext(''); setSelectedBriefingForNewCopy(null); fetchBriefingHistory()
-    } catch { toast.error("Erro ao gerar nova copy") }
+    } catch (error) { toast.error(await getEdgeFunctionErrorMessage(error, 'Erro ao gerar nova copy')) }
     finally { setIsGeneratingNewCopy(false) }
   }
 
@@ -393,7 +419,7 @@ export function TestCopyBriefingForm({ onBack, clientName }: TestCopyBriefingFor
         })
         if (fnError) {
           await supabase.from(TABLES.formsTable as any).update({ status: 'failed' }).eq('id', savedForm.id)
-          throw fnError
+          throw new Error(await getEdgeFunctionErrorMessage(fnError))
         }
       }
 
@@ -416,7 +442,7 @@ export function TestCopyBriefingForm({ onBack, clientName }: TestCopyBriefingFor
       }, 1500)
     } catch (error: any) {
       console.error('Erro:', error)
-      setGenerationStatus('error'); setGenerationError(error?.message || 'Erro ao processar briefing'); setIsLoading(false)
+      setGenerationStatus('error'); setGenerationError(await getEdgeFunctionErrorMessage(error, error?.message || 'Erro ao processar briefing')); setIsLoading(false)
     }
   }
 
@@ -903,14 +929,14 @@ export function TestCopyBriefingForm({ onBack, clientName }: TestCopyBriefingFor
             const { error } = await supabase.functions.invoke('generate-copy-ai', {
               body: { copyFormId: copyId, newCopyContext: instruction, appendToExisting: true, materialTypes: selectedMaterialTypes, tableName: TABLES.formsTable }
             })
-            if (error) throw error
+            if (error) throw new Error(await getEdgeFunctionErrorMessage(error))
             toast.success("Nova versão gerada!"); fetchBriefingHistory()
             const { data: updated } = await supabase.from(TABLES.formsTable as any).select('*').eq('id', copyId).single()
             if (updated) {
               const { data: pd } = await supabase.from('profiles').select('name, email').eq('id', updated.created_by).single()
               setViewingCopy({ ...updated, profiles: pd || { name: 'Usuário desconhecido', email: '' } })
             }
-          } catch (e) { console.error(e); toast.error("Erro ao gerar nova versão"); throw e }
+          } catch (e) { console.error(e); toast.error(await getEdgeFunctionErrorMessage(e, 'Erro ao gerar nova versão')); throw e }
         }}
       />
 

@@ -102,6 +102,32 @@ const DEFAULT_TABLE_CONFIG: CopyFormTableConfig = {
   draftsTable: 'copy_form_drafts',
 }
 
+async function getEdgeFunctionErrorMessage(error: any, fallback = 'Erro ao gerar copy') {
+  const genericSupabaseMessage = 'Edge Function returned a non-2xx status code'
+
+  if (error?.context && typeof error.context.clone === 'function') {
+    try {
+      const payload = await error.context.clone().json()
+      if (typeof payload?.error === 'string') return payload.error
+    } catch {
+      // Try plain text below
+    }
+
+    try {
+      const text = await error.context.clone().text()
+      if (text) return text
+    } catch {
+      // Fall back to message below
+    }
+  }
+
+  if (typeof error?.message === 'string' && error.message !== genericSupabaseMessage) {
+    return error.message
+  }
+
+  return fallback
+}
+
 interface CopyFormProps {
   onBack?: () => void
   clientName?: string
@@ -447,11 +473,12 @@ const [isLoading, setIsLoading] = useState(false)
 
         if (copyError) {
           console.error('❌ Erro na edge function:', copyError)
+          const message = await getEdgeFunctionErrorMessage(copyError)
           await supabase
             .from(tables.formsTable as any)
             .update({ status: 'failed' })
             .eq('id', savedForm.id)
-          throw copyError
+          throw new Error(message)
         }
       }
 
@@ -487,7 +514,7 @@ const [isLoading, setIsLoading] = useState(false)
       }, 1500)
     } catch (error: any) {
       console.error('Erro ao salvar briefing:', error)
-      const serverMsg = error?.message || error?.hint || 'Erro ao salvar briefing'
+      const serverMsg = await getEdgeFunctionErrorMessage(error, error?.hint || 'Erro ao salvar briefing')
       setGenerationStatus('error')
       setGenerationError(serverMsg)
       setIsLoading(false)
@@ -1143,7 +1170,7 @@ const [isLoading, setIsLoading] = useState(false)
 
       if (copyError) {
         console.error('❌ Erro na edge function:', copyError)
-        throw copyError
+        throw new Error(await getEdgeFunctionErrorMessage(copyError))
       }
 
       toast.success("Nova versão da copy criada com sucesso!")
@@ -1153,7 +1180,7 @@ const [isLoading, setIsLoading] = useState(false)
       fetchBriefingHistory()
     } catch (error) {
       console.error('Erro ao gerar nova copy:', error)
-      toast.error("Erro ao gerar nova copy")
+      toast.error(await getEdgeFunctionErrorMessage(error, 'Erro ao gerar nova copy'))
     } finally {
       setIsGeneratingNewCopy(false)
     }
@@ -2606,7 +2633,7 @@ EX: Mais de 1.000 projetos de placas solares instalados em todo o Rio Grande do 
                 }
               });
 
-            if (error) throw error;
+            if (error) throw new Error(await getEdgeFunctionErrorMessage(error));
 
             toast.success("Nova versão gerada com sucesso!");
             fetchBriefingHistory();
@@ -2628,7 +2655,7 @@ EX: Mais de 1.000 projetos de placas solares instalados em todo o Rio Grande do 
             }
           } catch (error) {
             console.error('Erro ao regenerar copy:', error);
-            toast.error("Erro ao gerar nova versão");
+            toast.error(await getEdgeFunctionErrorMessage(error, 'Erro ao gerar nova versão'));
             throw error;
           }
         }}

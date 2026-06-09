@@ -299,6 +299,32 @@ function extractAnthropicText(data: any): string {
     .trim();
 }
 
+function getCredentialDebugInfo(apiKey: string) {
+  return {
+    length: apiKey.length,
+    prefix: apiKey.slice(0, 12),
+    suffix: apiKey.slice(-4),
+  };
+}
+
+function formatAnthropicError(errorText: string): string {
+  const lower = errorText.toLowerCase();
+
+  if (lower.includes('credit balance is too low')) {
+    return 'A Anthropic recusou a geração porque a chave configurada no Supabase ainda está sem crédito. Confirme se os créditos foram adicionados na mesma conta/chave usada em ANTHROPIC_API_KEY ou atualize esse segredo no projeto.';
+  }
+
+  if (lower.includes('invalid x-api-key') || lower.includes('authentication_error') || lower.includes('api key')) {
+    return 'A chave da Anthropic configurada no Supabase parece inválida ou pertence a outra conta. Atualize o segredo ANTHROPIC_API_KEY com a chave correta.';
+  }
+
+  if (lower.includes('rate_limit')) {
+    return 'A Anthropic limitou temporariamente as requisições. Aguarde alguns instantes e tente novamente.';
+  }
+
+  return `Erro retornado pela Anthropic: ${errorText}`;
+}
+
 async function callAnthropicWithFallback(
   apiKey: string,
   systemPrompt: string,
@@ -351,7 +377,7 @@ async function callAnthropicWithFallback(
     return { model, text, stopReason };
   }
 
-  throw new Error(`Nenhum modelo Anthropic aceitou a requisição. Último erro: ${lastErrorText}`);
+  throw new Error(formatAnthropicError(lastErrorText));
 }
 
 async function generateMaterialBlock(params: {
@@ -575,7 +601,7 @@ serve(async (req) => {
       console.error('❌ Chave da API Claude não encontrada');
       throw new Error('Chave da API Claude não configurada no Supabase');
     }
-    console.log('✅ Chave da API encontrada');
+    console.log('✅ Chave da API encontrada', getCredentialDebugInfo(apiKey));
 
     const analysisRequested = isBriefingAnalysisRequested(materialTypes);
     let aiResponse = '';
@@ -702,13 +728,16 @@ serve(async (req) => {
       console.error('⚠️ Falha ao atualizar status para failed:', e);
     }
 
+    const errorMessage = error instanceof Error ? error.message : 'Erro desconhecido';
+    const status = errorMessage.includes('sem crédito') || errorMessage.includes('Anthropic recusou') ? 402 : 500;
+
     return new Response(
       JSON.stringify({
-        error: error instanceof Error ? error.message : 'Erro desconhecido',
+        error: errorMessage,
         success: false,
       }),
       {
-        status: 500,
+        status,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       },
     );
