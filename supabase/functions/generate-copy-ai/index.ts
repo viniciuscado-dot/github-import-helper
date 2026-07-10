@@ -613,25 +613,12 @@ serve(async (req) => {
               .trim();
             console.log(`✅ HTML ${fileName}: ${extracted.length} caracteres`);
           } else if (isPdf) {
-            if (fileData.size > MAX_PDF_BYTES) {
-              console.warn(`⚠️ PDF ${fileName} muito grande (${fileData.size} bytes) - pulando extração`);
-              parts.push(`=== DOCUMENTO PDF: ${fileName} ===\n[PDF grande demais para extração inline - use os campos do briefing]\n`);
-              continue;
-            }
-            try {
-              console.log(`📄 Extraindo PDF: ${fileName} (${fileData.size} bytes)`);
-              // unpdf é leve (baseado em pdfjs sem node polyfills) e roda bem em edge/Deno
-              const { extractText, getDocumentProxy } = await import('https://esm.sh/unpdf@0.12.1');
-              const arrayBuffer = await fileData.arrayBuffer();
-              const pdf = await getDocumentProxy(new Uint8Array(arrayBuffer));
-              const { text } = await extractText(pdf, { mergePages: true });
-              extracted = Array.isArray(text) ? text.join('\n') : String(text || '');
-              console.log(`✅ PDF ${fileName}: ${extracted.length} caracteres`);
-            } catch (pdfError) {
-              console.error(`❌ Erro PDF ${fileName}:`, pdfError);
-              parts.push(`=== DOCUMENTO: ${fileName} ===\n[Não foi possível extrair o PDF - considere converter para .txt ou preencher os campos do briefing]\n`);
-              continue;
-            }
+            // Extração inline de PDF foi removida: bibliotecas pdfjs/unpdf estouram
+            // o limite de memória do edge worker (WORKER_RESOURCE_LIMIT).
+            // O PDF fica registrado como anexo; o conteúdo relevante deve estar nos campos do briefing.
+            console.log(`📎 PDF anexado (extração inline desabilitada): ${fileName}`);
+            parts.push(`=== DOCUMENTO PDF: ${fileName} ===\n[PDF anexado pelo usuário. Extração automática desabilitada para preservar recursos. Considere colar os trechos relevantes nos campos do briefing ou anexar como .txt/.md.]\n`);
+            continue;
           } else {
             parts.push(`=== DOCUMENTO: ${fileName} (anexado) ===\n[Conteúdo não textual omitido]\n`);
             continue;
