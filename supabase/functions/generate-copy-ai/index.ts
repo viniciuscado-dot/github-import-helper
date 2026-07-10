@@ -579,20 +579,21 @@ serve(async (req) => {
           } else if (isPdf) {
             if (fileData.size > MAX_PDF_BYTES) {
               console.warn(`⚠️ PDF ${fileName} muito grande (${fileData.size} bytes) - pulando extração`);
-              parts.push(`=== DOCUMENTO PDF: ${fileName} ===\n[PDF grande demais para extração inline]\n`);
+              parts.push(`=== DOCUMENTO PDF: ${fileName} ===\n[PDF grande demais para extração inline - use os campos do briefing]\n`);
               continue;
             }
             try {
               console.log(`📄 Extraindo PDF: ${fileName} (${fileData.size} bytes)`);
-              const pdfParse = await import('https://esm.sh/pdf-parse@1.1.1');
+              // unpdf é leve (baseado em pdfjs sem node polyfills) e roda bem em edge/Deno
+              const { extractText, getDocumentProxy } = await import('https://esm.sh/unpdf@0.12.1');
               const arrayBuffer = await fileData.arrayBuffer();
-              const buffer = new Uint8Array(arrayBuffer);
-              const pdfData = await pdfParse.default(buffer);
-              extracted = pdfData.text || '';
+              const pdf = await getDocumentProxy(new Uint8Array(arrayBuffer));
+              const { text } = await extractText(pdf, { mergePages: true });
+              extracted = Array.isArray(text) ? text.join('\n') : String(text || '');
               console.log(`✅ PDF ${fileName}: ${extracted.length} caracteres`);
             } catch (pdfError) {
               console.error(`❌ Erro PDF ${fileName}:`, pdfError);
-              parts.push(`=== DOCUMENTO: ${fileName} ===\n[Erro ao extrair texto do PDF]\n`);
+              parts.push(`=== DOCUMENTO: ${fileName} ===\n[Não foi possível extrair o PDF - considere converter para .txt ou preencher os campos do briefing]\n`);
               continue;
             }
           } else {
