@@ -518,10 +518,10 @@ serve(async (req) => {
     const documentFiles = Array.isArray(formData.document_files) ? formData.document_files : [];
 
     // Limites para evitar WORKER_RESOURCE_LIMIT (edge function ~150MB RAM)
-    const MAX_DOCS = 5;
-    const MAX_CHARS_PER_DOC = 40_000;
-    const MAX_TOTAL_DOC_CHARS = 120_000;
-    const MAX_PDF_BYTES = 8 * 1024 * 1024; // 8MB por PDF
+    const MAX_DOCS = 3;
+    const MAX_CHARS_PER_DOC = 25_000;
+    const MAX_TOTAL_DOC_CHARS = 60_000;
+    const MAX_PDF_BYTES = 4 * 1024 * 1024; // 4MB por PDF
 
     const limitedFiles = documentFiles.slice(0, MAX_DOCS);
     if (documentFiles.length > MAX_DOCS) {
