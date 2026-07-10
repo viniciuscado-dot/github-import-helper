@@ -517,18 +517,39 @@ serve(async (req) => {
     let documentsContent = '';
     const documentFiles = Array.isArray(formData.document_files) ? formData.document_files : [];
 
-    if (documentFiles.length > 0) {
-      console.log(`Processando ${documentFiles.length} documento(s)...`);
+    // Limites para evitar WORKER_RESOURCE_LIMIT (edge function ~150MB RAM)
+    const MAX_DOCS = 5;
+    const MAX_CHARS_PER_DOC = 40_000;
+    const MAX_TOTAL_DOC_CHARS = 120_000;
+    const MAX_PDF_BYTES = 8 * 1024 * 1024; // 8MB por PDF
 
-      try {
-        const documentPromises = documentFiles.map(async (filePath: string) => {
+    const limitedFiles = documentFiles.slice(0, MAX_DOCS);
+    if (documentFiles.length > MAX_DOCS) {
+      console.warn(`⚠️ Limitando de ${documentFiles.length} para ${MAX_DOCS} documentos para evitar OOM`);
+    }
+
+    if (limitedFiles.length > 0) {
+      console.log(`Processando ${limitedFiles.length} documento(s) sequencialmente...`);
+
+      const parts: string[] = [];
+      let totalChars = 0;
+
+      // Processamento SEQUENCIAL (evita picos de memória do pdf-parse rodando em paralelo)
+      for (const filePath of limitedFiles) {
+        if (totalChars >= MAX_TOTAL_DOC_CHARS) {
+          console.warn('⚠️ Limite total de caracteres de documentos atingido; ignorando restantes');
+          break;
+        }
+
+        try {
           const { data: fileData, error: fileError } = await supabase.storage
             .from('briefing-documents')
             .download(filePath);
 
-          if (fileError) {
+          if (fileError || !fileData) {
             console.error(`Erro ao baixar ${filePath}:`, fileError);
-            return `Erro ao processar arquivo: ${filePath}`;
+            parts.push(`=== DOCUMENTO: ${filePath} ===\n[Falha ao baixar]\n`);
+            continue;
           }
 
           const fileName = filePath.split('/').pop() || 'arquivo';
@@ -536,61 +557,69 @@ serve(async (req) => {
           const isPdf = /\.pdf$/i.test(fileName);
           const isHtml = /\.html?$/i.test(fileName);
 
+          let extracted = '';
+
           if (isTextLike) {
-            const text = await fileData.text();
-            return `=== DOCUMENTO: ${fileName} ===\n${text}\n`;
-          }
-
-          if (isHtml) {
-            try {
-              console.log(`🌐 Extraindo texto do HTML: ${fileName}`);
-              const rawHtml = await fileData.text();
-              // Strip HTML tags to get clean text content
-              const cleanText = rawHtml
-                .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, '')
-                .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '')
-                .replace(/<[^>]+>/g, ' ')
-                .replace(/&nbsp;/gi, ' ')
-                .replace(/&amp;/gi, '&')
-                .replace(/&lt;/gi, '<')
-                .replace(/&gt;/gi, '>')
-                .replace(/&quot;/gi, '"')
-                .replace(/&#39;/gi, "'")
-                .replace(/\s+/g, ' ')
-                .trim();
-              console.log(`✅ HTML ${fileName}: ${cleanText.length} caracteres extraídos`);
-              return `=== DOCUMENTO HTML: ${fileName} ===\n${cleanText}\n`;
-            } catch (htmlError) {
-              console.error(`❌ Erro ao extrair HTML ${fileName}:`, htmlError);
-              return `=== DOCUMENTO: ${fileName} ===\n[Erro ao extrair texto do HTML]\n`;
+            extracted = await fileData.text();
+          } else if (isHtml) {
+            const rawHtml = await fileData.text();
+            extracted = rawHtml
+              .replace(/<script[^>]*>[\s\S]*?<\/script>/gi, '')
+              .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '')
+              .replace(/<[^>]+>/g, ' ')
+              .replace(/&nbsp;/gi, ' ')
+              .replace(/&amp;/gi, '&')
+              .replace(/&lt;/gi, '<')
+              .replace(/&gt;/gi, '>')
+              .replace(/&quot;/gi, '"')
+              .replace(/&#39;/gi, "'")
+              .replace(/\s+/g, ' ')
+              .trim();
+            console.log(`✅ HTML ${fileName}: ${extracted.length} caracteres`);
+          } else if (isPdf) {
+            if (fileData.size > MAX_PDF_BYTES) {
+              console.warn(`⚠️ PDF ${fileName} muito grande (${fileData.size} bytes) - pulando extração`);
+              parts.push(`=== DOCUMENTO PDF: ${fileName} ===\n[PDF grande demais para extração inline]\n`);
+              continue;
             }
-          }
-
-          if (isPdf) {
             try {
-              console.log(`📄 Extraindo texto do PDF: ${fileName}`);
+              console.log(`📄 Extraindo PDF: ${fileName} (${fileData.size} bytes)`);
               const pdfParse = await import('https://esm.sh/pdf-parse@1.1.1');
               const arrayBuffer = await fileData.arrayBuffer();
               const buffer = new Uint8Array(arrayBuffer);
               const pdfData = await pdfParse.default(buffer);
-              console.log(`✅ PDF ${fileName}: ${pdfData.text.length} caracteres extraídos`);
-              return `=== DOCUMENTO PDF: ${fileName} ===\n${pdfData.text}\n`;
+              extracted = pdfData.text || '';
+              console.log(`✅ PDF ${fileName}: ${extracted.length} caracteres`);
             } catch (pdfError) {
-              console.error(`❌ Erro ao extrair PDF ${fileName}:`, pdfError);
-              return `=== DOCUMENTO: ${fileName} ===\n[Erro ao extrair texto do PDF]\n`;
+              console.error(`❌ Erro PDF ${fileName}:`, pdfError);
+              parts.push(`=== DOCUMENTO: ${fileName} ===\n[Erro ao extrair texto do PDF]\n`);
+              continue;
             }
+          } else {
+            parts.push(`=== DOCUMENTO: ${fileName} (anexado) ===\n[Conteúdo não textual omitido]\n`);
+            continue;
           }
 
-          return `=== DOCUMENTO: ${fileName} (anexado) ===\n[Conteúdo não textual omitido no prompt para evitar ruído]\n`;
-        });
+          // Corta o documento no limite por arquivo
+          if (extracted.length > MAX_CHARS_PER_DOC) {
+            extracted = extracted.slice(0, MAX_CHARS_PER_DOC) + '\n[...conteúdo truncado para caber no limite de memória...]';
+          }
+          // E respeita o limite total
+          const remaining = MAX_TOTAL_DOC_CHARS - totalChars;
+          if (extracted.length > remaining) {
+            extracted = extracted.slice(0, remaining) + '\n[...truncado no limite total...]';
+          }
 
-        const documentsArray = await Promise.all(documentPromises);
-        documentsContent = documentsArray.join('\n\n');
-        console.log(`Documentos processados com sucesso. Total de caracteres: ${documentsContent.length}`);
-      } catch (error) {
-        console.error('Erro ao processar documentos:', error);
-        documentsContent = 'Erro ao processar documentos anexados.';
+          parts.push(`=== DOCUMENTO: ${fileName} ===\n${extracted}\n`);
+          totalChars += extracted.length;
+        } catch (error) {
+          console.error(`Erro ao processar ${filePath}:`, error);
+          parts.push(`=== DOCUMENTO: ${filePath} ===\n[Erro ao processar]\n`);
+        }
       }
+
+      documentsContent = parts.join('\n\n');
+      console.log(`Documentos processados. Total de caracteres: ${documentsContent.length}`);
     }
 
     const apiKey = Deno.env.get('ANTHROPIC_API_KEY');
