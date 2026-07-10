@@ -8,17 +8,20 @@ const corsHeaders = {
 };
 
 const CANDIDATE_MODELS = [
-  'claude-sonnet-4-20250514',
-  'claude-opus-4-1-20250805',
   'claude-3-5-haiku-20241022',
-  'claude-3-haiku-20240307',
+  'claude-opus-4-1-20250805',
 ] as const;
 
 const ANALYSIS_BRIEFING_TYPE = 'analise_briefing' as const;
 const MATERIAL_ORDER = ['criativos', 'roteiro_video', 'landing_page'] as const;
+const MAX_GENERATION_ATTEMPTS = 2;
 
 type MaterialType = (typeof MATERIAL_ORDER)[number];
 type PromptRow = { title: string; content: string };
+
+function elapsedSince(startTime: number): string {
+  return `${Date.now() - startTime}ms`;
+}
 
 const MATERIAL_LABELS: Record<MaterialType, string> = {
   criativos: 'Criativos Estáticos (headlines, textos para anúncios, copies de criativos)',
@@ -91,6 +94,21 @@ function getMaterialMinLength(materialType: MaterialType, landingPageSize: strin
       return 1200;
     case 'landing_page':
       return getLandingPageMinLength(landingPageSize);
+  }
+}
+
+function getMaterialMaxTokens(materialType: MaterialType, landingPageSize: string | null | undefined): number {
+  switch (materialType) {
+    case 'criativos':
+      return 4096;
+    case 'roteiro_video':
+      return 6144;
+    case 'landing_page': {
+      const normalized = (landingPageSize || '').toLowerCase();
+      if (/extens|longa|grande/.test(normalized)) return 8192;
+      if (/curta|curto|objetiva|pequena/.test(normalized)) return 4096;
+      return 6144;
+    }
   }
 }
 
@@ -334,6 +352,7 @@ async function callAnthropicWithFallback(
   let lastErrorText = '';
 
   for (const model of CANDIDATE_MODELS) {
+    const modelStartedAt = Date.now();
     console.log('🧪 Tentando modelo:', model);
 
     const resp = await fetch('https://api.anthropic.com/v1/messages', {
@@ -354,7 +373,7 @@ async function callAnthropicWithFallback(
       }),
     });
 
-    console.log('📡 Status do modelo', model, ':', resp.status);
+    console.log('📡 Status do modelo', model, ':', resp.status, `(${elapsedSince(modelStartedAt)})`);
 
     if (!resp.ok) {
       lastErrorText = await resp.text();
@@ -366,7 +385,7 @@ async function callAnthropicWithFallback(
     const text = extractAnthropicText(data);
     const stopReason = typeof data?.stop_reason === 'string' ? data.stop_reason : undefined;
 
-    console.log('✅ Modelo aceito:', model, 'stop_reason:', stopReason || 'n/a');
+    console.log('✅ Modelo aceito:', model, 'stop_reason:', stopReason || 'n/a', `tempo=${elapsedSince(modelStartedAt)}`);
 
     if (!text) {
       lastErrorText = `Resposta vazia do modelo ${model}`;
@@ -390,25 +409,29 @@ async function generateMaterialBlock(params: {
   const { apiKey, formData, clientContext, fullSystemPrompt, materialType } = params;
   let lastError: unknown = null;
 
-  for (let attempt = 0; attempt < 3; attempt++) {
+  const maxTokens = getMaterialMaxTokens(materialType, formData.tamanho_lp);
+
+  for (let attempt = 0; attempt < MAX_GENERATION_ATTEMPTS; attempt++) {
     const retryMode = attempt > 0;
+    const attemptStartedAt = Date.now();
 
     try {
       const userMessage = buildMaterialUserMessage(materialType, formData, clientContext, retryMode);
-      const { text, model, stopReason } = await callAnthropicWithFallback(apiKey, fullSystemPrompt, userMessage);
+      const { text, model, stopReason } = await callAnthropicWithFallback(apiKey, fullSystemPrompt, userMessage, maxTokens);
       const normalizedText = ensureMaterialHeading(materialType, formData.nome_empresa, text);
 
-      console.log(`📝 ${materialType} gerado com ${normalizedText.length} caracteres via ${model}`);
+      console.log(`📝 ${materialType} gerado com ${normalizedText.length} caracteres via ${model} em ${elapsedSince(attemptStartedAt)} (max_tokens=${maxTokens})`);
 
       if (stopReason !== 'max_tokens' && isMaterialOutputValid(materialType, normalizedText, formData.nome_empresa, formData.tamanho_lp)) {
         return normalizedText;
       }
 
-      console.warn(`⚠️ ${materialType} retornou potencialmente incompleto. stop_reason=${stopReason || 'n/a'} tamanho=${normalizedText.length} tentativa=${attempt + 1}`);
+      console.warn(`⚠️ ${materialType} retornou potencialmente incompleto. stop_reason=${stopReason || 'n/a'} tamanho=${normalizedText.length} tentativa=${attempt + 1} tempo=${elapsedSince(attemptStartedAt)}`);
       lastError = new Error(`Saída potencialmente incompleta para ${materialType}`);
     } catch (error) {
       lastError = error;
-      console.error(`❌ Erro ao gerar ${materialType} na tentativa ${attempt + 1}:`, error);
+      console.error(`❌ Erro ao gerar ${materialType} na tentativa ${attempt + 1} após ${elapsedSince(attemptStartedAt)}:`, error);
+      break;
     }
   }
 
@@ -425,7 +448,8 @@ async function generateBriefingAnalysis(params: {
   const { apiKey, formData, documentsContent } = params;
   let lastError: unknown = null;
 
-  for (let attempt = 0; attempt < 3; attempt++) {
+  for (let attempt = 0; attempt < MAX_GENERATION_ATTEMPTS; attempt++) {
+    const attemptStartedAt = Date.now();
     try {
       const { text, model, stopReason } = await callAnthropicWithFallback(
         apiKey,
@@ -434,17 +458,18 @@ async function generateBriefingAnalysis(params: {
         4096,
       );
 
-      console.log(`🧠 análise_briefing gerado com ${text.length} caracteres via ${model}`);
+      console.log(`🧠 análise_briefing gerado com ${text.length} caracteres via ${model} em ${elapsedSince(attemptStartedAt)}`);
 
       if (stopReason !== 'max_tokens' && isBriefingAnalysisOutputValid(text)) {
         return text.trim();
       }
 
-      console.warn(`⚠️ análise_briefing retornou potencialmente incompleto. stop_reason=${stopReason || 'n/a'} tamanho=${text.length} tentativa=${attempt + 1}`);
+      console.warn(`⚠️ análise_briefing retornou potencialmente incompleto. stop_reason=${stopReason || 'n/a'} tamanho=${text.length} tentativa=${attempt + 1} tempo=${elapsedSince(attemptStartedAt)}`);
       lastError = new Error('Saída potencialmente incompleta para analise_briefing');
     } catch (error) {
       lastError = error;
-      console.error(`❌ Erro ao gerar analise_briefing na tentativa ${attempt + 1}:`, error);
+      console.error(`❌ Erro ao gerar analise_briefing na tentativa ${attempt + 1} após ${elapsedSince(attemptStartedAt)}:`, error);
+      break;
     }
   }
 
@@ -462,6 +487,7 @@ serve(async (req) => {
   let tableNameVar = 'copy_forms';
 
   try {
+    const functionStartedAt = Date.now();
     console.log('🚀 Edge function generate-copy-ai iniciada');
 
     const body = await req.json();
@@ -497,6 +523,7 @@ serve(async (req) => {
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
+    const formFetchStartedAt = Date.now();
     console.log('🔍 Buscando dados do formulário na tabela:', tableName);
     const { data: formData, error: formError } = await supabase
       .from(tableName)
@@ -512,6 +539,7 @@ serve(async (req) => {
     console.log('✅ Dados do formulário carregados:', {
       empresa: formData.nome_empresa,
       status: formData.status,
+      tempo: elapsedSince(formFetchStartedAt),
     });
 
     let documentsContent = '';
@@ -529,6 +557,7 @@ serve(async (req) => {
     }
 
     if (limitedFiles.length > 0) {
+      const documentsStartedAt = Date.now();
       console.log(`Processando ${limitedFiles.length} documento(s) sequencialmente...`);
 
       const parts: string[] = [];
@@ -620,7 +649,7 @@ serve(async (req) => {
       }
 
       documentsContent = parts.join('\n\n');
-      console.log(`Documentos processados. Total de caracteres: ${documentsContent.length}`);
+      console.log(`Documentos processados. Total de caracteres: ${documentsContent.length}. Tempo: ${elapsedSince(documentsStartedAt)}`);
     }
 
     const apiKey = Deno.env.get('ANTHROPIC_API_KEY');
@@ -647,6 +676,7 @@ serve(async (req) => {
       const rawCopyType = formData.copy_type || 'onboarding';
       const copyType = rawCopyType === 'onboarding' ? 'onboarding' : 'ongoing';
 
+      const promptsStartedAt = Date.now();
       console.log('📋 Buscando prompts do tipo:', copyType, '(fase original:', rawCopyType, ')');
       const { data: prompts } = await supabase
         .from('default_prompts')
@@ -657,6 +687,7 @@ serve(async (req) => {
 
       console.log('📝 Preparando system prompt completo...');
       console.log(`📊 Total de prompts ativos encontrados: ${prompts?.length || 0}`);
+      console.log(`⏱️ Prompts carregados em ${elapsedSince(promptsStartedAt)}`);
 
       if (prompts && prompts.length > 0) {
         console.log('📋 Títulos dos prompts carregados:');
@@ -698,6 +729,7 @@ serve(async (req) => {
     console.log('📝 Resposta gerada, tamanho:', aiResponse.length, 'caracteres');
 
     console.log('💾 Salvando resposta no banco...');
+    const saveStartedAt = Date.now();
 
     let finalResponse = aiResponse;
     if (appendToExisting) {
@@ -730,7 +762,8 @@ serve(async (req) => {
       throw new Error(`Erro ao salvar resposta: ${updateError.message}`);
     }
 
-    console.log('🎉 Processo finalizado com sucesso!');
+    console.log(`💾 Resposta salva em ${elapsedSince(saveStartedAt)}`);
+    console.log(`🎉 Processo finalizado com sucesso em ${elapsedSince(functionStartedAt)}`);
     return new Response(
       JSON.stringify({
         success: true,
