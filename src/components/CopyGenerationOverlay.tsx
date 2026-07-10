@@ -32,22 +32,29 @@ export function CopyGenerationOverlay({ status, onRetry, errorMessage, title, su
   const [progress, setProgress] = useState(0);
   const [stepIndex, setStepIndex] = useState(0);
 
-  // Simulated progress 0→90 while generating
+  // Simulated progress: quick ramp to 90%, then slow asymptotic crawl toward 99%
   useEffect(() => {
     if (status !== 'generating') return;
     setProgress(0);
     setStepIndex(0);
 
     const startTime = Date.now();
-    const duration = STEP_MESSAGES.length * STEP_INTERVAL; // ~19.6s to reach 90%
+    const rampDuration = STEP_MESSAGES.length * STEP_INTERVAL; // ~20s até 90%
 
     const timer = setInterval(() => {
       const elapsed = Date.now() - startTime;
-      const ratio = Math.min(elapsed / duration, 1);
-      // Ease-out curve for natural deceleration
-      const eased = 1 - Math.pow(1 - ratio, 3);
-      setProgress(Math.min(eased * 90, 90));
-    }, 100);
+      if (elapsed <= rampDuration) {
+        const ratio = elapsed / rampDuration;
+        const eased = 1 - Math.pow(1 - ratio, 3);
+        setProgress(Math.min(eased * 90, 90));
+      } else {
+        // Após 90%, avança lentamente rumo a 99% (nunca chega em 100 sem sucesso)
+        const extra = elapsed - rampDuration;
+        // A cada ~10s adicionais, cobre ~metade do que falta até 99
+        const asymptotic = 99 - 9 * Math.pow(0.5, extra / 10000);
+        setProgress(Math.min(asymptotic, 99));
+      }
+    }, 200);
 
     return () => clearInterval(timer);
   }, [status]);
