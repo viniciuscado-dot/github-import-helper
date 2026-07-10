@@ -11,6 +11,10 @@ const CANDIDATE_MODELS = [
   'claude-3-5-haiku-20241022',
   'claude-opus-4-1-20250805',
 ] as const;
+const QUALITY_FALLBACK_MODELS = [
+  'claude-opus-4-1-20250805',
+  'claude-3-5-haiku-20241022',
+] as const;
 
 const ANALYSIS_BRIEFING_TYPE = 'analise_briefing' as const;
 const MATERIAL_ORDER = ['criativos', 'roteiro_video', 'landing_page'] as const;
@@ -348,10 +352,11 @@ async function callAnthropicWithFallback(
   systemPrompt: string,
   userMessage: string,
   maxTokens = 8192,
+  models: readonly string[] = CANDIDATE_MODELS,
 ): Promise<{ model: string; text: string; stopReason?: string }> {
   let lastErrorText = '';
 
-  for (const model of CANDIDATE_MODELS) {
+  for (const model of models) {
     const modelStartedAt = Date.now();
     console.log('🧪 Tentando modelo:', model);
 
@@ -417,7 +422,8 @@ async function generateMaterialBlock(params: {
 
     try {
       const userMessage = buildMaterialUserMessage(materialType, formData, clientContext, retryMode);
-      const { text, model, stopReason } = await callAnthropicWithFallback(apiKey, fullSystemPrompt, userMessage, maxTokens);
+      const models = retryMode ? QUALITY_FALLBACK_MODELS : CANDIDATE_MODELS;
+      const { text, model, stopReason } = await callAnthropicWithFallback(apiKey, fullSystemPrompt, userMessage, maxTokens, models);
       const normalizedText = ensureMaterialHeading(materialType, formData.nome_empresa, text);
 
       console.log(`📝 ${materialType} gerado com ${normalizedText.length} caracteres via ${model} em ${elapsedSince(attemptStartedAt)} (max_tokens=${maxTokens})`);
@@ -456,6 +462,7 @@ async function generateBriefingAnalysis(params: {
         buildBriefingAnalysisSystemPrompt(),
         buildBriefingAnalysisUserMessage(formData, documentsContent),
         4096,
+        attempt > 0 ? QUALITY_FALLBACK_MODELS : CANDIDATE_MODELS,
       );
 
       console.log(`🧠 análise_briefing gerado com ${text.length} caracteres via ${model} em ${elapsedSince(attemptStartedAt)}`);
